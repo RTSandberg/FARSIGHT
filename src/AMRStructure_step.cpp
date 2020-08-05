@@ -1,0 +1,67 @@
+#include "AMRStructure.hpp"
+
+void AMRStructure::step(bool get_4th_e) {
+    iter_num += 1;
+
+    int N = xs.size();
+
+// initialize rk4 vectors
+    std::vector<double> xtemp = xs;
+    std::vector<double> v1 = vs, v2, v3, v4;
+    std::vector<double> a1 = es, a2, a3, a4;
+
+//   math_vector v1, v2, v3, v4;
+//   math_vector f1(total_num_points), f2(total_num_points), f3(total_num_points), f4(total_num_points);
+//   math_vector tempx;
+  
+    // k1 = (v1,a1) = F(un) = F(xn,pn) = (vn, q/m E(xn) )
+  // v1 = vs = vn
+    // calculate_E_mq(a1, xs, xs, q_ws, L, epsilon);
+    // v1 = vs;
+    for (int ii = 0; ii < N; ++ii) {
+        a1[ii] *= qm;
+    }
+    
+    // k2 = (v2,a2) = F(un + h/2 k1) = F(xn + delt/2 v1, vn + delt/2 a1)
+    //              = ( vn + delt a1 / 2, q/m E(xn + delt v1 /2) )
+    for (int ii = 0; ii < N; ++ii) {
+        v2.push_back(vs[ii] + 0.5 * dt * a1[ii]);
+        xtemp[ii] += 0.5 * dt * v1[ii];
+    }
+    calculate_E_mq(a2, xtemp, xtemp, q_ws, Lx, greens_epsilon);
+    for (int ii = 0; ii < N; ++ii) {
+        a2[ii] *= qm;
+    }
+
+    // k3 = (v3,a3) = F(un + h/2 k2) = F(xn + delt/2 v2, vn + delt/2 a2)
+    //              = ( vn + delt a2 / 2, q/m E(xn + delt v2 /2) )
+    for (int ii = 0; ii < N; ++ii) {
+        v3.push_back(vs[ii] + 0.5 * dt * a2[ii]);
+        xtemp[ii] = xs[ii] + 0.5 * dt * v2[ii];
+    }
+    calculate_E_mq(a3, xtemp, xtemp, q_ws, Lx, greens_epsilon);
+    for (int ii = 0; ii < N; ++ii) {
+        a3[ii] *= qm;
+    }
+    // k4 = (v4,a4) = F(un + h k3) = F(xn + delt v3, pn + delt f3)
+    //              = ( (pn + delt f3) / m, q E(xn + delt v3) )
+    for (int ii = 0; ii < N; ++ii) {
+        v4.push_back(vs[ii] + dt * a3[ii]);
+        xtemp[ii] = xs[ii] + dt * v3[ii];
+    }
+    calculate_E_mq(a4, xtemp, xtemp, q_ws, Lx, greens_epsilon);
+    for (int ii = 0; ii < N; ++ii) {
+        a4[ii] *= qm;
+    }
+    // un+1 = (xn+1,pn+1) = un + h/6 (k1 + 2k2 + 2k3 + k4)
+    //                    = (xn + delt/6 (v1 + 2 v2 + 2 v3 + v4),
+    //                    = pn + delt/6 (a1 + 2 a2 + 2 a3 + a4) )
+    // store xn+1, pn+1 in xn,pn
+    for (int ii = 0; ii < N; ++ii) {
+        xs[ii] += dt / 6.0 * (v1[ii] + 2 * v2[ii] + 2 * v3[ii] + v4[ii]);
+        vs[ii] += dt / 6.0 * (a1[ii] + 2 * a2[ii] + 2 * a3[ii] + a4[ii]);
+    }
+    if (get_4th_e) {
+        calculate_E_mq(es, xs, xs, q_ws, Lx, greens_epsilon);
+    }
+}
