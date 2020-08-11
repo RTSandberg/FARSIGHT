@@ -29,8 +29,11 @@ AMRStructure::AMRStructure(std::string sim_dir, std::function<double (double,dou
     this->sim_dir = sim_dir;
     Lx = x_max - x_min;
     Lv = v_max - v_min;
+    npanels_x = int(pow(2, initial_height));
+    npanels_v = int(pow(2, initial_height));
     // create_prerefined_mesh();
-    generate_mesh(f0, do_adaptively_refine);
+    bool is_initial_step = true;
+    generate_mesh(f0, do_adaptively_refine, is_initial_step);
     
 }
 AMRStructure::AMRStructure(std::string sim_dir, std::function<double (double,double)> f0, 
@@ -50,9 +53,12 @@ AMRStructure::AMRStructure(std::string sim_dir, std::function<double (double,dou
     this->sim_dir = sim_dir;
     Lx = x_max - x_min;
     Lv = v_max - v_min;
+    npanels_x = int(pow(2, initial_height));
+    npanels_v = int(pow(2, initial_height));
 
     // create_prerefined_mesh();
-    generate_mesh(f0, do_adaptively_refine);
+    bool is_initial_step = true;
+    generate_mesh(f0, do_adaptively_refine, is_initial_step);
 }
 //end constructors
 

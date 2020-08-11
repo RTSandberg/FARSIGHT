@@ -394,24 +394,24 @@ void AMRStructure::refine_panels(std::function<double (double,double)> f, bool d
     }
 }
 
-void AMRStructure::generate_mesh(std::function<double (double,double)> f, bool do_adaptive_refine) {
-    // if (! is_initial_mesh_set) { 
-    //     std::cout << "Initial mesh not set!";
-    // }
-    // else {
-        // set f values
-        // for (auto& part : particles) {
-        //     part.set_f(f(part.get_x(), part.get_v() ) );
-        // }
+void AMRStructure::generate_mesh(std::function<double (double,double)> f, 
+                                 bool do_adaptive_refine, bool is_initial_step) 
+{
+    bool verbose=false;
     create_prerefined_mesh();
 
-    // cout << " extending prerefined mesh" << endl;
-
-    for (int ii = 0; ii < xs.size(); ii++) {
-        fs[ii] = f(xs[ii], vs[ii]);
+    if (is_initial_step) {
+        for (int ii = 0; ii < xs.size(); ii++) {
+            fs[ii] = f0(xs[ii],vs[ii]);
+        }
+    } else {
+        int nx_points = 2*npanels_x + 1;
+        int nv_points = 2*npanels_v + 1;
+        interpolate_to_initial_xvs(fs,xs,vs, nx_points, nv_points,verbose);
     }
+
     int num_panels_pre_refine = panels.size();
-    // cout << " testing leaf panels" << endl;
+
     for (int ii = minimum_unrefined_index; ii < num_panels_pre_refine; ++ii) {
         test_panel(ii);
     }
@@ -419,12 +419,9 @@ void AMRStructure::generate_mesh(std::function<double (double,double)> f, bool d
         need_further_refinement = false;
         refine_panels(f, do_adaptive_refine);
     }
-    // }
 
-    // cout << "setting weights" << endl;
     set_leaves_weights();
 
-    // calculating Q0
     Q0 = 0;
     for (int ii = 0; ii < q_ws.size(); ii++) {
         Q0 += q_ws[ii];
@@ -532,8 +529,9 @@ void AMRStructure::remesh() {
     auto stop = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>(stop - start);
 
-    // cout << "Old data copy time " << duration.count() << " microseconds." << endl << endl; 
+    // cout << "Old data copy time " << duration.count() << " microseconds." << endl << endl;
 
-    generate_mesh([&] (double x, double v) { return interpolate_from_mesh(x,v,false);} , do_adaptively_refine);
+    bool is_initial_step = false;
+    generate_mesh([&] (double x, double v) { return interpolate_from_mesh(x,v,true);} , do_adaptively_refine, is_initial_step);
     init_e();
 }

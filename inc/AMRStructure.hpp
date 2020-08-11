@@ -12,29 +12,31 @@
 #ifndef AMRSTRUCTURE_HPP
 #define AMRSTRUCTURE_HPP
 
-#include <algorithm> // sort, copy
+#include <algorithm> // sort, copy, std::find
 #include <assert.h> // assert
 #include <chrono> // high_resolution _clock, duration_cast, microseconds
 using namespace std::chrono;
 #include <functional>
 #include <fstream>
-#include <iostream>
+#include <iostream> // std::cout, std::endl
 #include <iterator> // ostream_iterator for vector printing
 #include <math.h>
 #include <numeric> // iota
 #include <omp.h>
+#include <set> // std::set, set.find
 #include <stdexcept> // exceptions
 #include <stdio.h> // printf
-#include <string>
-#include <vector>
+#include <string> 
+#include <vector> // std::vector
 
 #include <Eigen/Dense>
+using namespace Eigen;
 
 #include "Panel.hpp"
 
 enum Quadrature {simpsons, trap};
 
-class AMRStructure {
+struct AMRStructure {
     std::string sim_dir;
     // domain parameters
     double Lx, Lv;
@@ -109,7 +111,8 @@ class AMRStructure {
         // end getters
 
         // amr
-        void generate_mesh(std::function<double (double,double)> f, bool do_adaptive_refine);
+        void generate_mesh(std::function<double (double,double)> f,
+                        bool do_adaptive_refine, bool is_initial_step);
         void set_leaves_weights();
         void recursively_set_leaves_weights(int panel_ind);
 
@@ -121,10 +124,15 @@ class AMRStructure {
         // interpolation functions
         void shift_xs(std::vector<double>& shifted_xs, const std::vector<double>& xs, const std::vector<double>& vs);
         int find_leaf_containing_xv_recursively(double &x, const double &v, int panel_ind, bool verbose);
+        int find_leaf_containing_point_from_neighbor(double& tx, double& tv, int leaf_ind, std::set<int>& history, bool verbose);
         // int find_leaf_containing();
+        void interpolate_to_initial_xvs(std::vector<double>& fs, std::vector<double>& xs, std::vector<double>& vs, int nx, int nv,bool verbose);
         double interpolate_from_mesh(double xs, double vs, bool verbose);
         void interpolate_from_mesh(std::vector<double> &values, std::vector<double>& x, std::vector<double>& v, bool verbose);
+        void interpolate_from_mesh_slow(std::vector<double> &values, std::vector<double>& x, std::vector<double>& v, bool verbose);
         double interpolate_from_panel(double x, double v, int panel_ind,bool verbose);
+        void interpolate_from_panel_to_points(std::vector<double>& values, std::vector<double>& xs, std::vector<double>& vs,
+                                                std::vector<int>& point_inds, int panel_ind);
 
         // field functions
         void calculate_e();
