@@ -93,3 +93,4 @@ struct Panel {
 std::ostream& operator<<(std::ostream& os, const Panel& panel);
 
 #endif /* PANEL_H */
+
