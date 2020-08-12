@@ -12,7 +12,20 @@ int calculate_E_mq(std::vector<double>& es, const std::vector<double>& targets, 
         return 1;
     }
 
-#pragma omp parallel for
+#pragma omp parallel
+{ 
+    // omp_set_num_threads(2);
+    // int num_threads = omp_get_num_threads();
+    // if (omp_get_thread_num() == 0) {
+    //     cout << "Number of threads from calc_E: " << num_threads << endl;
+    // }
+
+// #pragma omp for
+//     for (int ii = 0; ii < num_threads; ii++) {
+//         cout << "Hello from thread " << omp_get_thread_num() << endl;
+//     }
+
+    #pragma omp for
     for (int ii = 0; ii < targets.size(); ++ii) {
         double xi = targets[ii];
         double ei = 0.0;
@@ -25,6 +38,7 @@ int calculate_E_mq(std::vector<double>& es, const std::vector<double>& targets, 
         }
         es[ii] = ei;
     }
+}
     return 0;
 }
 
@@ -83,7 +97,16 @@ void AMRStructure::init_e() {
     }
     // calculate reduced E
     std::vector<double> sort_es(sort_ws.size());
+
+    // #pragma omp parallel 
+    // {
+    // int num_threads = omp_get_num_threads();
+    // if (omp_get_thread_num() == 0) {
+        // cout << "Number of threads from init_e(): " << num_threads << endl;
+    // }
     calculate_E_mq(sort_es, unique_xs, unique_xs, sort_ws, Lx, greens_epsilon);
+    // }
+
     double mean_e = 0;
     for (int ii = 0; ii < sort_es.size(); ++ii) {
         mean_e += sort_ws[ii] * sort_es[ii];

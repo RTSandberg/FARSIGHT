@@ -11,4 +11,5 @@ add_library(AMRInterpObj AMRStructure_interp.cpp)
 
 
 
-#target_link_libraries(AMRFieldObj OpenMP::OpenMP_CXX)
+target_link_libraries(AMRFieldObj OpenMP::OpenMP_CXX)
+target_link_libraries(AMRInterpObj OpenMP::OpenMP_CXX)

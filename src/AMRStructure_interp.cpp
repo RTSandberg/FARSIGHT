@@ -358,6 +358,9 @@ void AMRStructure::interpolate_to_initial_xvs(
     std::vector<double>& fs, std::vector<double>& xs, std::vector<double>& vs, 
     int nx, int nv, bool verbose) 
 {
+    bool print_profile = true;
+
+    auto start = high_resolution_clock::now();
     // bool verbose = false;
     std::vector<double> shifted_xs(xs.size() );
     shift_xs(shifted_xs, xs, vs);
@@ -366,8 +369,15 @@ void AMRStructure::interpolate_to_initial_xvs(
         std::copy(shifted_xs.begin(), shifted_xs.end(), std::ostream_iterator<double>(cout, ", "));
         cout << endl;
     }
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(stop - start);
+    if (print_profile) {
+        cout << "shift time " << duration.count() << " microseconds" << endl;
+    }
 
     // have to sort points:
+    start = high_resolution_clock::now();
+
     std::vector<int> sort_indices(xs.size());
     for (int ii = 0; ii < xs.size(); ii++ ) { sort_indices[ii] = ii; }
     bool do_sort = false;
@@ -392,9 +402,16 @@ void AMRStructure::interpolate_to_initial_xvs(
         std::copy(sortxs.begin(), sortxs.end(), std::ostream_iterator<double>(cout, ", "));
         cout << endl << "sorted vs: " << endl;
         std::copy(sortvs.begin(), sortvs.end(), std::ostream_iterator<double>(cout, ", "));
+        cout << endl;
+    }
+
+    stop = high_resolution_clock::now();
+    duration = duration_cast<microseconds>(stop - start);
+    if (print_profile) {
+        cout << "sort time " << duration.count() << " microseconds" << endl;
     }
     
-    cout << endl;
+    start = high_resolution_clock::now();
     std::vector<double> sortfs(xs.size() );
 
     std::vector<int> leaf_panel_of_points(xs.size() );
@@ -422,60 +439,41 @@ void AMRStructure::interpolate_to_initial_xvs(
         // cout << "point " << sort_indices[point_ind] << " in panel " << leaf_ind << " (sorted ind " << point_ind << ")" << endl;
     }
 
-    // cout << "That was one column to test ----------------------------------------- " << endl;
-
+#pragma omp parallel
+{
+    // int num_threads = omp_get_num_threads();
+    // if (omp_get_thread_num() == 0) {
+    //     cout << "Number of threads from calc_E: " << num_threads << endl;
+    // }
+    #pragma omp for
     for (int ii = 0; ii < nv; ++ii) {
         int point_ind = ii * nv;
-        leaf_ind = first_column_leaf_inds[ii];
+        int leaf_ind_c = first_column_leaf_inds[ii];
         for (int jj = 1; jj < nx; ++jj) {
             point_ind++;
             // cout << "Testing point " << point_ind << ", (x,v)= (" << sortxs[point_ind] << ", " << sortvs[point_ind] << ")" << endl;
             std::set<int> history;
-            history.emplace(leaf_ind);
-            leaf_ind = find_leaf_containing_point_from_neighbor(sortxs[point_ind], sortvs[point_ind], leaf_ind, history, verbose);
-            point_in_leaf_panels_by_inds[leaf_ind].push_back(point_ind);
-            leaf_panel_of_points[sort_indices[point_ind]] = leaf_ind;
+            history.emplace(leaf_ind_c);
+            leaf_ind_c = find_leaf_containing_point_from_neighbor(sortxs[point_ind], sortvs[point_ind], leaf_ind_c, history, verbose);
+            // point_in_leaf_panels_by_inds[leaf_ind_c].push_back(point_ind);
+            leaf_panel_of_points[sort_indices[point_ind]] = leaf_ind_c;
 
             // cout << "sorted ind " << point_ind << ", ind " << sort_indices[point_ind] << " is in panel " << leaf_ind << endl;
         }
     }    
-    // std::cout << "leaves the new way " << std::endl;
-    // // std::copy(leaf_panel_of_points.begin(), leaf_panel_of_points.end(), std::ostream_iterator<int>(std::cout, ", "));
-    // for (int ii = 0; ii < point_in_leaf_panels_by_inds.size(); ii++) {
-    //     if (point_in_leaf_panels_by_inds[ii].size() > 0) {
-    //         std::cout << " in panel " << ii << " are points:" << endl;
-    //         for (int jj = 0; jj < point_in_leaf_panels_by_inds[ii].size(); ++jj) {
-    //             cout << point_in_leaf_panels_by_inds[ii][jj] << ", ";
-    //         }
-    //         cout << endl;
+} // end omp parallel
 
-    //     }
-    // }
-    // std::cout << endl;
+    for (int ii = 0; ii < leaf_panel_of_points.size(); ++ii) {
+        point_in_leaf_panels_by_inds[leaf_panel_of_points[ii]].emplace_back(ii);
+    }
 
-
-    // std::vector<int> leaves;
-    // point_in_leaf_panels_by_inds = std::vector<std::vector<int> > (old_panels.size());
-    // for (int ii = 0; ii < xs.size(); ++ii) {
-    //     int leaf_ind = find_leaf_containing_xv_recursively(shifted_xs[ii], vs[ii], 0, verbose);
-    //     leaves.push_back(leaf_ind);
-    //     point_in_leaf_panels_by_inds[leaf_ind].push_back(ii);
-    // }
-    // std::cout << "leaves the old way " << std::endl;
-    // std::copy(leaves.begin(), leaves.end(), std::ostream_iterator<int>(std::cout, ", "));
-    // for (int ii = 0; ii < point_in_leaf_panels_by_inds.size(); ii++) {
-    //     if (point_in_leaf_panels_by_inds[ii].size() > 0) {
-    //         std::cout << " in panel " << ii << " are points:" << endl;
-    //         for (int jj = 0; jj < point_in_leaf_panels_by_inds[ii].size(); ++jj) {
-    //             cout << point_in_leaf_panels_by_inds[ii][jj] << ", ";
-    //         }
-    //         cout << endl;
-
-    //     }
-    // }
-    // std::cout << endl;
+    stop = high_resolution_clock::now();
+    duration = duration_cast<microseconds>(stop - start);
+    if (print_profile) {
+        cout << "find leaf time " << duration.count() << " microseconds" << endl;
+    }
     
-
+    start = high_resolution_clock::now();
     for (int panel_ind = 0; panel_ind < old_panels.size(); panel_ind++) {
         if (point_in_leaf_panels_by_inds[panel_ind].size() > 0) {
             interpolate_from_panel_to_points(sortfs,sortxs,sortvs,point_in_leaf_panels_by_inds[panel_ind], panel_ind);
@@ -484,9 +482,11 @@ void AMRStructure::interpolate_to_initial_xvs(
     for (int ii = 0; ii < fs.size(); ii++) {
         fs[sort_indices[ii]] = sortfs[ii];
     }
-    // cout << "f values" << endl;
-    // std::copy(fs.begin(), fs.end(), std::ostream_iterator<double>(cout, ", "));
-    // cout << endl;
+    stop = high_resolution_clock::now();
+    duration = duration_cast<microseconds>(stop - start);
+    if (print_profile) {
+        cout << "evaluate interpolant time " << duration.count() << " microseconds" << endl;
+    }
 }
 
 void AMRStructure::interpolate_from_panel_to_points(

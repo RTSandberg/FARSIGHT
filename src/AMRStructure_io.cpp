@@ -82,7 +82,7 @@ int AMRStructure::write_panels_to_file() {
         return 1;
     }
 
-    cout << "Successfully wrote step " << iter_num << " panel data files" << endl;
+    // cout << "Successfully wrote step " << iter_num << " panel data files" << endl;
 
     return 0;
 }

@@ -28,22 +28,6 @@ class F0_LD {
 };
 
 int main(int argc, char** argv) {
-    cout << "Hello world!" << endl; 
-    const auto processor_count = std::thread::hardware_concurrency();
-    cout << "Num procs available " << processor_count << endl;
-
-#pragma omp parallel 
-{
-    int num_threads = omp_get_num_threads();
-    if (omp_get_thread_num() == 0) {
-        cout << "Number of threads: " << num_threads << endl;
-    }
-#pragma omp for
-    for (int ii = 0; ii < num_threads; ii++) {
-        cout << "Hello from thread " << omp_get_thread_num() << endl;
-    }
-}
-
 
     if (argc < 14) {
         std::cout << "Not enough input arguments: had " << argc - 1 << ", but need 13" << endl;
@@ -51,9 +35,6 @@ int main(int argc, char** argv) {
         std::cout << " 9:initial_height 10:greens_epsilon";
         std::cout << " 11:num_steps 12:n_steps_remesh 13:dt" << std::endl;
         return 1;
-    }
-    for (int ii = 1; ii < 14; ++ii) {
-        std::cout << argv[ii] << endl;
     }
     std::string sim_dir = argv[1];
     // sim_dir.append("/");
@@ -71,6 +52,16 @@ int main(int argc, char** argv) {
     int n_steps_remesh = atoi(argv[12]);
     double dt = atof(argv[13]);//0.5;
     bool do_adaptively_refine = false;
+
+
+    cout << "============================" << endl;
+    cout << "Running a FRSIGHT simulation" << endl;
+    cout << "sim dir: " << sim_dir << endl;
+    cout << x_min << " <= x <= " << x_max << endl;
+    cout << v_min << " <= v <= " << v_max << endl;
+    cout << "k=" << kx << ", amp = " << amp << ", vth = " << vth << endl;
+    cout << "height " << initial_height << endl;
+    cout << "green's epsilon = " << greens_epsilon << endl;
 
     AMRStructure amr{sim_dir, f0, 
                 initial_height, 
