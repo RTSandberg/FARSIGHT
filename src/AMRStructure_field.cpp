@@ -122,6 +122,7 @@ void AMRStructure::init_e() {
         es[ii] = sort_es[inv_inds[ii]];
     }
 }
+
 // void AMRStructure::calculate_e() {
 //     double epsLsq = epsilon * epsilon / L / L;
 //     double norm_epsL = sqrt(1 + 4 * epsLsq );
