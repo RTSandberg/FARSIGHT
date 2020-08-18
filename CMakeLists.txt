@@ -54,16 +54,17 @@ include_directories(inc_eigen/eigen-3.3.7)
 link_directories(src)
 
 # add the executable
-
-add_executable(farrsight run_FARRSIGHT.cpp)
-target_link_libraries(farrsight AMRObj 
-                                PanelObj 
+set(EXE farrsight)
+add_executable(${EXE} run_FARRSIGHT.cpp)
+target_link_libraries(${EXE}    PanelObj 
                                 icsObj)
+if (ENABLE_GPU_BUILD)
+    target_link_libraries(farrsight AMRObj_gpu)
+else()
+    target_link_libraries(farrsight AMRObj_cpu)
+endif()
 
 target_link_libraries(farrsight OpenMP::OpenMP_CXX)
-
-
-
 
 install(TARGETS farrsight DESTINATION bin)
 
