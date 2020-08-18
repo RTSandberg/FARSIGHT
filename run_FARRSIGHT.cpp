@@ -57,7 +57,7 @@ int main(int argc, char** argv) {
 
 
     cout << "============================" << endl;
-    cout << "Running a FRSIGHT simulation" << endl;
+    cout << "Running a FARRSIGHT simulation" << endl;
     cout << "sim dir: " << sim_dir << endl;
     cout << x_min << " <= x <= " << x_max << endl;
     cout << v_min << " <= v <= " << v_max << endl;

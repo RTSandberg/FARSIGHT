@@ -15,7 +15,9 @@ target_link_libraries(AMRObj    OpenMP::OpenMP_CXX
                                 $<$<CXX_COMPILER_ID:GNU>:m>)
 
 if(ENABLE_GPU_BUILD)
-    target_link_libraries(AMRObj    OpenMP::OpenMP_CXX
-                                    OPENACC_CXX
-                                    $<$<CXX_COMPILER_ID:GNU>:m>)
+    target_compile_definitions(AMRObj PRIVATE OPENACC_ENABLED)
+    target_link_libraries(AMRObj    PUBLIC
+                                        OpenMP::OpenMP_CXX
+                                        OpenACC_CXX
+                                        $<$<CXX_COMPILER_ID:GNU>:m>)
 endif()
