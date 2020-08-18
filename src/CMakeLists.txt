@@ -11,4 +11,11 @@ add_library(AMRObj  AMRStructure.cpp
 add_library(icsObj initial_distributions.cpp)
 
 
-target_link_libraries(AMRObj OpenMP::OpenMP_CXX)
+target_link_libraries(AMRObj    OpenMP::OpenMP_CXX
+                                $<$<CXX_COMPILER_ID:GNU>:m>)
+
+if(ENABLE_GPU_BUILD)
+    target_link_libraries(AMRObj    OpenMP::OpenMP_CXX
+                                    OPENACC_CXX
+                                    $<$<CXX_COMPILER_ID:GNU>:m>)
+endif()

@@ -15,12 +15,38 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
                 "Debug" "Release" "None")
 endif()
 
+option(ENABLE_GPU_BUILD "build OpenACC GPU version"             OFF)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 
 find_package(OpenMP REQUIRED)
+
+# from Leighton
+#Some PGI versions seem to require a link flag for OpenMP
+set_property(TARGET OpenMP::OpenMP_C APPEND
+                                     PROPERTY
+                                         INTERFACE_LINK_LIBRARIES
+                                         $<$<CXX_COMPILER_ID:PGI>:-mp>) 
+#Creating an interface for OpenACC
+add_library(OpenACC_CXX INTERFACE)
+set_property(TARGET OpenACC_CXX     PROPERTY
+                                         INTERFACE_COMPILE_OPTIONS
+                                         -acc
+#                                         -ta=tesla:ccall,cc60$<$<CONFIG:Debug>:,time>
+                                         -Minfo)
+set_property(TARGET OpenACC_CXX     PROPERTY
+                                         INTERFACE_LINK_LIBRARIES
+                                         -acc
+#                                         -ta=tesla:ccall,cc60
+                                        )
+
+if(ENABLE_GPU_BUILD AND NOT (CMAKE_C_COMPILER_ID MATCHES PGI))
+    message(STATUS "GPU build requires PGI compilers! Turning GPU build off.")
+    set(ENABLE_GPU_BUILD OFF CACHE BOOL "build OpenACC GPU version" FORCE)
+endif()
+
 
 add_subdirectory(src)
 include_directories(inc)

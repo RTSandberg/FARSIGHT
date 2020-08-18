@@ -152,7 +152,9 @@ struct AMRStructure {
 
 
 
-int calculate_E_mq(std::vector<double>& es, const std::vector<double>& targets, const std::vector<double>& sources, const std::vector<double>& q_weights, double L, double epsilon);
+int calculate_E_mq(double* es, const double* targets, int nt, 
+                  const double* sources, const double* q_ws, int ns, 
+                  double L, double epsilon);
 
 #endif /* AMRSTRUCTURE_HPP */
 

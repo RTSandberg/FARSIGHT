@@ -9,7 +9,7 @@ void AMRStructure::step(bool get_4th_e) {
 // initialize rk4 vectors
     std::vector<double> xtemp = xs;
     std::vector<double> v1 = vs, v2, v3, v4;
-    std::vector<double> a1 = es, a2, a3, a4;
+    std::vector<double> a1 = es, a2(xs.size()), a3(xs.size()), a4(xs.size());
 
 //   math_vector v1, v2, v3, v4;
 //   math_vector f1(total_num_points), f2(total_num_points), f3(total_num_points), f4(total_num_points);
@@ -29,7 +29,9 @@ void AMRStructure::step(bool get_4th_e) {
         v2.push_back(vs[ii] + 0.5 * dt * a1[ii]);
         xtemp[ii] += 0.5 * dt * v1[ii];
     }
-    calculate_E_mq(a2, xtemp, xtemp, q_ws, Lx, greens_epsilon);
+    calculate_E_mq(a2.data(), xtemp.data(), a2.size(),
+                    xtemp.data(), q_ws.data(), xtemp.size(),
+                    Lx, greens_epsilon);
     for (int ii = 0; ii < N; ++ii) {
         a2[ii] *= qm;
     }
@@ -40,7 +42,9 @@ void AMRStructure::step(bool get_4th_e) {
         v3.push_back(vs[ii] + 0.5 * dt * a2[ii]);
         xtemp[ii] = xs[ii] + 0.5 * dt * v2[ii];
     }
-    calculate_E_mq(a3, xtemp, xtemp, q_ws, Lx, greens_epsilon);
+    calculate_E_mq(a3.data(), xtemp.data(), a3.size(),
+                    xtemp.data(), q_ws.data(), xtemp.size(),
+                    Lx, greens_epsilon);
     for (int ii = 0; ii < N; ++ii) {
         a3[ii] *= qm;
     }
@@ -50,7 +54,9 @@ void AMRStructure::step(bool get_4th_e) {
         v4.push_back(vs[ii] + dt * a3[ii]);
         xtemp[ii] = xs[ii] + dt * v3[ii];
     }
-    calculate_E_mq(a4, xtemp, xtemp, q_ws, Lx, greens_epsilon);
+    calculate_E_mq(a4.data(), xtemp.data(), a4.size(), 
+                    xtemp.data(), q_ws.data(), xtemp.size(),
+                    Lx, greens_epsilon);
     for (int ii = 0; ii < N; ++ii) {
         a4[ii] *= qm;
     }
@@ -63,6 +69,8 @@ void AMRStructure::step(bool get_4th_e) {
         vs[ii] += dt / 6.0 * (a1[ii] + 2 * a2[ii] + 2 * a3[ii] + a4[ii]);
     }
     if (get_4th_e) {
-        calculate_E_mq(es, xs, xs, q_ws, Lx, greens_epsilon);
+        calculate_E_mq(es.data(), xs.data(), xs.size(),
+                        xs.data(), q_ws.data(), xs.size(),
+                        Lx, greens_epsilon);
     }
 }

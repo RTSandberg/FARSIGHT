@@ -1,44 +1,32 @@
 #include "AMRStructure.hpp"
 
-int calculate_E_mq(std::vector<double>& es, const std::vector<double>& targets, const std::vector<double>& sources, const std::vector<double>& q_weights, double L, double epsilon) {
+int calculate_E_mq(double* es, const double* targets, int nt, 
+                const double* sources, const double* q_ws, int ns, 
+                double L, double epsilon) {
 
     double epsLsq = epsilon * epsilon / L / L;
     double norm_epsL = sqrt(1 + 4 * epsLsq );
 
-    // es = std::vector<double> (targets.size() );
-    es.reserve(targets.size() );
-    if (sources.size() != q_weights.size()) { 
-        cout << "sources and weights aren't same size!" << endl;
-        return 1;
-    }
-
-#pragma omp parallel
-{ 
-    // omp_set_num_threads(2);
-    // int num_threads = omp_get_num_threads();
-    // if (omp_get_thread_num() == 0) {
-    //     cout << "Number of threads from calc_E: " << num_threads << endl;
-    // }
-
-// #pragma omp for
-//     for (int ii = 0; ii < num_threads; ii++) {
-//         cout << "Hello from thread " << omp_get_thread_num() << endl;
-//     }
-
-    #pragma omp for
-    for (int ii = 0; ii < targets.size(); ++ii) {
+#ifdef OPENACC_ENABLED
+#pragma acc parallel loop independent
+#else
+#pragma omp parallel for
+#endif
+    for (int ii = 0; ii < nt; ++ii) {
         double xi = targets[ii];
         double ei = 0.0;
-        for (int jj = 0; jj < sources.size(); ++jj) {
+#ifdef OPENACC_ENABLED
+#pragma acc loop independent reduction(+:ei)
+#endif
+        for (int jj = 0; jj < ns; ++jj) {
             double z = (xi - sources[jj]) / L;
 
             while (z < -0.5) { z += 1.0; }
             while (z >= 0.5) { z -= 1.0; }
-            ei += q_weights[jj] * (0.5 * z * norm_epsL / sqrt(z * z + epsLsq) - z);
+            ei += q_ws[jj] * (0.5 * z * norm_epsL / sqrt(z * z + epsLsq) - z);
         }
         es[ii] = ei;
     }
-}
     return 0;
 }
 
@@ -59,8 +47,11 @@ int calculate_E_mq(std::vector<double>& es, const std::vector<double>& targets, 
 //     }
 // }
 void AMRStructure::vector_calc_e_wrapper() {
-    es.reserve(xs.size());
-    calculate_E_mq(es, xs, xs, q_ws, Lx, greens_epsilon);
+    // es.reserve(xs.size());
+    es = std::vector<double>(xs.size());
+    calculate_E_mq(es.data(), xs.data(), xs.size(), 
+                xs.data(), q_ws.data(), xs.size(),
+                Lx, greens_epsilon);
 }
 
 
@@ -104,7 +95,9 @@ void AMRStructure::init_e() {
     // if (omp_get_thread_num() == 0) {
         // cout << "Number of threads from init_e(): " << num_threads << endl;
     // }
-    calculate_E_mq(sort_es, unique_xs, unique_xs, sort_ws, Lx, greens_epsilon);
+    calculate_E_mq(sort_es.data(), unique_xs.data(), unique_xs.size(),
+                    unique_xs.data(), sort_ws.data(), unique_xs.size(),
+                    Lx, greens_epsilon);
     // }
 
     double mean_e = 0;
