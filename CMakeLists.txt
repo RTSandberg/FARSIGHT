@@ -56,19 +56,19 @@ link_directories(src)
 # add the executable
 set(EXE farrsight)
 add_executable(${EXE} run_FARRSIGHT.cpp)
-target_link_libraries(${EXE}    PanelObj 
-                                icsObj)
 if (ENABLE_GPU_BUILD)
-    target_link_libraries(farrsight AMRObj_gpu)
+    target_link_libraries(${EXE} AMRObj_gpu)
 else()
-    target_link_libraries(farrsight AMRObj_cpu)
+    target_link_libraries(${EXE} AMRObj_cpu)
 endif()
 
-target_link_libraries(farrsight OpenMP::OpenMP_CXX)
+target_link_libraries(${EXE}    PanelObj 
+                                icsObj)
+target_link_libraries(${EXE} OpenMP::OpenMP_CXX)
 
-install(TARGETS farrsight DESTINATION bin)
+install(TARGETS ${EXE} DESTINATION bin)
 
 
 enable_testing()
 
-add_test(NAME Runs COMMAND farrsight 1 0.0 1.0 -2.0 2.0)
+add_test(NAME Runs COMMAND ${EXE} 1 0.0 1.0 -2.0 2.0)
