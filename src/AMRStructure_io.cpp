@@ -64,7 +64,7 @@ int AMRStructure::write_particles_to_file() {
 int AMRStructure::write_panels_to_file() {
     std::ofstream panel_file;
 
-    panel_file.open(sim_dir + "simulation_output/panels/leaf_point_inds_" + std::to_string(iter_num), ios::out | ios::binary);
+    panel_file.open(sim_dir + "simulation_output/panels/leaf_point_inds_" + std::to_string(iter_num), std::ios::out | std::ios::binary);
     
     if (!panel_file) {
         cout << "Unable to open step " << iter_num << " panel data files" << endl;

@@ -30,7 +30,9 @@ link_directories(src)
 # add the executable
 
 add_executable(farrsight run_FARRSIGHT.cpp)
-target_link_libraries(farrsight AMRObj AMRInterpObj AMRStepObj AMRFieldObj AMRIOObj AMRMeshObj PanelObj icsObj)
+target_link_libraries(farrsight AMRObj 
+                                PanelObj 
+                                icsObj)
 
 target_link_libraries(farrsight OpenMP::OpenMP_CXX)
 
