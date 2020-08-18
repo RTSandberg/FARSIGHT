@@ -65,6 +65,8 @@ int main(int argc, char** argv) {
     cout << "height " << initial_height << endl;
     cout << "green's epsilon = " << greens_epsilon << endl;
 
+    auto sim_start = high_resolution_clock::now();
+
     AMRStructure amr{sim_dir, f0, 
                 initial_height, 
                 x_min, x_max, v_min, v_max, 
@@ -105,5 +107,8 @@ int main(int argc, char** argv) {
     }
 
     // cout << amr << endl;
+    auto sim_stop = high_resolution_clock::now();
+    auto sim_duration = duration_cast<microseconds>(sim_stop - sim_start);
+    cout << "Sim time " << sim_duration.count() << endl;
 
 }
