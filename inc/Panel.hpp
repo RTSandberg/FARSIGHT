@@ -9,7 +9,8 @@
 #define PANEL_H
 
 #include <iostream> // cout, endl
-using namespace std;
+using std::cout;
+using std::endl;
 
 /**
  * @brief collection of information for a panel in an adaptively refined mesh

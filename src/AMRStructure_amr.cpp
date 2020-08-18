@@ -103,7 +103,7 @@ void AMRStructure::refine_panels(std::function<double (double,double)> f, bool d
             // printf("refining panel %i\n", panel->get_panel_ind() );
             std::vector<double> panel_xs;
             std::vector<double> panel_vs;
-            double dx, dv, panel_area;
+            double dx, dv;
 
             const int* panel_points = panel->point_inds;
             for (int ii = 0; ii < 9; ++ii) {

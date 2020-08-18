@@ -358,7 +358,7 @@ void AMRStructure::interpolate_to_initial_xvs(
     std::vector<double>& fs, std::vector<double>& xs, std::vector<double>& vs, 
     int nx, int nv, bool verbose) 
 {
-    bool print_profile = true;
+    bool print_profile = false;
 
     auto start = high_resolution_clock::now();
     // bool verbose = false;
@@ -385,7 +385,6 @@ void AMRStructure::interpolate_to_initial_xvs(
         std::sort(sort_indices.begin(), sort_indices.end(),
             [&] (int a, int b) 
             { 
-                bool alb;
                 if (vs[a] != vs[b]) { return vs[a] < vs[b]; }
                 else {
                     return shifted_xs[a] < shifted_xs[b];

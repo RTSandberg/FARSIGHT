@@ -2,6 +2,7 @@
 
 void AMRStructure::step(bool get_4th_e) {
     iter_num += 1;
+    std::cout << "step " << iter_num << std::endl;
 
     int N = xs.size();
 

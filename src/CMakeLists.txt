@@ -8,6 +8,7 @@ add_library(AMRMeshObj AMRStructure_amr.cpp)
 add_library(AMRFieldObj AMRStructure_field.cpp)
 add_library(AMRStepObj AMRStructure_step.cpp)
 add_library(AMRInterpObj AMRStructure_interp.cpp)
+add_library(icsObj initial_distributions.cpp)
 
 
 
