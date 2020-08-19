@@ -54,11 +54,13 @@ include_directories(inc_eigen/eigen-3.3.7)
 link_directories(src)
 
 # add the executable
-set(EXE farrsight)
-add_executable(${EXE} run_FARRSIGHT.cpp)
 if (ENABLE_GPU_BUILD)
+    set(EXE farrsight_gpu)
+    add_executable(${EXE} run_FARRSIGHT.cpp)
     target_link_libraries(${EXE} AMRObj_gpu)
 else()
+    set(EXE farrsight_cpu)
+    add_executable(${EXE} run_FARRSIGHT.cpp)
     target_link_libraries(${EXE} AMRObj_cpu)
 endif()
 

@@ -36,16 +36,30 @@ int main(int argc, char** argv) {
     double amp = atof(argv[8]);//0.5;
     double vth = atof(argv[9]);//1.0;
     double vstr = atof(argv[10]);
-    // switch (atof(argv[6]))
-    // {
-    // case 1:
-        
-    //     break;
-    
-    // default:
-    //     break;
-    // }
-    F0_colder_two_stream f0{vth, vstr, kx, amp};
+    int sim_type = atoi(argv[6]);
+
+    distribution* f0;
+
+    switch (sim_type)
+    {
+        case 1: // weak Landau Damping
+            f0 = new F0_LD(vth, kx, amp);
+            break;
+        case 2: // strong Landau Damping
+            f0 = new F0_LD(vth, kx, amp);
+            break;
+        case 3: // 'strong' two-stream
+            f0 = new F0_strong_two_stream(vth, kx, amp);
+            break;
+        case 4: // 'colder' two-stream
+            f0 = new F0_colder_two_stream(vth, vstr, kx, amp);
+            break;
+        default:
+            f0 = new F0_LD(vth, kx, amp);
+            break;
+    }
+
+    // F0_colder_two_stream f0{vth, vstr, kx, amp};
     
     int initial_height = atoi(argv[11]);//6; 
     double greens_epsilon = atof(argv[12]);//0.2;
@@ -64,6 +78,7 @@ int main(int argc, char** argv) {
     cout << "k=" << kx << ", amp = " << amp << ", vth = " << vth << ", vstr = " << vstr <<  endl;
     cout << "height " << initial_height << endl;
     cout << "green's epsilon = " << greens_epsilon << endl;
+    cout << "============================" << endl;
 
     auto sim_start = high_resolution_clock::now();
 
@@ -102,7 +117,9 @@ int main(int argc, char** argv) {
         // cout << "remesh time " << duration.count() << " microseconds." << endl << endl;
 
     // cout << "Old data copy time " << duration.count() << " microseconds." << endl << endl;
-        amr.write_to_file();
+        if ((ii+1) % n_steps_diag == 0) {
+            amr.write_to_file();
+        }
     //     // cout << amr << endl;
     }
 
@@ -111,4 +128,5 @@ int main(int argc, char** argv) {
     auto sim_duration = duration_cast<microseconds>(sim_stop - sim_start);
     cout << "Sim time " << sim_duration.count() << endl;
 
+    delete f0;
 }

@@ -402,7 +402,7 @@ void AMRStructure::generate_mesh(std::function<double (double,double)> f,
 
     if (is_initial_step) {
         for (int ii = 0; ii < xs.size(); ii++) {
-            fs[ii] = f0(xs[ii],vs[ii]);
+            fs[ii] = (*f0)(xs[ii],vs[ii]);
         }
     } else {
         int nx_points = 2*npanels_x + 1;

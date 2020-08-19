@@ -12,7 +12,7 @@
 #include "AMRStructure.hpp"
 
 AMRStructure::AMRStructure() {}
-AMRStructure::AMRStructure(std::string sim_dir, std::function<double (double,double)> f0, 
+AMRStructure::AMRStructure(std::string sim_dir, distribution* f0, //std::function<double (double,double)> f0, 
                             int initial_height, 
                             double x_min, double x_max, double v_min, double v_max, 
                             double greens_epsilon, int num_steps, double dt, 
@@ -33,10 +33,11 @@ AMRStructure::AMRStructure(std::string sim_dir, std::function<double (double,dou
     npanels_v = int(pow(2, initial_height));
     // create_prerefined_mesh();
     bool is_initial_step = true;
-    generate_mesh(f0, do_adaptively_refine, is_initial_step);
+    
+    generate_mesh([&](double x, double v) { return (*f0)(x,v); }, do_adaptively_refine, is_initial_step);
     
 }
-AMRStructure::AMRStructure(std::string sim_dir, std::function<double (double,double)> f0, 
+AMRStructure::AMRStructure(std::string sim_dir, distribution* f0, //std::function<double (double,double)> f0, 
                             double q, double m, 
                             int initial_height, int max_height, 
                             double x_min, double x_max, double v_min, double v_max, 
@@ -58,7 +59,7 @@ AMRStructure::AMRStructure(std::string sim_dir, std::function<double (double,dou
 
     // create_prerefined_mesh();
     bool is_initial_step = true;
-    generate_mesh(f0, do_adaptively_refine, is_initial_step);
+    generate_mesh([&](double x, double v) { return (*f0)(x,v); }, do_adaptively_refine, is_initial_step);
 }
 //end constructors
 

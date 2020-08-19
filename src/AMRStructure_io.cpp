@@ -71,8 +71,8 @@ int AMRStructure::write_panels_to_file() {
         return 1;
     }
 
-    for (int ii=0; ii < panels.size(); ++ii ) {
-        const int *inds = panels[ii].point_inds;
+    for (int ii=0; ii < leaf_inds.size(); ++ii ) {
+        const int *inds = panels[leaf_inds[ii]].point_inds;
         panel_file.write( (char*) inds, 9*sizeof(int));
     }
 

@@ -12,10 +12,12 @@ double F0_M::get_vth() { return vth; }
 
 // F0_LD functions
 F0_LD::F0_LD() : vth(1.0), k(.5), amp(.1) {}
-F0_LD::F0_LD(double vth, double k, double amp) : vth(vth), k(k), amp(amp) {}
+F0_LD::F0_LD(double vth, double k, double amp) 
+    : vth(vth), k(k), amp(amp) {}
 
 double F0_LD::operator() (double x, double v) {
-    return 1.0 / sqrt(2.0 * M_PI) / vth * exp(-v*v / 2 / vth /vth) * ( 1 + amp * cos(k * x ));
+    return 1.0 / sqrt(2.0 * M_PI) / vth * exp(-v*v / 2 / vth /vth) 
+        * ( 1 + amp * cos(k * x ));
 }
 double F0_LD::get_vth() { return vth; }
 double F0_LD::get_k() { return k; }

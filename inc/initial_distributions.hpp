@@ -5,7 +5,12 @@
 #include <math.h> // exp, sqrt, cos
 #include <vector> // vector
 
-class F0_M {
+class distribution {
+    public:
+        virtual double operator() (double x, double v)=0;
+};
+
+class F0_M : public distribution {
     double vth;
     public:
         F0_M();
@@ -15,7 +20,7 @@ class F0_M {
         double get_vth();
 };
 
-class F0_LD {
+class F0_LD : public distribution {
     double vth, k, amp;
     public:
         F0_LD();
@@ -27,7 +32,7 @@ class F0_LD {
         double get_amp();
 };
 
-class F0_strong_two_stream {
+class F0_strong_two_stream : public distribution {
     double vth, k, amp;
     F0_LD ld_seed;
     public:
@@ -40,7 +45,7 @@ class F0_strong_two_stream {
         double get_amp();
 };
 
-class F0_colder_two_stream {
+class F0_colder_two_stream : public distribution {
     double vth, v_str, k, amp;
     F0_M maxwellian;
     public:

@@ -32,6 +32,7 @@ using namespace std::chrono;
 #include <Eigen/Dense>
 using namespace Eigen;
 
+#include "initial_distributions.hpp"
 #include "Panel.hpp"
 
 enum Quadrature {simpsons, trap};
@@ -47,7 +48,8 @@ struct AMRStructure {
     double q, qm;
 
     // initial condition
-    std::function<double (double,double)> f0;
+    //std::function<double (double,double)> f0;
+    distribution* f0;
 
     // mesh parameters
     int initial_height;
@@ -93,12 +95,12 @@ struct AMRStructure {
 
     public:
         AMRStructure();
-        AMRStructure(std::string sim_dir, std::function<double (double,double)> f0, 
+        AMRStructure(std::string sim_dir, distribution* f0, //std::function<double (double,double)>& f0, 
                 int initial_height, 
                 double x_min, double x_max, double v_min, double v_max, 
                 double greens_epsilon, int num_steps, double dt, 
                 bool do_adaptively_refine);
-        AMRStructure(std::string sim_dir, std::function<double (double,double)> f0, 
+        AMRStructure(std::string sim_dir, distribution* f0, //std::function<double (double,double)>& f0, 
                 double q, double m, 
                 int initial_height, int max_height, 
                 double x_min, double x_max, double v_min, double v_max, 
