@@ -370,10 +370,10 @@ void AMRStructure::interpolate_to_initial_xvs(
         cout << endl;
     }
     auto stop = high_resolution_clock::now();
-    auto duration = duration_cast<microseconds>(stop - start);
-    if (print_profile) {
-        cout << "shift time " << duration.count() << " microseconds" << endl;
-    }
+    // auto duration = duration_cast<microseconds>(stop - start);
+    // if (print_profile) {
+    //     cout << "shift time " << duration.count() << " microseconds" << endl;
+    // }
 
     // have to sort points:
     start = high_resolution_clock::now();
@@ -405,12 +405,12 @@ void AMRStructure::interpolate_to_initial_xvs(
     }
 
     stop = high_resolution_clock::now();
-    duration = duration_cast<microseconds>(stop - start);
-    if (print_profile) {
-        cout << "sort time " << duration.count() << " microseconds" << endl;
-    }
+    // duration = duration_cast<microseconds>(stop - start);
+    // if (print_profile) {
+    //     cout << "sort time " << duration.count() << " microseconds" << endl;
+    // }
     
-    start = high_resolution_clock::now();
+    auto search_start = high_resolution_clock::now();
     std::vector<double> sortfs(xs.size() );
 
     std::vector<int> leaf_panel_of_points(xs.size() );
@@ -466,11 +466,8 @@ void AMRStructure::interpolate_to_initial_xvs(
         point_in_leaf_panels_by_inds[leaf_panel_of_points[ii]].emplace_back(ii);
     }
 
-    stop = high_resolution_clock::now();
-    duration = duration_cast<microseconds>(stop - start);
-    if (print_profile) {
-        cout << "find leaf time " << duration.count() << " microseconds" << endl;
-    }
+    auto search_stop = high_resolution_clock::now();
+    add_time(search_time, duration_cast<duration<double>>(search_stop - search_start) );
     
     start = high_resolution_clock::now();
     for (int panel_ind = 0; panel_ind < old_panels.size(); panel_ind++) {
@@ -482,10 +479,7 @@ void AMRStructure::interpolate_to_initial_xvs(
         fs[sort_indices[ii]] = sortfs[ii];
     }
     stop = high_resolution_clock::now();
-    duration = duration_cast<microseconds>(stop - start);
-    if (print_profile) {
-        cout << "evaluate interpolant time " << duration.count() << " microseconds" << endl;
-    }
+    add_time(eval_time, duration_cast<duration<double>>(stop - start) );
 }
 
 void AMRStructure::interpolate_from_panel_to_points(
@@ -601,11 +595,7 @@ double AMRStructure::interpolate_from_panel(double x, double v, int panel_ind, b
     double panel_xs[9], panel_vs[9], panel_fs[9];
 
     for (int ii = 0; ii < 9; ++ii) {
-        // Particle* part = &particles[vertex_inds[ii]];
         int vind = point_inds[ii];
-        // panel_xs[ii] = part->get_x();
-        // panel_vs[ii] = part->get_v();
-        // panel_fs[ii] = part->get_f();
         panel_xs[ii] = old_xs[vind];
         panel_vs[ii] = old_vs[vind];
         panel_fs[ii] = old_fs[vind];

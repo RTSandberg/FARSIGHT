@@ -407,7 +407,11 @@ void AMRStructure::generate_mesh(std::function<double (double,double)> f,
     } else {
         int nx_points = 2*npanels_x + 1;
         int nv_points = 2*npanels_v + 1;
+
+        auto start = high_resolution_clock::now();
         interpolate_to_initial_xvs(fs,xs,vs, nx_points, nv_points,verbose);
+        auto stop = high_resolution_clock::now();
+        add_time(interp_time, duration_cast<duration<double>>(stop - start) );
     }
 
     int num_panels_pre_refine = panels.size();

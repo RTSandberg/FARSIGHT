@@ -36,6 +36,7 @@ using namespace Eigen;
 #include "Panel.hpp"
 
 enum Quadrature {simpsons, trap};
+enum ProfileTypes {sim_time, step_time, field_time, remesh_time, interp_time, search_time, eval_time, last};
 
 struct AMRStructure {
     std::string sim_dir;
@@ -84,6 +85,11 @@ struct AMRStructure {
     //field parameters
     double greens_epsilon;
     Quadrature quad;
+
+    //profile parameters
+    bool do_profile;
+    std::vector<duration<double>> time_operations;
+    std::vector<int> num_operations;
 
     // private functions
     int create_prerefined_mesh();
@@ -150,6 +156,9 @@ struct AMRStructure {
         int write_to_file();
         void print_panel_points();
 
+        // profiling
+        void add_time(ProfileTypes prof_type, duration<double> op_time);
+        void print_times();
 };
 
 

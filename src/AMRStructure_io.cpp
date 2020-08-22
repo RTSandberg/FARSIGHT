@@ -176,3 +176,26 @@ void AMRStructure::print_panel_points() {
         panel_it++;
     }
 }
+
+void AMRStructure::print_times() {
+    cout << "========= timing ==========" << endl;
+    cout << "Total sim time " << time_operations[sim_time].count() << " seconds" << endl;
+    cout << ". Total step time " << time_operations[step_time].count() << " seconds" << endl;
+    cout << "- " << num_operations[step_time] << " steps taken at ";
+    cout << time_operations[step_time].count() / num_operations[step_time] << " seconds per step" << endl;
+    cout << ".. Total field time " << time_operations[field_time].count() << " seconds" << endl;
+    cout << "- " << num_operations[field_time] << " field evaluations made at ";
+    cout << time_operations[field_time].count() / num_operations[field_time] << " seconds per step" << endl;
+    cout << ". Total remeshing time " << time_operations[remesh_time].count() << " seconds" << endl;
+    cout << "- " << num_operations[remesh_time] << " remeshings made at ";
+    cout << time_operations[remesh_time].count() / num_operations[remesh_time] << " seconds per remeshing" << endl;
+    cout << ".. Total interpolation time " << time_operations[interp_time].count() << " seconds" << endl;
+    cout << "- " << num_operations[interp_time] << " interpolations made at ";
+    cout << time_operations[interp_time].count() / num_operations[interp_time] << " seconds per interpolation" << endl;
+    cout << "... Total panel search time " << time_operations[search_time].count() << " seconds" << endl;
+    cout << "- " << num_operations[search_time] << " searches made at ";
+    cout << time_operations[search_time].count() / num_operations[search_time] << " seconds per search" << endl;
+    cout << "... Total interpolant evaluation time " << time_operations[eval_time].count() << " seconds" << endl;
+    cout << "- " << num_operations[eval_time] << " evaluations made at ";
+    cout <<  time_operations[eval_time].count() / num_operations[eval_time] << " seconds per evaluation " << endl;
+}

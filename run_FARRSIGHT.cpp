@@ -88,35 +88,26 @@ int main(int argc, char** argv) {
                 greens_epsilon, num_steps, dt, 
                 do_adaptively_refine};
 
+
+    auto start = high_resolution_clock::now();
     amr.init_e();
+    auto stop = high_resolution_clock::now();
+    amr.add_time(field_time, duration_cast<duration<double>>(stop - start) );
     amr.write_to_file();
-
-    // cout << amr << endl;
-
-
-    // bool get_4th_e = true;
-    // amr.step(get_4th_e);
-    // cout << amr << endl;
-    // cout << "Now trying to remesh" << endl;
-    // amr.remesh();
-    // amr.write_to_file();
 
     for (int ii = 0; ii < num_steps; ++ii) {
         bool get_4th_e = false;
-        auto start = high_resolution_clock::now();
+        start = high_resolution_clock::now();
         amr.step(get_4th_e);
-        auto stop = high_resolution_clock::now();
-        auto duration = duration_cast<microseconds>(stop - start);
+        stop = high_resolution_clock::now();
+        amr.add_time(step_time, duration_cast<duration<double>>(stop - start) );
 
-        // cout << "Step time " << duration.count() << " microseconds." << endl << endl;
 
         start = high_resolution_clock::now();
         amr.remesh();
         stop = high_resolution_clock::now();
-        duration = duration_cast<microseconds>(stop - start);
-        // cout << "remesh time " << duration.count() << " microseconds." << endl << endl;
+        amr.add_time(remesh_time, duration_cast<duration<double>>(stop - start) );
 
-    // cout << "Old data copy time " << duration.count() << " microseconds." << endl << endl;
         if ((ii+1) % n_steps_diag == 0) {
             amr.write_to_file();
         }
@@ -125,8 +116,10 @@ int main(int argc, char** argv) {
 
     // cout << amr << endl;
     auto sim_stop = high_resolution_clock::now();
-    auto sim_duration = duration_cast<microseconds>(sim_stop - sim_start);
-    cout << "Sim time " << sim_duration.count() << endl;
+    amr.add_time(sim_time,  duration_cast<duration<double>>(sim_stop - sim_start) );
+    // cout << "Sim time " << sim_duration.count() << " seconds" << endl;
+
+    amr.print_times();
 
     delete f0;
 }
