@@ -22,6 +22,21 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 
 find_package(OpenMP REQUIRED)
+find_package(MPI    REQUIRED)
+
+set(CMAKE_PREFIX_PATH "/usr/local")
+#option(BaryTree_DIR     /usr/local/)
+#set(BaryTree_DIR ${CMAKE_INSTALL_PREFIX})
+find_library(BaryTree_lib NAMES BaryTree_cpu
+                HINTS /usr/local/lib)
+#find_package(BaryTree REQUIRED)
+#add_library(BaryTree_Interface INTERFACE)
+#target_link_libraries(BaryTree_Interface INTERFACE barytree)
+#target_include_directories(BaryTree_Interface INTERFACE ${BaryTree_INCLUDE_DIRS})
+#    find_package(Zoltan REQUIRED)
+#    add_library(Zoltan_Interface INTERFACE)
+#    target_link_libraries(Zoltan_Interface INTERFACE zoltan)
+#    target_include_directories(Zoltan_Interface INTERFACE ${Zoltan_INCLUDE_DIRS})
 
 # from Leighton
 #Some PGI versions seem to require a link flag for OpenMP

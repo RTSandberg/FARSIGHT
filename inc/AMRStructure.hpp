@@ -29,14 +29,24 @@ using namespace std::chrono;
 #include <string> 
 #include <vector> // std::vector
 
+// external libraries to include
 #include <Eigen/Dense>
 using namespace Eigen;
+extern "C" {
+    #include <mpi.h>
+    #include <BaryTreeInterface.h>
+}
 
+// amr in-project dependencies
 #include "initial_distributions.hpp"
 #include "Panel.hpp"
 
+
+
 enum Quadrature {simpsons, trap};
-enum ProfileTypes {sim_time, step_time, field_time, remesh_time, interp_time, search_time, eval_time, last};
+enum ProfileTypes {sim_time, step_time, field_time, 
+                remesh_time, interp_time, search_time, 
+                eval_time, last_time};
 
 struct AMRStructure {
     std::string sim_dir;

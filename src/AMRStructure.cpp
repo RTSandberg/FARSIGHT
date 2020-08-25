@@ -26,8 +26,8 @@ AMRStructure::AMRStructure(std::string sim_dir, distribution* f0, //std::functio
                            is_initial_mesh_set(false), minimum_unrefined_index(0), need_further_refinement(false),
                             do_adaptively_refine(do_adaptively_refine)
 {
-    time_operations = std::vector<duration<double>>(last);
-    num_operations = std::vector<int> (last);
+    time_operations = std::vector<duration<double>>(last_time);
+    num_operations = std::vector<int> (last_time);
 
     this->sim_dir = sim_dir;
     Lx = x_max - x_min;
@@ -54,8 +54,8 @@ AMRStructure::AMRStructure(std::string sim_dir, distribution* f0, //std::functio
                            is_initial_mesh_set(false), minimum_unrefined_index(0), need_further_refinement(false),
                            do_adaptively_refine(do_adaptively_refine)
 {
-    time_operations = std::vector<duration<double>>(last);
-    num_operations = std::vector<int> (last);
+    time_operations = std::vector<duration<double>>(last_time);
+    num_operations = std::vector<int> (last_time);
 
     this->sim_dir = sim_dir;
     Lx = x_max - x_min;
