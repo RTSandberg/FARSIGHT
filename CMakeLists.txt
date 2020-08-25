@@ -1,7 +1,8 @@
-cmake_minimum_required(VERSION 3.10)
+# much of this is owed to Leighton Wilson
 
-# set the project name
-project(FARRSIGHT)
+cmake_minimum_required(VERSION 3.9...3.14)
+
+project(FARRSIGHT LANGUAGES C CXX)
 
 set(default_build_type "Release")
 
@@ -15,28 +16,25 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
                 "Debug" "Release" "None")
 endif()
 
+set(default_include /usr/local/include)
+if(NOT INCLUDE_HEADERS)
+    message(STATUS "Setting include directory to '${default_include}' as none was specified.")
+    set(INCLUDE_HEADERS ${default_include} CACHE FILEPATH "Choose include directory")
+endif()
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
+
 option(ENABLE_GPU_BUILD "build OpenACC GPU version"             OFF)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 
-find_package(OpenMP REQUIRED)
-find_package(MPI    REQUIRED)
-
-set(CMAKE_PREFIX_PATH "/usr/local")
-#option(BaryTree_DIR     /usr/local/)
-#set(BaryTree_DIR ${CMAKE_INSTALL_PREFIX})
-find_library(BaryTree_lib NAMES BaryTree_cpu
-                HINTS /usr/local/lib)
-#find_package(BaryTree REQUIRED)
-#add_library(BaryTree_Interface INTERFACE)
-#target_link_libraries(BaryTree_Interface INTERFACE barytree)
-#target_include_directories(BaryTree_Interface INTERFACE ${BaryTree_INCLUDE_DIRS})
-#    find_package(Zoltan REQUIRED)
-#    add_library(Zoltan_Interface INTERFACE)
-#    target_link_libraries(Zoltan_Interface INTERFACE zoltan)
-#    target_include_directories(Zoltan_Interface INTERFACE ${Zoltan_INCLUDE_DIRS})
+find_package(OpenMP     REQUIRED)
+find_package(MPI        REQUIRED)
+find_library(BARYTREE_LIB BaryTree_cpu REQUIRED)
 
 # from Leighton
 #Some PGI versions seem to require a link flag for OpenMP
