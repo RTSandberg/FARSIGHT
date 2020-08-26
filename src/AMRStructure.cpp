@@ -15,14 +15,14 @@ AMRStructure::AMRStructure() {}
 AMRStructure::AMRStructure(std::string sim_dir, distribution* f0, //std::function<double (double,double)> f0, 
                             int initial_height, 
                             double x_min, double x_max, double v_min, double v_max, 
-                            double greens_epsilon, int num_steps, double dt, 
+                            ElectricField* calculate_e, int num_steps, double dt, 
                             bool do_adaptively_refine)
                            : f0(f0), q(-1.0), qm(-1.0), 
                            initial_height(initial_height) , height(initial_height), max_height(initial_height),
                            x_min(x_min), x_max(x_max),
                            v_min(v_min), v_max(v_max), 
                            iter_num(0), num_steps(num_steps), dt(dt),
-                           greens_epsilon(greens_epsilon), quad(trap),
+                           calculate_e(calculate_e), quad(trap),
                            is_initial_mesh_set(false), minimum_unrefined_index(0), need_further_refinement(false),
                             do_adaptively_refine(do_adaptively_refine)
 {
@@ -38,19 +38,20 @@ AMRStructure::AMRStructure(std::string sim_dir, distribution* f0, //std::functio
     bool is_initial_step = true;
     
     generate_mesh([&](double x, double v) { return (*f0)(x,v); }, do_adaptively_refine, is_initial_step);
-    
+
+
 }
 AMRStructure::AMRStructure(std::string sim_dir, distribution* f0, //std::function<double (double,double)> f0, 
                             double q, double m, 
                             int initial_height, int max_height, 
                             double x_min, double x_max, double v_min, double v_max, 
-                            double epsilon, Quadrature quad, int num_steps, double dt, 
+                            ElectricField* calculate_e, Quadrature quad, int num_steps, double dt, 
                             bool do_adaptively_refine)
                            : f0(f0), q(q), qm(q/m), 
                            initial_height(initial_height), height(initial_height), max_height(max_height), 
                            x_min(x_min), x_max(x_max), v_min(v_min), v_max(v_max), 
                            iter_num(0), num_steps(num_steps), dt(dt),
-                           greens_epsilon(greens_epsilon), quad(quad),
+                           calculate_e(calculate_e), quad(quad),
                            is_initial_mesh_set(false), minimum_unrefined_index(0), need_further_refinement(false),
                            do_adaptively_refine(do_adaptively_refine)
 {
@@ -66,8 +67,12 @@ AMRStructure::AMRStructure(std::string sim_dir, distribution* f0, //std::functio
     // create_prerefined_mesh();
     bool is_initial_step = true;
     generate_mesh([&](double x, double v) { return (*f0)(x,v); }, do_adaptively_refine, is_initial_step);
+    // calculate_e = new E_MQ_DirectSum(Lx, greens_epsilon);
 }
 //end constructors
+
+//destructor
+AMRStructure::~AMRStructure() = default;
 
 // getters
 std::string AMRStructure::get_sim_dir() const { return sim_dir; }

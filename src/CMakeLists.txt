@@ -1,25 +1,38 @@
 include_directories(${PROJECT_SOURCE_DIR}/inc)
-include_directories(${PROJECT_SOURCE_DIR}/inc_eigen/eigen-3.3.7)
 
-set(TRGT AMRObj_cpu)
+
+add_library(FieldObj FieldStructure.cpp)
+target_link_libraries(FieldObj       PUBLIC  ${BARYTREE_LIB}
+                                            OpenMP::OpenMP_CXX
+                                            MPI::MPI_CXX
+                                            $<$<CXX_COMPILER_ID:GNU>:m>)
+target_include_directories(FieldObj PUBLIC ${INCLUDE_HEADERS})
+
+add_library(icsObj initial_distributions.cpp)
 add_library(PanelObj Panel.cpp)
-add_library(${TRGT}  AMRStructure.cpp 
+
+add_library(AMRObj_cpu  AMRStructure.cpp 
                     AMRStructure_io.cpp
                     AMRStructure_amr.cpp
                     AMRStructure_field.cpp
                     AMRStructure_step.cpp
                     AMRStructure_interp.cpp)
-add_library(icsObj initial_distributions.cpp)
-
-
-target_link_libraries(${TRGT}       PUBLIC  ${BARYTREE_LIB}
-                                            OpenMP::OpenMP_CXX
+target_link_libraries(AMRObj_cpu    PUBLIC  OpenMP::OpenMP_CXX
                                             MPI::MPI_CXX
                                             $<$<CXX_COMPILER_ID:GNU>:m>)
-                                            
-target_include_directories(${TRGT} PUBLIC ${INCLUDE_HEADERS})
+target_include_directories(AMRObj_cpu PUBLIC    ${PROJECT_SOURCE_DIR}/inc_eigen/eigen-3.3.7
+                                                ${INCLUDE_HEADERS})
 
 if(ENABLE_GPU_BUILD)
+    add_library(FieldObj_gpu FieldStructure.cpp)
+    target_compile_definitions(FieldObj_gpu PRIVATE OPENACC_ENABLED)
+    target_link_libraries(FieldObj_gpu  PUBLIC  ${BARYTREE_LIB}
+                                                OpenMP::OpenMP_CXX
+                                                MPI::MPI_CXX
+                                                OpenACC_CXX
+                                                $<$<CXX_COMPILER_ID:GNU>:m>)
+    target_include_directories(FieldObj_gpu PUBLIC ${INCLUDE_HEADERS})
+
     set(TRGT AMRObj_gpu)
     add_library(${TRGT}  AMRStructure.cpp 
                         AMRStructure_io.cpp
@@ -33,4 +46,6 @@ if(ENABLE_GPU_BUILD)
                                         MPI::MPI_CXX
                                         OpenACC_CXX
                                         $<$<CXX_COMPILER_ID:GNU>:m>)
+    target_include_directories(AMRObj_cpu PUBLIC    ${PROJECT_SOURCE_DIR}/inc_eigen/eigen-3.3.7
+                                                    ${INCLUDE_HEADERS})
 endif()

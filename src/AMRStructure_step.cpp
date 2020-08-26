@@ -31,9 +31,8 @@ void AMRStructure::step(bool get_4th_e) {
     }
 
     auto start = high_resolution_clock::now();
-    calculate_E_mq(a2.data(), xtemp.data(), a2.size(),
-                    xtemp.data(), q_ws.data(), xtemp.size(),
-                    Lx, greens_epsilon);
+    (*calculate_e)(a2.data(), xtemp.data(), a2.size(),
+                    xtemp.data(), q_ws.data(), xtemp.size());
     auto stop = high_resolution_clock::now();
     add_time(field_time, duration_cast<duration<double>>(stop - start) );
     for (int ii = 0; ii < N; ++ii) {
@@ -47,9 +46,8 @@ void AMRStructure::step(bool get_4th_e) {
         xtemp[ii] = xs[ii] + 0.5 * dt * v2[ii];
     }
     start = high_resolution_clock::now();
-    calculate_E_mq(a3.data(), xtemp.data(), a3.size(),
-                    xtemp.data(), q_ws.data(), xtemp.size(),
-                    Lx, greens_epsilon);
+    (*calculate_e)(a3.data(), xtemp.data(), a3.size(),
+                    xtemp.data(), q_ws.data(), xtemp.size());
     stop = high_resolution_clock::now();
     add_time(field_time, duration_cast<duration<double>>(stop - start) );
     for (int ii = 0; ii < N; ++ii) {
@@ -62,9 +60,8 @@ void AMRStructure::step(bool get_4th_e) {
         xtemp[ii] = xs[ii] + dt * v3[ii];
     }
     start = high_resolution_clock::now();
-    calculate_E_mq(a4.data(), xtemp.data(), a4.size(), 
-                    xtemp.data(), q_ws.data(), xtemp.size(),
-                    Lx, greens_epsilon);
+    (*calculate_e)(a4.data(), xtemp.data(), a4.size(), 
+                    xtemp.data(), q_ws.data(), xtemp.size());
     stop = high_resolution_clock::now();
     add_time(field_time, duration_cast<duration<double>>(stop - start) );
 
@@ -81,9 +78,8 @@ void AMRStructure::step(bool get_4th_e) {
     }
     if (get_4th_e) {
         start = high_resolution_clock::now();
-        calculate_E_mq(es.data(), xs.data(), xs.size(),
-                        xs.data(), q_ws.data(), xs.size(),
-                        Lx, greens_epsilon);
+        (*calculate_e)(es.data(), xs.data(), xs.size(),
+                        xs.data(), q_ws.data(), xs.size());
         stop = high_resolution_clock::now();
         add_time(field_time, duration_cast<duration<double>>(stop - start) );
     }

@@ -128,8 +128,8 @@ std::ostream& operator<<(std::ostream& os, const AMRStructure& amr) {
     os << "---------" << endl;
 
     // os << "Field parameters " << endl << "---------" << endl;
-    os << "Field softening parameter (aka Green's function epsilon): " << amr.greens_epsilon << endl;
-    os << "---------" << endl;
+    // os << "Field softening parameter (aka Green's function epsilon): " << amr.greens_epsilon << endl;
+    // os << "---------" << endl;
 
     os << "Panels: " << endl << "==============" << endl;
     std::copy(amr.panels.begin(), amr.panels.end(), std::ostream_iterator<Panel>(os));

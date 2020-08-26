@@ -40,6 +40,7 @@ extern "C" {
 // amr in-project dependencies
 #include "initial_distributions.hpp"
 #include "Panel.hpp"
+#include "FieldStructure.hpp"
 
 
 
@@ -93,8 +94,10 @@ struct AMRStructure {
     double dt;
 
     //field parameters
-    double greens_epsilon;
+//     double greens_epsilon;
     Quadrature quad;
+//     bool use_treecode;
+    ElectricField* calculate_e;
 
     //profile parameters
     bool do_profile;
@@ -114,16 +117,18 @@ struct AMRStructure {
         AMRStructure(std::string sim_dir, distribution* f0, //std::function<double (double,double)>& f0, 
                 int initial_height, 
                 double x_min, double x_max, double v_min, double v_max, 
-                double greens_epsilon, int num_steps, double dt, 
+                ElectricField* calculate_e, int num_steps, double dt, 
                 bool do_adaptively_refine);
         AMRStructure(std::string sim_dir, distribution* f0, //std::function<double (double,double)>& f0, 
                 double q, double m, 
                 int initial_height, int max_height, 
                 double x_min, double x_max, double v_min, double v_max, 
-                double greens_epsilon, Quadrature quad, int num_steps, double dt, 
+                ElectricField* calculate_e, Quadrature quad, int num_steps, double dt, 
                 bool do_adaptively_refine);
 
         // end constructors
+        // destructor
+        ~AMRStructure();
         // getters
         std::string get_sim_dir() const;
         // end getters
@@ -153,8 +158,8 @@ struct AMRStructure {
                                                 std::vector<int>& point_inds, int panel_ind);
 
         // field functions
-        void calculate_e();
-        void vector_calc_e_wrapper();
+        // void calculate_e();
+        // void vector_calc_e_wrapper();
         void init_e();
 
         // step functions
@@ -173,9 +178,9 @@ struct AMRStructure {
 
 
 
-int calculate_E_mq(double* es, const double* targets, int nt, 
-                  const double* sources, const double* q_ws, int ns, 
-                  double L, double epsilon);
+// int calculate_E_mq(double* es, const double* targets, int nt, 
+//                   const double* sources, const double* q_ws, int ns, 
+//                   double L, double epsilon);
 
 #endif /* AMRSTRUCTURE_HPP */
 

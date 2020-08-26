@@ -4,11 +4,16 @@
 #include <string>
 #include <string.h> // atof
 #include <iostream> // cout, endl
+// #include <mpi.h>
 #include <omp.h>
 using std::cout;
 using std::endl;
 #include <stdexcept> // invalid_argument exception
 #include <thread> // std::thread::hardware_concurrency
+
+extern "C" {
+    #include <mpi.h>
+}
 
 #include "Panel.hpp"
 #include "AMRStructure.hpp"
@@ -19,12 +24,18 @@ using std::endl;
 
 int main(int argc, char** argv) {
 
-    if (argc < 14) {
+    int rank, numProcs;
+    MPI_Init(&argc, &argv);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &numProcs);
+
+    if (argc < 19) {
         std::cout << "Not enough input arguments: had " << argc - 1 << ", but need 13" << std::endl;
-        std::cout << "Usage: 1:sim_dir 2:xmin 3:xmax 4:vmin 5:vmax " << std::endl;
-        std::cout << "6:sim_type 7:normal_k 8:amp 9:vth 10:vstr" << std::endl;
+        std::cout << "Usage: 1:sim_dir 2:xmin 3:xmax 4:vmin 5:vmax" << std::endl;
+        std::cout << " 6:sim_type 7:normal_k 8:amp 9:vth 10:vstr" << std::endl;
         std::cout << " 11:initial_height 12:greens_epsilon" << std::endl;
-        std::cout << " 13:num_steps 14:n_steps_remesh 15: n_steps_diag 16:dt" << std::endl;
+        std::cout << " 13:use_treecode 14:treecode_beta" << std::endl;
+        std::cout << " 15:num_steps 16:n_steps_remesh 17: n_steps_diag 18:dt" << std::endl;
         return 1;
     }
     std::string sim_dir = argv[1];
@@ -63,10 +74,20 @@ int main(int argc, char** argv) {
     
     int initial_height = atoi(argv[11]);//6; 
     double greens_epsilon = atof(argv[12]);//0.2;
-    int num_steps = atoi(argv[13]);//120;
-    int n_steps_remesh = atoi(argv[14]);
-    int n_steps_diag = atoi(argv[15]);
-    double dt = atof(argv[16]);//0.5;
+    int use_treecode = atoi(argv[13]);
+    double beta = atof(argv[14]);
+
+    ElectricField* calculate_e;
+    if (use_treecode > 0) {
+        calculate_e = new E_MQ_Treecode(Lx, greens_epsilon, beta);
+    } else {
+        calculate_e = new E_MQ_DirectSum(Lx, greens_epsilon);
+    }
+
+    int num_steps = atoi(argv[15]);//120;
+    int n_steps_remesh = atoi(argv[16]);
+    int n_steps_diag = atoi(argv[17]);
+    double dt = atof(argv[18]);//0.5;
     bool do_adaptively_refine = false;
 
 
@@ -78,6 +99,12 @@ int main(int argc, char** argv) {
     cout << "k=" << kx << ", amp = " << amp << ", vth = " << vth << ", vstr = " << vstr <<  endl;
     cout << "height " << initial_height << endl;
     cout << "green's epsilon = " << greens_epsilon << endl;
+    cout << "use treecode var " << use_treecode << endl;
+    if (use_treecode > 0) { 
+        cout << "Using treecode with beta " << beta << endl;
+    } else {
+        cout << "using direct sum" << endl;
+    }
     cout << "============================" << endl;
 
     auto sim_start = high_resolution_clock::now();
@@ -85,11 +112,14 @@ int main(int argc, char** argv) {
     AMRStructure amr{sim_dir, f0, 
                 initial_height, 
                 x_min, x_max, v_min, v_max, 
-                greens_epsilon, num_steps, dt, 
+                calculate_e, num_steps, dt, 
                 do_adaptively_refine};
+    
+
 
 
     auto start = high_resolution_clock::now();
+    cout << " starting init e " << endl;
     amr.init_e();
     auto stop = high_resolution_clock::now();
     amr.add_time(field_time, duration_cast<duration<double>>(stop - start) );
@@ -122,4 +152,8 @@ int main(int argc, char** argv) {
     amr.print_times();
 
     delete f0;
+    delete calculate_e;
+
+    
+    MPI_Finalize();
 }

@@ -1,7 +1,6 @@
 # much of this is owed to Leighton Wilson
 
 cmake_minimum_required(VERSION 3.9...3.14)
-
 project(FARRSIGHT LANGUAGES C CXX)
 
 set(default_build_type "Release")
@@ -62,28 +61,58 @@ endif()
 
 
 add_subdirectory(src)
-include_directories(inc)
-include_directories(inc_eigen/eigen-3.3.7)
-link_directories(src)
+#include_directories(inc)
+#include_directories(inc_eigen/eigen-3.3.7)
+#link_directories(src)
 
 # add the executable
+add_executable(farrsight_cpu run_FARRSIGHT.cpp)
+target_link_libraries     (farrsight_cpu PUBLIC   OpenMP::OpenMP_CXX
+                                                MPI::MPI_CXX 
+                                                ${BARYTREE_LIB}
+                                                FieldObj
+                                                PanelObj
+                                                icsObj
+                                                AMRObj_cpu)
+target_include_directories(farrsight_cpu PUBLIC ${INCLUDE_HEADERS})
+target_include_directories(farrsight_cpu PUBLIC   inc)
+
+install(TARGETS farrsight_cpu LIBRARY DESTINATION lib
+                            ARCHIVE DESTINATION lib)
+
 if (ENABLE_GPU_BUILD)
-    set(EXE farrsight_gpu)
-    add_executable(${EXE} run_FARRSIGHT.cpp)
-    target_link_libraries(${EXE} AMRObj_gpu)
-else()
-    set(EXE farrsight_cpu)
-    add_executable(${EXE} run_FARRSIGHT.cpp)
-    target_link_libraries(${EXE} AMRObj_cpu)
+    target_link_libraries(farrsight_gpu PUBLIC   OpenMP::OpenMP_CXX
+                                                MPI::MPI_CXX 
+                                                ${BARYTREE_LIB}
+                                                FieldObj_gpu
+                                                PanelObj
+                                                icsObj
+                                                AMRObj_gpu)
+    target_include_directories(farrsight_gpu PUBLIC ${INCLUDE_HEADERS})
+    target_include_directories(farrsight_gpu PUBLIC   inc)
+
+    install(TARGETS farrsight_gpu LIBRARY DESTINATION lib
+                                ARCHIVE DESTINATION lib)
 endif()
+    
+#else()
+#    set(EXE farrsight_cpu)
+#    add_executable(${EXE} run_FARRSIGHT.cpp)
+#    target_link_libraries(${EXE} PUBLIC AMRObj_cpu)
+#endif()
 
-target_link_libraries(${EXE}    PanelObj 
-                                icsObj)
-target_link_libraries(${EXE} OpenMP::OpenMP_CXX)
+#target_link_libraries(${EXE}    PanelObj 
+#                                FieldObj
+#                                icsObj)
+#target_link_libraries(${EXE}    PUBLIC  OpenMP::OpenMP_CXX
+#                                        MPI::MPI_CXX
+#                                        PanelObj 
+#                                        FieldObj
+#                                        icsObj)
 
-install(TARGETS ${EXE} DESTINATION bin)
+#install(TARGETS ${EXE} DESTINATION bin)
 
 
-enable_testing()
+#enable_testing()
 
-add_test(NAME Runs COMMAND ${EXE} 1 0.0 1.0 -2.0 2.0)
+#add_test(NAME Runs COMMAND ${EXE} 1 0.0 1.0 -2.0 2.0)

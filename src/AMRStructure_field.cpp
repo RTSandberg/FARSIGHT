@@ -46,13 +46,13 @@ int calculate_E_mq(double* es, const double* targets, int nt,
 //         particles[ii].e = es[ii];
 //     }
 // }
-void AMRStructure::vector_calc_e_wrapper() {
-    // es.reserve(xs.size());
-    es = std::vector<double>(xs.size());
-    calculate_E_mq(es.data(), xs.data(), xs.size(), 
-                xs.data(), q_ws.data(), xs.size(),
-                Lx, greens_epsilon);
-}
+// void AMRStructure::vector_calc_e_wrapper() {
+//     // es.reserve(xs.size());
+//     es = std::vector<double>(xs.size());
+//     calculate_E_mq(es.data(), xs.data(), xs.size(), 
+//                 xs.data(), q_ws.data(), xs.size(),
+//                 Lx, greens_epsilon);
+// }
 
 
 void AMRStructure::init_e() {
@@ -95,9 +95,13 @@ void AMRStructure::init_e() {
     // if (omp_get_thread_num() == 0) {
         // cout << "Number of threads from init_e(): " << num_threads << endl;
     // }
-    calculate_E_mq(sort_es.data(), unique_xs.data(), unique_xs.size(),
-                    unique_xs.data(), sort_ws.data(), unique_xs.size(),
-                    Lx, greens_epsilon);
+    // calculate_E_mq(sort_es.data(), unique_xs.data(), unique_xs.size(),
+    //                 unique_xs.data(), sort_ws.data(), unique_xs.size(),
+    //                 Lx, greens_epsilon);
+    // calculate_e(sort_es.data(), )
+
+    (*calculate_e)(sort_es.data(), unique_xs.data(), unique_xs.size(),
+                    unique_xs.data(), sort_ws.data(), unique_xs.size() );
     // }
 
     double mean_e = 0;
