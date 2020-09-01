@@ -81,13 +81,14 @@ install(TARGETS farrsight_cpu LIBRARY DESTINATION lib
                             ARCHIVE DESTINATION lib)
 
 if (ENABLE_GPU_BUILD)
+    find_library(BARYTREE_LIB_GPU BaryTree_gpu REQUIRED)
     target_link_libraries(farrsight_gpu PUBLIC   OpenMP::OpenMP_CXX
                                                 MPI::MPI_CXX 
-                                                ${BARYTREE_LIB}
+                                                ${BARYTREE_LIB_GPU}
                                                 FieldObj_gpu
                                                 PanelObj
                                                 icsObj
-                                                AMRObj_gpu)
+                                                AMRObj_cpu)
     target_include_directories(farrsight_gpu PUBLIC ${INCLUDE_HEADERS})
     target_include_directories(farrsight_gpu PUBLIC   inc)
 

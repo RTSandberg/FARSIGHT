@@ -26,26 +26,26 @@ target_include_directories(AMRObj_cpu PUBLIC    ${PROJECT_SOURCE_DIR}/inc_eigen/
 if(ENABLE_GPU_BUILD)
     add_library(FieldObj_gpu FieldStructure.cpp)
     target_compile_definitions(FieldObj_gpu PRIVATE OPENACC_ENABLED)
-    target_link_libraries(FieldObj_gpu  PUBLIC  ${BARYTREE_LIB}
+    target_link_libraries(FieldObj_gpu  PUBLIC  ${BARYTREE_LIB_GPU}
                                                 OpenMP::OpenMP_CXX
                                                 MPI::MPI_CXX
                                                 OpenACC_CXX
                                                 $<$<CXX_COMPILER_ID:GNU>:m>)
     target_include_directories(FieldObj_gpu PUBLIC ${INCLUDE_HEADERS})
 
-    set(TRGT AMRObj_gpu)
-    add_library(${TRGT}  AMRStructure.cpp 
-                        AMRStructure_io.cpp
-                        AMRStructure_amr.cpp
-                        AMRStructure_field.cpp
-                        AMRStructure_step.cpp
-                        AMRStructure_interp.cpp)
-    target_compile_definitions(${TRGT} PRIVATE OPENACC_ENABLED)
-    target_link_libraries(AMRObj_gpu    PUBLIC
-                                        OpenMP::OpenMP_CXX
-                                        MPI::MPI_CXX
-                                        OpenACC_CXX
-                                        $<$<CXX_COMPILER_ID:GNU>:m>)
-    target_include_directories(AMRObj_cpu PUBLIC    ${PROJECT_SOURCE_DIR}/inc_eigen/eigen-3.3.7
-                                                    ${INCLUDE_HEADERS})
+#    set(TRGT AMRObj_gpu)
+#    add_library(${TRGT}  AMRStructure.cpp 
+#                        AMRStructure_io.cpp
+#                        AMRStructure_amr.cpp
+#                        AMRStructure_field.cpp
+#                        AMRStructure_step.cpp
+#                        AMRStructure_interp.cpp)
+#    target_compile_definitions(${TRGT} PRIVATE OPENACC_ENABLED)
+#    target_link_libraries(AMRObj_gpu    PUBLIC
+#                                        OpenMP::OpenMP_CXX
+#                                        MPI::MPI_CXX
+#                                        OpenACC_CXX
+#                                        $<$<CXX_COMPILER_ID:GNU>:m>)
+#    target_include_directories(AMRObj_cpu PUBLIC    ${PROJECT_SOURCE_DIR}/inc_eigen/eigen-3.3.7
+#                                                    ${INCLUDE_HEADERS})
 endif()
