@@ -2,8 +2,11 @@
 #ifndef FIELD_STRUCTURE_HPP
 #define FIELD_STRUCTURE_HPP
 
+#include <algorithm>
+#include <iterator>
 #include <math.h>
 #include <omp.h>
+#include <iostream>
 #include <vector>
 
 extern "C" {
@@ -44,7 +47,7 @@ class E_MQ_Treecode : public ElectricField {
         E_MQ_Treecode(double L, double epsilon, double beta);
         E_MQ_Treecode(double L, double epsilon,
             double theta, int interpDegree, int maxPerSourceLeaf, int maxPerTargetLeaf,
-            double beta, int verbosity);
+            int verbosity);
         void operator() (double* es, double* targets, int nt, 
                         double* sources, double* q_ws, int ns);
         ~E_MQ_Treecode();

@@ -1,5 +1,8 @@
 
+#include <algorithm> // std::copy
+#include <iterator> // std::ostream_iterator
 #include <math.h> // M_PI, exp, cos, sin
+#include <numeric> // std::inner_product
 #include <stdio.h> // printf
 #include <string>
 #include <string.h> // atof
@@ -29,13 +32,14 @@ int main(int argc, char** argv) {
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &numProcs);
 
-    if (argc < 19) {
+    if (argc < 23) {
         std::cout << "Not enough input arguments: had " << argc - 1 << ", but need 13" << std::endl;
         std::cout << "Usage: 1:sim_dir 2:xmin 3:xmax 4:vmin 5:vmax" << std::endl;
         std::cout << " 6:sim_type 7:normal_k 8:amp 9:vth 10:vstr" << std::endl;
         std::cout << " 11:initial_height 12:greens_epsilon" << std::endl;
         std::cout << " 13:use_treecode 14:treecode_beta" << std::endl;
-        std::cout << " 15:num_steps 16:n_steps_remesh 17: n_steps_diag 18:dt" << std::endl;
+        std::cout << " 15: mac 16: degree 17: max_source 18: max target" << std::endl;
+        std::cout << " 19:num_steps 20:n_steps_remesh 21: n_steps_diag 22:dt" << std::endl;
         return 1;
     }
     std::string sim_dir = argv[1];
@@ -76,18 +80,33 @@ int main(int argc, char** argv) {
     double greens_epsilon = atof(argv[12]);//0.2;
     int use_treecode = atoi(argv[13]);
     double beta = atof(argv[14]);
+    double mac = atof(argv[15]);
+    int degree = atoi(argv[16]);
+    int max_source = atoi(argv[17]);
+    int max_target = atoi(argv[18]);
+
+    int nxsqrt = pow(2, initial_height + 1) + 1;
+    int nx = nxsqrt * nxsqrt;
 
     ElectricField* calculate_e;
     if (use_treecode > 0) {
-        calculate_e = new E_MQ_Treecode(Lx, greens_epsilon, beta);
+        if (0 <= beta && beta <= 1.0) {
+            calculate_e = new E_MQ_Treecode(Lx, greens_epsilon, beta);
+        } else {
+            int verbosity = 0;
+            calculate_e = new E_MQ_Treecode(Lx, greens_epsilon, 
+                                            mac, degree, 
+                                            max_source, max_target, 
+                                            verbosity);
+        }
     } else {
         calculate_e = new E_MQ_DirectSum(Lx, greens_epsilon);
     }
 
-    int num_steps = atoi(argv[15]);//120;
-    int n_steps_remesh = atoi(argv[16]);
-    int n_steps_diag = atoi(argv[17]);
-    double dt = atof(argv[18]);//0.5;
+    int num_steps = atoi(argv[19]);//120;
+    int n_steps_remesh = atoi(argv[20]);
+    int n_steps_diag = atoi(argv[21]);
+    double dt = atof(argv[22]);//0.5;
     bool do_adaptively_refine = false;
 
 
@@ -99,9 +118,13 @@ int main(int argc, char** argv) {
     cout << "k=" << kx << ", amp = " << amp << ", vth = " << vth << ", vstr = " << vstr <<  endl;
     cout << "height " << initial_height << endl;
     cout << "green's epsilon = " << greens_epsilon << endl;
-    cout << "use treecode var " << use_treecode << endl;
+    cout << "use treecode flag " << use_treecode << endl;
     if (use_treecode > 0) { 
-        cout << "Using treecode with beta " << beta << endl;
+        if (0 <= beta && beta <= 1.0) {
+            cout << "Using treecode with beta " << beta << endl;
+        } else {
+            cout << "Using treecode with mac " << mac << " and degree " << degree << endl;
+        }
     } else {
         cout << "using direct sum" << endl;
     }
@@ -114,12 +137,58 @@ int main(int argc, char** argv) {
                 x_min, x_max, v_min, v_max, 
                 calculate_e, num_steps, dt, 
                 do_adaptively_refine};
-    
 
+// ------ problem with tc!  
+/*
+    cout << "Problem with treecode.  Trying to debug" << endl;
+
+    E_MQ_DirectSum ds {Lx, greens_epsilon};
+    AMRStructure amr_ds{sim_dir, f0, 
+                initial_height, 
+                x_min, x_max, v_min, v_max, 
+                &ds, num_steps, dt, 
+                do_adaptively_refine};
+
+    amr.init_e();
+    amr_ds.init_e();
+
+    bool get_4th_e = false;
+    amr.step(get_4th_e);
+    amr_ds.step(get_4th_e);
+    amr.remesh();
+    amr_ds.remesh();
+
+    std::vector<double> es_ds = amr_ds.get_e();
+    std::vector<double> es_tc = amr.get_e();
+
+    int nt = es_ds.size();
+    double dx_t = Lx / nt;
+    std::vector<double> error(nt);
+    double l2norm_ds=0.0, l2norm_tc=0.0, l2norm_diff=0.0;
+    for (int ii = 0; ii < nt; ++ii) {
+        double dsii = es_ds[ii];
+        double tcii = es_tc[ii];
+        l2norm_ds += dsii * dsii * dx_t;
+        l2norm_tc += tcii * tcii * dx_t;
+        double errii = es_ds[ii] - es_tc[ii];
+        error[ii] = errii;
+        l2norm_diff += errii * errii * dx_t;
+    }
+    // l2norm_ds = std::inner_product(es_ds.begin(), es_ds.end(), es_ds.begin(), 0);
+    // l2norm_tc = std::inner_product(es_tc.begin(), es_tc.end(), es_tc.begin(), 0);
+    // l2norm_diff = std::inner_product(error.begin(), error.end(), error.begin(), 0);
+    l2norm_ds = sqrt(l2norm_ds);
+    l2norm_tc = sqrt(l2norm_tc);
+    l2norm_diff = sqrt(l2norm_diff);
+
+    cout << "l2 norm of es, direct sum = " << l2norm_ds << endl;
+    cout << "l2 norm of es, treecode = " << l2norm_tc << endl;
+    cout << "l2 norm of error = " << l2norm_diff << endl;
+*/
+// ----- end treecode debug section
 
 
     auto start = high_resolution_clock::now();
-    cout << " starting init e " << endl;
     amr.init_e();
     auto stop = high_resolution_clock::now();
     amr.add_time(field_time, duration_cast<duration<double>>(stop - start) );
@@ -150,10 +219,10 @@ int main(int argc, char** argv) {
     // cout << "Sim time " << sim_duration.count() << " seconds" << endl;
 
     amr.print_times();
+    
 
     delete f0;
     delete calculate_e;
-
     
     MPI_Finalize();
 }

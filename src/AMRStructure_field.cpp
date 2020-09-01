@@ -100,8 +100,14 @@ void AMRStructure::init_e() {
     //                 Lx, greens_epsilon);
     // calculate_e(sort_es.data(), )
 
+    std::cout << "Debugging : xs size " << unique_xs.size() << std::endl;
+    std::cout << "es.size " << sort_es.size() << endl;
+    std::cout << "xs.size " << xs.size() << endl;
+
+    std::vector<double> unique_xs_cpy (unique_xs);
+
     (*calculate_e)(sort_es.data(), unique_xs.data(), unique_xs.size(),
-                    unique_xs.data(), sort_ws.data(), unique_xs.size() );
+                    unique_xs_cpy.data(), sort_ws.data(), unique_xs.size() );
     // }
 
     double mean_e = 0;

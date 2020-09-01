@@ -24,7 +24,8 @@ AMRStructure::AMRStructure(std::string sim_dir, distribution* f0, //std::functio
                            iter_num(0), num_steps(num_steps), dt(dt),
                            calculate_e(calculate_e), quad(trap),
                            is_initial_mesh_set(false), minimum_unrefined_index(0), need_further_refinement(false),
-                            do_adaptively_refine(do_adaptively_refine)
+                            do_adaptively_refine(do_adaptively_refine),
+                           use_limiter(false), limit_val(0.0)
 {
     time_operations = std::vector<duration<double>>(last_time);
     num_operations = std::vector<int> (last_time);
@@ -53,7 +54,8 @@ AMRStructure::AMRStructure(std::string sim_dir, distribution* f0, //std::functio
                            iter_num(0), num_steps(num_steps), dt(dt),
                            calculate_e(calculate_e), quad(quad),
                            is_initial_mesh_set(false), minimum_unrefined_index(0), need_further_refinement(false),
-                           do_adaptively_refine(do_adaptively_refine)
+                           do_adaptively_refine(do_adaptively_refine),
+                           use_limiter(false), limit_val(0.0)
 {
     time_operations = std::vector<duration<double>>(last_time);
     num_operations = std::vector<int> (last_time);
@@ -75,6 +77,7 @@ AMRStructure::AMRStructure(std::string sim_dir, distribution* f0, //std::functio
 AMRStructure::~AMRStructure() = default;
 
 // getters
+std::vector<double> AMRStructure::get_e() { return es; };
 std::string AMRStructure::get_sim_dir() const { return sim_dir; }
 // end getters
 

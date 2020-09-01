@@ -472,7 +472,7 @@ void AMRStructure::interpolate_to_initial_xvs(
     start = high_resolution_clock::now();
     for (int panel_ind = 0; panel_ind < old_panels.size(); panel_ind++) {
         if (point_in_leaf_panels_by_inds[panel_ind].size() > 0) {
-            interpolate_from_panel_to_points(sortfs,sortxs,sortvs,point_in_leaf_panels_by_inds[panel_ind], panel_ind);
+            interpolate_from_panel_to_points(sortfs,sortxs,sortvs,point_in_leaf_panels_by_inds[panel_ind], panel_ind, use_limiter, limit_val);
         }
     }
     for (int ii = 0; ii < fs.size(); ii++) {
@@ -484,7 +484,7 @@ void AMRStructure::interpolate_to_initial_xvs(
 
 void AMRStructure::interpolate_from_panel_to_points(
     std::vector<double>& values, std::vector<double>& xs, std::vector<double>& vs,
-    std::vector<int>& point_inds, int panel_ind) 
+    std::vector<int>& point_inds, int panel_ind, bool use_limiter, double limit_val) 
 {
     bool verbose = false;
     Panel* panel = &(old_panels[panel_ind]);
@@ -582,6 +582,12 @@ void AMRStructure::interpolate_from_panel_to_points(
         values[point_inds[ii]] = interp_vals(ii);
     }
 
+    if (use_limiter) {
+        for (int ii = 0; ii < values.size(); ++ii) {
+            if (values[ii] < 0) { values[ii] = limit_val; }
+        }
+    }
+
     // return c(0) + c(1)*dx + c(2) * dx*dv + c(3) * dv +
     //         c(4) * dx*dx + c(5) * dx*dx*dv + c(6) * dx*dx*dv*dv +
     //         c(7) * dx*dv*dv + c(8) * dv*dv;
@@ -671,7 +677,7 @@ void AMRStructure::interpolate_from_mesh(std::vector<double>& values, std::vecto
 
     for (int panel_ind = 0; panel_ind < old_panels.size(); panel_ind++) {
         if (point_in_leaf_panels_by_inds[panel_ind].size() > 0) {
-            interpolate_from_panel_to_points(values,shifted_xs,vs,point_in_leaf_panels_by_inds[panel_ind], panel_ind);
+            interpolate_from_panel_to_points(values,shifted_xs,vs,point_in_leaf_panels_by_inds[panel_ind], panel_ind, use_limiter, limit_val);
         }
     }
 

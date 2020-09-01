@@ -130,6 +130,7 @@ struct AMRStructure {
         // destructor
         ~AMRStructure();
         // getters
+        std::vector<double> get_e();
         std::string get_sim_dir() const;
         // end getters
 
@@ -145,6 +146,8 @@ struct AMRStructure {
         void remesh();
 
         // interpolation functions
+        bool use_limiter;
+        double limit_val;
         void shift_xs(std::vector<double>& shifted_xs, const std::vector<double>& xs, const std::vector<double>& vs);
         int find_leaf_containing_xv_recursively(double &x, const double &v, int panel_ind, bool verbose);
         int find_leaf_containing_point_from_neighbor(double& tx, double& tv, int leaf_ind, std::set<int>& history, bool verbose);
@@ -155,7 +158,7 @@ struct AMRStructure {
         void interpolate_from_mesh_slow(std::vector<double> &values, std::vector<double>& x, std::vector<double>& v, bool verbose);
         double interpolate_from_panel(double x, double v, int panel_ind,bool verbose);
         void interpolate_from_panel_to_points(std::vector<double>& values, std::vector<double>& xs, std::vector<double>& vs,
-                                                std::vector<int>& point_inds, int panel_ind);
+                                                std::vector<int>& point_inds, int panel_ind, bool use_limiter, double limit_val);
 
         // field functions
         // void calculate_e();

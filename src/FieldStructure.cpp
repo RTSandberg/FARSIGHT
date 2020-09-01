@@ -40,19 +40,19 @@ E_MQ_Treecode::E_MQ_Treecode(double L, double epsilon, double beta) :
     kernel(MQ), 
     singularity(SKIPPING), approximation(LAGRANGE), compute_type(PARTICLE_CLUSTER),
     beta(beta), theta(-1.0), interpDegree(-1), maxPerSourceLeaf(1), maxPerTargetLeaf(1),
-    verbosity(0) 
+    verbosity(0)
 {
     kernelParams.push_back(L); kernelParams.push_back(epsilon);
 }
 
 E_MQ_Treecode::E_MQ_Treecode(double L, double epsilon,
     double theta, int interpDegree, int maxPerSourceLeaf, int maxPerTargetLeaf,
-    double beta, int verbosity) :
+    int verbosity) :
         kernel(MQ), 
         singularity(SKIPPING), approximation(LAGRANGE), compute_type(PARTICLE_CLUSTER),
-        beta(beta), theta(theta), interpDegree(interpDegree), 
+        beta(-1.0), theta(theta), interpDegree(interpDegree), 
         maxPerSourceLeaf(maxPerSourceLeaf), maxPerTargetLeaf(maxPerTargetLeaf),
-        verbosity(verbosity) 
+        verbosity(verbosity)
 {
     kernelParams.push_back(L); kernelParams.push_back(epsilon);
 }
@@ -60,16 +60,83 @@ E_MQ_Treecode::E_MQ_Treecode(double L, double epsilon,
 void E_MQ_Treecode::operator() (double* es, double* targets, int nt, 
                 double* sources, double* q_ws, int ns)
 {
-    std::vector <double> xS (ns);
-    std::vector <double> yS (ns);
-    std::vector <double> wS (ns);
+    std::vector <double> xS(ns);
+    std::vector <double> yS(ns);
+    std::vector <double> wS(ns, 1.0);
 
-    std::vector <double> xT (nt);
-    std::vector <double> yT (nt);
-    std::vector <double> qT (nt);
+    std::vector <double> xT(nt);
+    std::vector <double> yT(nt);
+    std::vector <double> qT(nt, 1.0);
 
-    std::fill(wS.begin(), wS.end(), 1.);
-    std::fill(qT.begin(), qT.end(), 1.);
+    // if (targets == sources) {
+    //     std::vector<double> new_sources(ns);
+    //     for (int ii = 0; ii < ns; ii++) {
+    //         new_sources[ii] = sources[ii];
+    //     }
+    //     sources = new_sources.data();
+    // }
+//
+/*
+    std::cout << "beta " << beta << std::endl;
+    std::cout << "mac " << theta << std::endl;
+    std::cout << "degree " << interpDegree << std::endl;
+    std::cout << "max source " << maxPerSourceLeaf << std::endl;
+    std::cout << "max target " << maxPerTargetLeaf << std::endl;
+    std::cout << "ns " << ns << std::endl;
+    std::cout << "nt " << nt << std::endl;
+    std::cout << "kernel " << kernel << std::endl;
+    std::cout << "singularity " << singularity << std::endl;
+    std::cout << "approximation " << approximation << std::endl;
+    std::cout << "compute type " << compute_type << std::endl;
+
+    std::cout << "xT ";
+    std::copy(xT.begin(), xT.end(), std::ostream_iterator<double>(std::cout, " "));
+    std::cout << std::endl;
+
+    std::cout << "xS ";
+    std::copy(xS.begin(), xS.end(), std::ostream_iterator<double>(std::cout, " "));
+    std::cout << std::endl;
+
+    std::cout << "yT ";
+    std::copy(yT.begin(), yT.end(), std::ostream_iterator<double>(std::cout, " "));
+    std::cout << std::endl;
+
+    std::cout << "yS ";
+    std::copy(yS.begin(), yS.end(), std::ostream_iterator<double>(std::cout, " "));
+    std::cout << std::endl;
+
+    std::cout << "qT ";
+    std::copy(qT.begin(), qT.end(), std::ostream_iterator<double>(std::cout, " "));
+    std::cout << std::endl;
+
+    std::cout << "wS ";
+    std::copy(wS.begin(), wS.end(), std::ostream_iterator<double>(std::cout, " "));
+    std::cout << std::endl;
+
+    std::cout << "es ";
+    for (int ii = 0; ii < nt; ii++) {
+        std::cout << es[ii] << " ";
+    }
+    std::cout << std::endl;
+    
+    std::cout << "xs ";
+    for (int ii = 0; ii < ns; ii++) {
+        std::cout << sources[ii] << " ";
+    }
+    std::cout << std::endl;
+    
+    std::cout << "xt ";
+    for (int ii = 0; ii < nt; ii++) {
+        std::cout << targets[ii] << " ";
+    }
+    std::cout << std::endl;
+    
+    std::cout << "qws ";
+    for (int ii = 0; ii < ns; ii++) {
+        std::cout << q_ws[ii] << " ";
+    }
+    std::cout << std::endl;   
+    */
 
     BaryTreeInterface(nt, ns, xT.data(), yT.data(), 
                     targets, qT.data(),
