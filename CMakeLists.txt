@@ -92,7 +92,8 @@ if (ENABLE_GPU_BUILD)
     target_include_directories(farrsight_gpu PUBLIC ${INCLUDE_HEADERS})
     target_include_directories(farrsight_gpu PUBLIC   inc)
 
-    install(TARGETS farrsight_gpu LIBRARY DESTINATION lib
+    install(TARGETS farrsight_gpu RUNTIME DESTINATION lib
+                                LIBRARY DESTINATION lib
                                 ARCHIVE DESTINATION lib)
 endif()
     

@@ -17,7 +17,9 @@ add_library(AMRObj_cpu  AMRStructure.cpp
                     AMRStructure_field.cpp
                     AMRStructure_step.cpp
                     AMRStructure_interp.cpp)
-target_link_libraries(AMRObj_cpu    PUBLIC  OpenMP::OpenMP_CXX
+target_link_libraries(AMRObj_cpu    PUBLIC  PanelObj
+                                            icsObj
+                                            OpenMP::OpenMP_CXX
                                             MPI::MPI_CXX
                                             $<$<CXX_COMPILER_ID:GNU>:m>)
 target_include_directories(AMRObj_cpu PUBLIC    ${PROJECT_SOURCE_DIR}/inc_eigen/eigen-3.3.7

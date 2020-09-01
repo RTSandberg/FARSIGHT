@@ -47,7 +47,7 @@ void AMRStructure::step(bool get_4th_e) {
         v3.push_back(vs[ii] + 0.5 * dt * a2[ii]);
         xtemp[ii] = xs[ii] + 0.5 * dt * v2[ii];
     }
-    start = high_resolution_clock::now();]
+    start = high_resolution_clock::now();
     xtemp_cpy = xtemp;
     (*calculate_e)(a3.data(), xtemp.data(), a3.size(),
                     xtemp_cpy.data(), q_ws.data(), xtemp.size());

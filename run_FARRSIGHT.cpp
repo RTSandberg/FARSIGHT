@@ -85,8 +85,8 @@ int main(int argc, char** argv) {
     int max_source = atoi(argv[17]);
     int max_target = atoi(argv[18]);
 
-    int nxsqrt = pow(2, initial_height + 1) + 1;
-    int nx = nxsqrt * nxsqrt;
+    // int nxsqrt = pow(2, initial_height + 1) + 1;
+    // int nx = nxsqrt * nxsqrt;
 
     ElectricField* calculate_e;
     if (use_treecode > 0) {
