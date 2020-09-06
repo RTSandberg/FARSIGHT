@@ -77,10 +77,12 @@ target_link_libraries     (farrsight_cpu PUBLIC   OpenMP::OpenMP_CXX
 target_include_directories(farrsight_cpu PUBLIC ${INCLUDE_HEADERS})
 target_include_directories(farrsight_cpu PUBLIC   inc)
 
-install(TARGETS farrsight_cpu LIBRARY DESTINATION lib
+install(TARGETS farrsight_cpu  RUNTIME DESTINATION bin
+                                LIBRARY DESTINATION lib
                             ARCHIVE DESTINATION lib)
 
 if (ENABLE_GPU_BUILD)
+    add_executable(farrsight_gpu run_FARRSIGHT.cpp) 
     find_library(BARYTREE_LIB_GPU BaryTree_gpu REQUIRED)
     target_link_libraries(farrsight_gpu PUBLIC   OpenMP::OpenMP_CXX
                                                 MPI::MPI_CXX 
@@ -92,7 +94,7 @@ if (ENABLE_GPU_BUILD)
     target_include_directories(farrsight_gpu PUBLIC ${INCLUDE_HEADERS})
     target_include_directories(farrsight_gpu PUBLIC   inc)
 
-    install(TARGETS farrsight_gpu RUNTIME DESTINATION lib
+    install(TARGETS farrsight_gpu RUNTIME DESTINATION bin
                                 LIBRARY DESTINATION lib
                                 ARCHIVE DESTINATION lib)
 endif()
