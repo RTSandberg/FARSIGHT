@@ -15,8 +15,7 @@ AMRStructure::AMRStructure() {}
 AMRStructure::AMRStructure(std::string sim_dir, distribution* f0, //std::function<double (double,double)> f0, 
                             int initial_height, 
                             double x_min, double x_max, double v_min, double v_max, 
-                            ElectricField* calculate_e, int num_steps, double dt, 
-                            bool do_adaptively_refine)
+                            ElectricField* calculate_e, int num_steps, double dt)
                            : f0(f0), q(-1.0), qm(-1.0), 
                            initial_height(initial_height) , height(initial_height), max_height(initial_height),
                            x_min(x_min), x_max(x_max),
@@ -24,7 +23,7 @@ AMRStructure::AMRStructure(std::string sim_dir, distribution* f0, //std::functio
                            iter_num(0), num_steps(num_steps), dt(dt),
                            calculate_e(calculate_e), quad(trap),
                            is_initial_mesh_set(false), minimum_unrefined_index(0), need_further_refinement(false),
-                            do_adaptively_refine(do_adaptively_refine),
+                           do_adaptively_refine(false),
                            use_limiter(false), limit_val(0.0)
 {
     time_operations = std::vector<duration<double>>(last_time);
@@ -47,7 +46,7 @@ AMRStructure::AMRStructure(std::string sim_dir, distribution* f0, //std::functio
                             int initial_height, int max_height, 
                             double x_min, double x_max, double v_min, double v_max, 
                             ElectricField* calculate_e, Quadrature quad, int num_steps, double dt, 
-                            bool do_adaptively_refine)
+                            bool do_adaptively_refine, std::vector<double>& amr_epsilons)
                            : f0(f0), q(q), qm(q/m), 
                            initial_height(initial_height), height(initial_height), max_height(max_height), 
                            x_min(x_min), x_max(x_max), v_min(v_min), v_max(v_max), 
@@ -65,6 +64,7 @@ AMRStructure::AMRStructure(std::string sim_dir, distribution* f0, //std::functio
     Lv = v_max - v_min;
     npanels_x = int(pow(2, initial_height));
     npanels_v = int(pow(2, initial_height));
+    this->amr_epsilons = amr_epsilons;
 
     // create_prerefined_mesh();
     bool is_initial_step = true;

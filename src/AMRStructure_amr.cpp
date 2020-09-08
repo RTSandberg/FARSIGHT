@@ -439,6 +439,21 @@ void AMRStructure::test_panel(int panel_ind) {
         // panel_fs[ii] = particles.at(panel_it->get_vertex_ind(ii)).get_f();
         panel_fs[ii] = fs[panel_it->point_inds[ii]];
     }
+    int i0, i1, i3;
+    i0 = panel_it->point_inds[0];
+    i1 = panel_it->point_inds[1];
+    i3 = panel_it->point_inds[3];
+    double dx = xs[i3] - xs[i0];
+    double dv = vs[i1] - vs[i0];
+    double abs_dfdxs[6], abs_dfdvs[6];
+    for (int ii = 0; ii < 6; ++ii) {
+        abs_dfdxs[ii] = fabs((panel_fs[3+ii] - panel_fs[ii]) / dx);
+    }
+    for (int jj = 0; jj < 3; ++jj) {
+        for (int ii = 0; ii < 2; ii++) {
+            abs_dfdvs[ii] = fabs((panel_fs[3*jj + ii + 1] - panel_fs[3*jj + ii)]) / dv);
+        }
+    }
     double max_f = panel_fs[0];
     double min_f = panel_fs[0];
     for (int ii = 1; ii < 9; ++ii) {
@@ -446,8 +461,20 @@ void AMRStructure::test_panel(int panel_ind) {
         if (max_f < fii) { max_f = fii; }
         if (min_f > fii) { min_f = fii; }
     }
+    double max_dfdx = abs_dfdxs[0];
+    double max_dfdv = abs_dfdxv[0];
+    for (int ii = 1; ii < 6; ++ii) {
+        if (max_dfdx < abs_dfdxs[ii]) { max_dfdx = abs_dfdxs[ii];}
+        if (max_dfdv < abs_dfdvs[ii]) { max_dfdv = abs_dfdvs[ii];}
+    }
+    std::vector<bool> criteria(3, true);
+    criteria[0] = (max_f - min_f > 100);
+    criteria[1] = (max_dfdx > 100);
+    criteria[2] = (max_dfdv > 100);
+    bool refine_criteria_met = std::accumulate(criteria.begin(), criteria.end(), true, std::logical_and<bool>() );
 
-    if (panel_it->level < max_height & max_f - min_f > 100) { 
+
+    if (panel_it->level < max_height && refine_criteria_met) { 
         panel_it->needs_refinement = true; 
         need_further_refinement = true;
     }

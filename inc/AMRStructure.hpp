@@ -12,22 +12,22 @@
 #ifndef AMRSTRUCTURE_HPP
 #define AMRSTRUCTURE_HPP
 
-#include <algorithm> // sort, copy, std::find
-#include <assert.h> // assert
-#include <chrono> // high_resolution _clock, duration_cast, microseconds
+#include <algorithm>            // std::sort, std::copy, std::find
+#include <assert.h>             // assert
+#include <chrono>               // high_resolution _clock, duration_cast, microseconds
 using namespace std::chrono;
-#include <functional>
+#include <functional>           // std::logical_and
 #include <fstream>
-#include <iostream> // std::cout, std::endl
-#include <iterator> // ostream_iterator for vector printing
+#include <iostream>             // std::cout, std::endl
+#include <iterator>             // std::ostream_iterator for vector printing
 #include <math.h>
-#include <numeric> // iota
+#include <numeric>              // std::iota, std::accumulate
 #include <omp.h>
-#include <set> // std::set, set.find
-#include <stdexcept> // exceptions
-#include <stdio.h> // printf
+#include <set>                  // std::set, set.find
+#include <stdexcept>            // exceptions
+#include <stdio.h>              // printf
 #include <string> 
-#include <vector> // std::vector
+#include <vector>               // std::vector
 
 // external libraries to include
 #include <Eigen/Dense>
@@ -73,6 +73,7 @@ struct AMRStructure {
     bool need_further_refinement;
     int minimum_unrefined_index;
     bool do_adaptively_refine;
+    std::vector<double> amr_epsilons;
 
     double Q0, M0;
 
@@ -117,14 +118,13 @@ struct AMRStructure {
         AMRStructure(std::string sim_dir, distribution* f0, //std::function<double (double,double)>& f0, 
                 int initial_height, 
                 double x_min, double x_max, double v_min, double v_max, 
-                ElectricField* calculate_e, int num_steps, double dt, 
-                bool do_adaptively_refine);
+                ElectricField* calculate_e, int num_steps, double dt);
         AMRStructure(std::string sim_dir, distribution* f0, //std::function<double (double,double)>& f0, 
                 double q, double m, 
                 int initial_height, int max_height, 
                 double x_min, double x_max, double v_min, double v_max, 
                 ElectricField* calculate_e, Quadrature quad, int num_steps, double dt, 
-                bool do_adaptively_refine);
+                bool do_adaptively_refine, std::vector<double>& amr_epsilons);
 
         // end constructors
         // destructor
