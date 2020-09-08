@@ -208,7 +208,11 @@ int main(int argc, char** argv) {
         amr.add_time(remesh_time, duration_cast<duration<double>>(stop - start) );
 
         if ((ii+1) % n_steps_diag == 0) {
+
+            auto file_start = high_resolution_clock::now();
             amr.write_to_file();
+            auto file_stop = high_resolution_clock::now();
+            amr.add_time(file_time,  duration_cast<duration<double>>(file_stop - file_start) );
         }
     //     // cout << amr << endl;
     }

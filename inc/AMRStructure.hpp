@@ -47,7 +47,7 @@ extern "C" {
 enum Quadrature {simpsons, trap};
 enum ProfileTypes {sim_time, step_time, field_time, 
                 remesh_time, interp_time, search_time, 
-                eval_time, last_time};
+                eval_time, file_time, last_time};
 
 struct AMRStructure {
     std::string sim_dir;

@@ -167,7 +167,7 @@ class FarrsightInterface:
 
         self.simulation_has_run = False
         
-        self.generate_standard_names_dirs()
+        self.generate_standard_names_dirs(root_dir=root_dir)
     
     def __repr__(self):
         return f'{self.__class__.__name__}(...)'
@@ -230,12 +230,12 @@ class FarrsightInterface:
             self.simulation_has_run = False
             print('simulation stopped with error code %i'%proc.returncode)
 
-        with open(self.sim_dir + 'sim.txt','a') as log:
+        with open(self.sim_dir + 'sim_out.txt','a') as log:
             log.write(f'compute time {t2-t1:.03f}s')
         print(f'simulation compute time {t2-t1:.03f}s')
     # end run_farrsight
     
-    def generate_standard_names_dirs(self):
+    def generate_standard_names_dirs(self, root_dir=None):
         tc_string = ''
         if self.use_treecode:
             if 0 <= self.beta <= 1:
@@ -248,7 +248,7 @@ class FarrsightInterface:
         sim_group = f'vth_{self.vth:.3f}_vstr_{self.vstr:.3f}_amp_{self.amp:.3f}_normal_k_{self.normalized_wavenumber:.3f}'
         sim_name = f'height0_{self.initial_height}_vm_{self.vmax:.1f}_g_eps_{self.greens_epsilon:.3f}_dt_{self.dt:.3f}_tf_{self.tf:.1f}_diag_freq_{self.diag_freq}' + tc_string
 
-        self.sim_dir, directories_found = make_dirs(self.project_name, sim_group, sim_name)
+        self.sim_dir, directories_found = make_dirs(self.project_name, sim_group, sim_name,root_dir=root_dir)
         self.simulation_has_run = directories_found
     # end generate_standard_names_dirs
 

@@ -55,10 +55,11 @@ args = parser.parse_args()
 
 remesh_period = 1
 FS = FS_int.FarrsightInterface(args.project_name, args.xmin, args.xmax, args.vmin, args.vmax,\
-                        FS_int.SimType(args.simtype), args.vth, args.vstr,\
-                        args.normalized_wavenumber, args.amp, args.initial_height,\
-                        args.greens_epsilon, args.use_treecode, args.beta, args.mac,\
-                        args.degree, args.maxSourceLeafSize, args.maxTargetLeafSize, args.num_steps, remesh_period,\
+                        FS_int.SimType(args.simtype), args.normalized_wavenumber, args.amp, 
+                        args.vth, args.vstr,\
+                        args.initial_height, args.greens_epsilon, args.use_treecode, args.beta, args.mac,\
+                        args.degree, args.maxSourceLeafSize, args.maxTargetLeafSize,\
+                        args.num_steps, remesh_period,\
                         args.diag_freq, args.dt, root_dir = args.root_dir, can_do_movie=can_do_movie)
 
 
