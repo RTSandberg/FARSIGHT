@@ -30,7 +30,8 @@ option(ENABLE_GPU_BUILD "build OpenACC GPU version"             OFF)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-
+# use nlohmann_json if we can't get boost working
+find_package(nlohmann_json REQUIRED)
 find_package(OpenMP     REQUIRED)
 find_package(MPI        REQUIRED)
 find_library(BARYTREE_LIB BaryTree_cpu REQUIRED)
@@ -74,6 +75,7 @@ target_link_libraries     (farrsight_cpu PUBLIC   OpenMP::OpenMP_CXX
                                                 PanelObj
                                                 icsObj
                                                 AMRObj_cpu)
+target_link_libraries(farrsight_cpu PRIVATE nlohmann_json::nlohmann_json)
 target_include_directories(farrsight_cpu PUBLIC ${INCLUDE_HEADERS})
 target_include_directories(farrsight_cpu PUBLIC   inc)
 
@@ -91,6 +93,7 @@ if (ENABLE_GPU_BUILD)
                                                 PanelObj
                                                 icsObj
                                                 AMRObj_cpu)
+    target_link_libraries(farrsight_gpu PRIVATE nlohmann_json::nlohmann_json)
     target_include_directories(farrsight_gpu PUBLIC ${INCLUDE_HEADERS})
     target_include_directories(farrsight_gpu PUBLIC   inc)
 

@@ -120,6 +120,11 @@ struct AMRStructure {
                 double x_min, double x_max, double v_min, double v_max, 
                 ElectricField* calculate_e, int num_steps, double dt);
         AMRStructure(std::string sim_dir, distribution* f0, //std::function<double (double,double)>& f0, 
+                int initial_height, int max_height,
+                double x_min, double x_max, double v_min, double v_max, 
+                ElectricField* calculate_e, int num_steps, double dt,
+                bool do_adaptively_refine, std::vector<double>& amr_epsilons);
+        AMRStructure(std::string sim_dir, distribution* f0, //std::function<double (double,double)>& f0, 
                 double q, double m, 
                 int initial_height, int max_height, 
                 double x_min, double x_max, double v_min, double v_max, 

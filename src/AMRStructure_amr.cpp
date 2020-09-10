@@ -451,7 +451,7 @@ void AMRStructure::test_panel(int panel_ind) {
     }
     for (int jj = 0; jj < 3; ++jj) {
         for (int ii = 0; ii < 2; ii++) {
-            abs_dfdvs[ii] = fabs((panel_fs[3*jj + ii + 1] - panel_fs[3*jj + ii)]) / dv);
+            abs_dfdvs[ii] = fabs((panel_fs[3*jj + ii + 1] - panel_fs[3*jj + ii]) / dv);
         }
     }
     double max_f = panel_fs[0];
@@ -462,16 +462,26 @@ void AMRStructure::test_panel(int panel_ind) {
         if (min_f > fii) { min_f = fii; }
     }
     double max_dfdx = abs_dfdxs[0];
-    double max_dfdv = abs_dfdxv[0];
+    double max_dfdv = abs_dfdvs[0];
     for (int ii = 1; ii < 6; ++ii) {
         if (max_dfdx < abs_dfdxs[ii]) { max_dfdx = abs_dfdxs[ii];}
         if (max_dfdv < abs_dfdvs[ii]) { max_dfdv = abs_dfdvs[ii];}
     }
-    std::vector<bool> criteria(3, true);
-    criteria[0] = (max_f - min_f > 100);
-    criteria[1] = (max_dfdx > 100);
-    criteria[2] = (max_dfdv > 100);
-    bool refine_criteria_met = std::accumulate(criteria.begin(), criteria.end(), true, std::logical_and<bool>() );
+    // std::vector<bool> criteria(amr_epsilons.size(), true);
+    bool refine_criteria_met = true;
+    if (amr_epsilons.size() > 0) {
+        refine_criteria_met = (max_f - min_f > amr_epsilons[0]);
+    }
+    if (amr_epsilons.size() > 1) {
+        refine_criteria_met = refine_criteria_met && (max_dfdx > amr_epsilons[1]);
+    }
+    if (amr_epsilons.size() > 2) {
+        refine_criteria_met = refine_criteria_met && (max_dfdv > amr_epsilons[2]);
+    }
+    // criteria[0] = (max_f - min_f > 100);
+    // criteria[1] = (max_dfdx > 100);
+    // criteria[2] = (max_dfdv > 100);
+    // bool refine_criteria_met = std::accumulate(criteria.begin(), criteria.end(), true, std::logical_and<bool>() );
 
 
     if (panel_it->level < max_height && refine_criteria_met) { 
