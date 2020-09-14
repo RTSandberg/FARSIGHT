@@ -118,7 +118,8 @@ def make_dirs(project_name, sim_group, sim_name,
 def generate_standard_names_dirs(simulation_dictionary, root_dir=None):
     sd = simulation_dictionary
     tc_string = ''
-    if sd['use_treecode']:
+    # if 'use_treecode' not in sd
+    if 'use_treecode' in sd and sd['use_treecode']:
         if 0 <= sd['beta'] <= 1:
             tc_string = '_beta_%.2f'%sd['beta']# f'_beta_{sim_dict['beta']:.2f}'
         else:

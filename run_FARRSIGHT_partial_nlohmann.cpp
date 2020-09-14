@@ -141,9 +141,9 @@ int main(int argc, char** argv) {
     int use_treecode = deck.get<int>("use_treecode", 0); //atoi(argv[13]);
     double beta = deck.get<double>("beta", -1.0); //atof(argv[14]);
     double mac = deck.get<double>("mac", -1.0); //atof(argv[15]);
-    int degree = deck.get<int>("degree", -1); //atoi(argv[16]);
-    int max_source = deck.get<int>("max_source", 200); //atoi(argv[17]);
-    int max_target = deck.get<int>("max_target", 200); //atoi(argv[18]);
+    int degree = get_json_val<int>(deck, "degree", -1); //atoi(argv[16]);
+    int max_source = get_json_val<int>(deck, "max_source", 200); //atoi(argv[17]);
+    int max_target = get_json_val<int>(deck, "max_target", 200); //atoi(argv[18]);
 
     // int nxsqrt = pow(2, initial_height + 1) + 1;
     // int nx = nxsqrt * nxsqrt;
@@ -163,11 +163,11 @@ int main(int argc, char** argv) {
         calculate_e = new E_MQ_DirectSum(Lx, greens_epsilon);
     }
 
-    int num_steps = deck.get<int>("num_steps", 10);//atoi(argv[19]);//120;
-    int n_steps_remesh = deck.get<int>("remesh_period", 1); //atoi(argv[20]);
-    int n_steps_diag = deck.get<int>("diag_period", 1); //atoi(argv[21]);
-    double dt = deck.get<double> ("dt", 0.5); //atof(argv[22]);//0.5;
-    bool do_adaptively_refine = deck.get<bool> ("adaptively_refine", false);//false;
+    int num_steps = get_json_val<int>(deck, "num_steps", 10);//atoi(argv[19]);//120;
+    int n_steps_remesh = get_json_val<int>(deck, "remesh_period", 1); //atoi(argv[20]);
+    int n_steps_diag = get_json_val<int>(deck, "diag_period", 1); //atoi(argv[21]);
+    double dt = get_json_val<double> (deck, "dt", 0.5); //atof(argv[22]);//0.5;
+    bool do_adaptively_refine = get_json_val<int> (deck, "adaptively_refine", false);//false;
 
     // double eps_amr = deck.at("")
     // cout << "eps_amr: " << deck.at("amr_epsilons").at(0) << endl;
@@ -176,10 +176,9 @@ int main(int argc, char** argv) {
     std::vector<double> amr_epsilons; //= deck.at("amr_epsilons");
     try {
         // deck.at("amr_epsilons");
-        for (pt::ptree::value_type &eps : deck.get_child("amr_epsilons")) {
-            amr_epsilons.push_back(eps.second.get_value<double>() );
-        }
-    } catch(std::exception& err) {
+        std::vector<double> temp = deck.at("amr_epsilons");
+        amr_epsilons = temp;
+    } catch(nlohmann::detail::exception& err) {
         cout << "Unable to find amr refinement values.  Disabling amr." << endl;
         amr_epsilons = std::vector<double>();
 
@@ -219,14 +218,13 @@ int main(int argc, char** argv) {
 
     auto sim_start = high_resolution_clock::now();
 
-
     AMRStructure amr{sim_dir, f0, 
                 initial_height, max_height,
                 x_min, x_max, v_min, v_max, 
                 calculate_e, num_steps, dt,
                 do_adaptively_refine, amr_epsilons};
                 
-
+*/
 
 // ------ problem with tc!  
 /*
@@ -277,7 +275,7 @@ int main(int argc, char** argv) {
 */
 // ----- end treecode debug section
 
-
+/*
 
     auto start = high_resolution_clock::now();
     amr.init_e();
@@ -318,7 +316,7 @@ int main(int argc, char** argv) {
 
     delete f0;
     delete calculate_e;
-    
+    */
     
     MPI_Finalize();
 }
