@@ -20,9 +20,6 @@ extern "C" {
     #include <mpi.h>
 }
 
-
-// #include <nlohmann/json.hpp>
-// using json = nlohmann::json;
 #include "boost/property_tree/ptree.hpp"        //property_tree::ptree, property_tree::read_json
 #include "boost/property_tree/json_parser.hpp"
 namespace pt = boost::property_tree;
@@ -30,23 +27,6 @@ namespace pt = boost::property_tree;
 #include "Panel.hpp"
 #include "AMRStructure.hpp"
 #include "initial_distributions.hpp"
-
-/*
-template<class T>
-T get_json_val(json& j, std::string key, T default_val) {
-    T val;
-    try {
-        val = j.at(key);
-    }
-    catch (nlohmann::detail::exception& err) {
-        cout << key << " not found in json file.";
-        cout << " Setting to " << default_val << endl;
-        val = default_val;
-    }
-    return val;
-}
-*/
-
 
 int main(int argc, char** argv) {
 
@@ -89,12 +69,8 @@ int main(int argc, char** argv) {
         }
     }
 
-    // std::ifstream json_stream;
-    // json deck;
     pt::ptree deck;
     try {
-        // std::ifstream json_stream(input_deck, std::ifstream::in);
-        // json_stream >> deck;
         pt::read_json(input_deck, deck);
     } catch(std::exception& err) {
         cout << "unable to open input deck" << endl;
@@ -132,8 +108,6 @@ int main(int argc, char** argv) {
             f0 = new F0_LD(vth, kx, amp);
             break;
     }
-
-    // F0_colder_two_stream f0{vth, vstr, kx, amp};
     
     int initial_height = deck.get<int>("initial_height",6);//atoi(argv[11]);//6; 
     int max_height = deck.get<int>("max_height", initial_height);
@@ -169,13 +143,9 @@ int main(int argc, char** argv) {
     double dt = deck.get<double> ("dt", 0.5); //atof(argv[22]);//0.5;
     bool do_adaptively_refine = deck.get<bool> ("adaptively_refine", false);//false;
 
-    // double eps_amr = deck.at("")
-    // cout << "eps_amr: " << deck.at("amr_epsilons").at(0) << endl;
-    // cout << deck.at("amr_epsilons").size() << endl;
 
-    std::vector<double> amr_epsilons; //= deck.at("amr_epsilons");
+    std::vector<double> amr_epsilons; 
     try {
-        // deck.at("amr_epsilons");
         for (pt::ptree::value_type &eps : deck.get_child("amr_epsilons")) {
             amr_epsilons.push_back(eps.second.get_value<double>() );
         }
