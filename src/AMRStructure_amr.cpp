@@ -389,7 +389,7 @@ void AMRStructure::refine_panels(std::function<double (double,double)> f, bool d
     // test 
     if (do_adaptive_refine) { 
         for (int ii = 0; ii < prospective_leaf_inds.size(); ++ii) {
-            test_panel(prospective_leaf_inds.at(ii));
+            test_panel(prospective_leaf_inds.at(ii), false);
         }
     }
 }
@@ -416,12 +416,17 @@ void AMRStructure::generate_mesh(std::function<double (double,double)> f,
 
     int num_panels_pre_refine = panels.size();
 
-    for (int ii = minimum_unrefined_index; ii < num_panels_pre_refine; ++ii) {
-        test_panel(ii);
-    }
-    while (need_further_refinement) {
-        need_further_refinement = false;
-        refine_panels(f, do_adaptive_refine);
+    if (do_adaptive_refine) {
+        cout << "test initial grid for refinement" << endl;
+        for (int ii = minimum_unrefined_index; ii < num_panels_pre_refine; ++ii) {
+            test_panel(ii, false);
+        }
+        while (need_further_refinement) {
+            cout << "making additional refinement passes" << endl;
+            need_further_refinement = false;
+            refine_panels(f, true);
+        }
+  
     }
 
     set_leaves_weights();
@@ -432,50 +437,67 @@ void AMRStructure::generate_mesh(std::function<double (double,double)> f,
     }
 }
 
-void AMRStructure::test_panel(int panel_ind) {
+void AMRStructure::test_panel(int panel_ind, bool verbose) {
+    // cout << "testing panel " << panel_ind << endl;
+
     double panel_fs[9];
     auto panel_it = panels.begin() + panel_ind;
     for (int ii = 0; ii < 9; ++ii) {
         // panel_fs[ii] = particles.at(panel_it->get_vertex_ind(ii)).get_f();
         panel_fs[ii] = fs[panel_it->point_inds[ii]];
     }
-    int i0, i1, i3;
-    i0 = panel_it->point_inds[0];
-    i1 = panel_it->point_inds[1];
-    i3 = panel_it->point_inds[3];
-    double dx = xs[i3] - xs[i0];
-    double dv = vs[i1] - vs[i0];
-    double abs_dfdxs[6], abs_dfdvs[6];
-    for (int ii = 0; ii < 6; ++ii) {
-        abs_dfdxs[ii] = fabs((panel_fs[3+ii] - panel_fs[ii]) / dx);
-    }
-    for (int jj = 0; jj < 3; ++jj) {
-        for (int ii = 0; ii < 2; ii++) {
-            abs_dfdvs[ii] = fabs((panel_fs[3*jj + ii + 1] - panel_fs[3*jj + ii]) / dv);
-        }
-    }
-    double max_f = panel_fs[0];
-    double min_f = panel_fs[0];
-    for (int ii = 1; ii < 9; ++ii) {
-        double fii = panel_fs[ii];
-        if (max_f < fii) { max_f = fii; }
-        if (min_f > fii) { min_f = fii; }
-    }
-    double max_dfdx = abs_dfdxs[0];
-    double max_dfdv = abs_dfdvs[0];
-    for (int ii = 1; ii < 6; ++ii) {
-        if (max_dfdx < abs_dfdxs[ii]) { max_dfdx = abs_dfdxs[ii];}
-        if (max_dfdv < abs_dfdvs[ii]) { max_dfdv = abs_dfdvs[ii];}
-    }
     // std::vector<bool> criteria(amr_epsilons.size(), true);
     bool refine_criteria_met = true;
     if (amr_epsilons.size() > 0) {
-        refine_criteria_met = (max_f - min_f > amr_epsilons[0]);
+        double max_f = panel_fs[0];
+        double min_f = panel_fs[0];
+        for (int ii = 1; ii < 9; ++ii) {
+            double fii = panel_fs[ii];
+            if (max_f < fii) { max_f = fii; }
+            if (min_f > fii) { min_f = fii; }
+        }
+        // finding trouble panels in amr
+        if (max_f - min_f >= 1.) {
+            cout << "interpolation trouble at panel " << panel_ind << endl;
+            cout << "max f " << max_f << ", min f" << min_f << ", difference= " << max_f - min_f << endl;
+            for (int ii = 0; ii < 9; ++ii) {
+                int pind = panel_it->point_inds[ii];
+                cout << "point " << pind << ": (x,v,f)=(" << xs[pind] << ", " << vs[pind] << ", " << panel_fs[ii] << ")" << endl;
+            }
+            cout << endl;
+        }
+        refine_criteria_met = refine_criteria_met && (max_f - min_f > amr_epsilons[0]);
     }
     if (amr_epsilons.size() > 1) {
+        int i0, i3;
+        i0 = panel_it->point_inds[0];
+        i3 = panel_it->point_inds[3];
+        double dx = xs[i3] - xs[i0];
+        double abs_dfdxs[6];
+        for (int ii = 0; ii < 6; ++ii) {
+            abs_dfdxs[ii] = fabs((panel_fs[3+ii] - panel_fs[ii]) / dx);
+        }
+        double max_dfdx = abs_dfdxs[0];
+        for (int ii = 1; ii < 6; ++ii) {
+            if (max_dfdx < abs_dfdxs[ii]) { max_dfdx = abs_dfdxs[ii];}
+        }
         refine_criteria_met = refine_criteria_met && (max_dfdx > amr_epsilons[1]);
     }
     if (amr_epsilons.size() > 2) {
+        int i0, i1;
+        i0 = panel_it->point_inds[0];
+        i1 = panel_it->point_inds[1];
+        double dv = vs[i1] - vs[i0];
+        double abs_dfdvs[6];
+        for (int jj = 0; jj < 3; ++jj) {
+            for (int ii = 0; ii < 2; ii++) {
+                abs_dfdvs[ii] = fabs((panel_fs[3*jj + ii + 1] - panel_fs[3*jj + ii]) / dv);
+            }
+        }
+        double max_dfdv = abs_dfdvs[0];
+        for (int ii = 1; ii < 6; ++ii) {
+            if (max_dfdv < abs_dfdvs[ii]) { max_dfdv = abs_dfdvs[ii];}
+        }
         refine_criteria_met = refine_criteria_met && (max_dfdv > amr_epsilons[2]);
     }
     // criteria[0] = (max_f - min_f > 100);
@@ -483,10 +505,21 @@ void AMRStructure::test_panel(int panel_ind) {
     // criteria[2] = (max_dfdv > 100);
     // bool refine_criteria_met = std::accumulate(criteria.begin(), criteria.end(), true, std::logical_and<bool>() );
 
-
     if (panel_it->level < max_height && refine_criteria_met) { 
         panel_it->needs_refinement = true; 
         need_further_refinement = true;
+        if (verbose) {
+            cout << "panel " << panel_ind << " is level " << panel_it->level << ", max height " << max_height << ", and is flagged for refinement" << endl;
+        }
+    }
+    else if (verbose)
+    {
+        cout << "panel " << panel_ind << " is level " << panel_it->level << ", max height " << max_height;
+        if (refine_criteria_met) {
+            cout << ", and is flagged for refinement" << endl;
+        } else {
+            cout << ", and is not flagged for refinement" << endl;
+        }
     }
 }
 
@@ -549,7 +582,6 @@ void AMRStructure::recursively_set_leaves_weights(int panel_ind) {
 
 void AMRStructure::remesh() {
     // create copy of current panels and particle data
-    do_adaptively_refine = false;
 
     auto start = high_resolution_clock::now();
     old_panels = std::vector<Panel> (); old_panels.reserve(panels.size() );
@@ -573,6 +605,6 @@ void AMRStructure::remesh() {
     // cout << "Old data copy time " << duration.count() << " microseconds." << endl << endl;
 
     bool is_initial_step = false;
-    generate_mesh([&] (double x, double v) { return interpolate_from_mesh(x,v,true);} , do_adaptively_refine, is_initial_step);
+    generate_mesh([&] (double x, double v) { return interpolate_from_mesh(x,v,false);} , do_adaptively_refine, is_initial_step);
     init_e();
 }

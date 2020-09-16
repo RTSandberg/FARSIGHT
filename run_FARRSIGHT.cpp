@@ -179,7 +179,7 @@ int main(int argc, char** argv) {
     }
     if (do_adaptively_refine) {
         cout << "Adaptively refining, to height at most " << max_height << endl;
-        cout << "Refinement epsilons : ";
+        cout << "Refinement epsilon(s) : ";
         std::copy(amr_epsilons.begin(), amr_epsilons.end(), std::ostream_iterator<double>(cout, " "));
         cout << endl;
     } else {
@@ -196,7 +196,7 @@ int main(int argc, char** argv) {
                 calculate_e, num_steps, dt,
                 do_adaptively_refine, amr_epsilons};
                 
-
+    // cout << amr << endl;
 
 // ------ problem with tc!  
 /*
@@ -255,7 +255,7 @@ int main(int argc, char** argv) {
     amr.add_time(field_time, duration_cast<duration<double>>(stop - start) );
     amr.write_to_file();
 
-    for (int ii = 0; ii < num_steps; ++ii) {
+    for (int ii = 1; ii < num_steps+1; ++ii) {
         bool get_4th_e = false;
         start = high_resolution_clock::now();
         amr.step(get_4th_e);
@@ -268,7 +268,7 @@ int main(int argc, char** argv) {
         stop = high_resolution_clock::now();
         amr.add_time(remesh_time, duration_cast<duration<double>>(stop - start) );
 
-        if ((ii+1) % n_steps_diag == 0) {
+        if ((ii) % n_steps_diag == 0) {
 
             auto file_start = high_resolution_clock::now();
             amr.write_to_file();

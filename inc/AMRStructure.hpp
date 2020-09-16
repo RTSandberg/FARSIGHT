@@ -108,7 +108,7 @@ struct AMRStructure {
     // private functions
     int create_prerefined_mesh();
     void refine_panels(std::function<double (double,double)> f, bool do_adaptive_refine);
-    void test_panel(int panel_ind);
+    void test_panel(int panel_ind, bool verbose);
 
     int write_particles_to_file();
     int write_panels_to_file();
