@@ -4,7 +4,7 @@ Collection of functions for creating and running FARRSIGHT simulations
 Contains
 ---
 SimType : Enumerated type
-make_dirs :
+make_dirs [DEPRECATED]:
 generate_standard_names_dirs :
 dict_to_deck :
 deck_to_dict :
@@ -53,6 +53,7 @@ sim_type_to_flim = {SimType.WEAK_LD : (0, 0.44),
 def make_dirs(project_name, sim_group, sim_name, 
                           root_dir = None):
     """
+    [DEPRECATED] 
     Make directories to hold simulation data and return simulation directory
     
     If any of the following directories don't exist, make them:
@@ -116,6 +117,15 @@ def make_dirs(project_name, sim_group, sim_name,
     return sim_dir, directories_found
 
 def generate_standard_names_dirs(simulation_dictionary, root_dir=None):
+
+    directories_found = True
+    if root_dir is not None:
+        if root_dir[-1] != '/':
+            root_dir += '/'
+        simulations_dir = root_dir + 'simulations/' 
+    else:
+        simulations_dir = 'simulations/'
+
     sd = simulation_dictionary
     tc_string = ''
     # if 'use_treecode' not in sd
@@ -127,14 +137,25 @@ def generate_standard_names_dirs(simulation_dictionary, root_dir=None):
     else:
         tc_string = '_dsum'
 
+    if 'adaptively_refine' in sd and sd['adaptively_refine']:
+        amr_string = 'max_height_%i'%sd['max_height']
+        amr_string += '_amr_epsilons'
+        for eps in sd['amr_epsilons']:
+            amr_string += '_%.03f'%(eps)
+    else:
+        amr_string = 'no_amr'
 #         sim_group = ''
 #         sim_name = ''
     tf = sd['dt'] * sd['num_steps']
-    sim_group = 'vth_%.3f_vstr_%.3f_amp_%.3f_normal_k_%.3f'%(sd['vth'], sd['vstr'], sd['amp'], sd['normalized_wavenumber'])
-    sim_name = 'height0_%i_vm_%.1f_g_eps_%.3f_dt_%.3f_tf_%.1f_diag_freq_%i'%(sd['initial_height'], sd['vmax'], sd['greens_epsilon'], sd['dt'], tf, sd['diag_period']) + tc_string
+    physical_parameters = 'vth_%.3f_vstr_%.3f_amp_%.3f_normal_k_%.3f_tf_%.1f'%(sd['vth'], sd['vstr'], sd['amp'], sd['normalized_wavenumber'], tf)
+    numerical_parameters = 'height0_%i_vm_%.1f_g_eps_%.3f_dt_%.3f_diag_freq_%i'%(sd['initial_height'], sd['vmax'], sd['greens_epsilon'], sd['dt'], sd['diag_period'])
+    amr_treecode_paramters = amr_string + tc_string
 #         sim_name = f'height0_{self.initial_height}_vm_{self.vmax:.1f}_g_eps_{self.greens_epsilon:.3f}_dt_{self.dt:.3f}_tf_{self.tf:.1f}_diag_freq_{self.diag_freq}' + tc_string
-
-    sim_dir, directories_found = make_dirs(sd['project_name'], sim_group, sim_name,root_dir=root_dir)
+    sim_dir = simulations_dir + sd['project_name'] + '/' + physical_parameters + '/'
+    sim_dir += numerical_parameters + '/' + amr_treecode_paramters + '/'
+    if not os.path.exists(sim_dir):
+        os.makedirs(sim_dir)
+    # sim_dir, directories_found = make_dirs(sd['project_name'], sim_group, sim_name,root_dir=root_dir)
     return sim_dir, directories_found
 # end generate_standard_names_dirs
 
@@ -577,10 +598,10 @@ def phase_movie(sim_dir, simulation_dictionary,do_show_panels,flim=(0,.3), simul
                 print(f'Movie is about {iter_num/(sd["num_steps"]+1)*100 :0.0f}% complete')
                 print_update_counter = 0
 #                 plt.savefig(mya.sim_dir + f'phase_space_image_t_{iter_num*dt}.svg')
-                plt.savefig(sim_dir_str + f'phase_space_image_t_{iter_num*sd["dt"]}.png')
+                plt.savefig(sim_dir_str + panel_string + f'phase_space_image_t_{iter_num*sd["dt"]}.png')
             print_update_counter += 1
 
-    plt.savefig(sim_dir_str + f'phase_space_image_t_{iter_num*sd["dt"]}.png')
+    plt.savefig(sim_dir_str + panel_string + f'phase_space_image_t_{iter_num*sd["dt"]}.png')
     print('phase space movie done!')
     t2 = time.time()
     print(f'phase space movie took {t2-t1:.3f}s')

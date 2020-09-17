@@ -262,11 +262,12 @@ int main(int argc, char** argv) {
         stop = high_resolution_clock::now();
         amr.add_time(step_time, duration_cast<duration<double>>(stop - start) );
 
-
         start = high_resolution_clock::now();
         amr.remesh();
         stop = high_resolution_clock::now();
         amr.add_time(remesh_time, duration_cast<duration<double>>(stop - start) );
+
+        
 
         if ((ii) % n_steps_diag == 0) {
 

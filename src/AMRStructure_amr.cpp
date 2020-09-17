@@ -409,12 +409,20 @@ void AMRStructure::generate_mesh(std::function<double (double,double)> f,
         int nv_points = 2*npanels_v + 1;
 
         auto start = high_resolution_clock::now();
+        // cout << "interpolating to grid " << endl;
         interpolate_to_initial_xvs(fs,xs,vs, nx_points, nv_points,verbose);
         auto stop = high_resolution_clock::now();
         add_time(interp_time, duration_cast<duration<double>>(stop - start) );
     }
 
     int num_panels_pre_refine = panels.size();
+
+// for debugging
+        cout << "test initial grid for refinement" << endl;
+        for (int ii = minimum_unrefined_index; ii < num_panels_pre_refine; ++ii) {
+            test_panel(ii, false);
+        }
+// end debug
 
     if (do_adaptive_refine) {
         cout << "test initial grid for refinement" << endl;
@@ -457,7 +465,7 @@ void AMRStructure::test_panel(int panel_ind, bool verbose) {
             if (min_f > fii) { min_f = fii; }
         }
         // finding trouble panels in amr
-        if (max_f - min_f >= 1.) {
+        if (max_f - min_f >= 0.8) {
             cout << "interpolation trouble at panel " << panel_ind << endl;
             cout << "max f " << max_f << ", min f" << min_f << ", difference= " << max_f - min_f << endl;
             for (int ii = 0; ii < 9; ++ii) {
@@ -585,19 +593,20 @@ void AMRStructure::remesh() {
 
     auto start = high_resolution_clock::now();
     old_panels = std::vector<Panel> (); old_panels.reserve(panels.size() );
-    old_xs = std::vector<double> (); old_xs.reserve(xs.size());
-    old_vs = std::vector<double> (); old_vs.reserve(xs.size());
-    old_fs = std::vector<double> (); old_fs.reserve(xs.size());
+    old_xs = std::vector<double> (xs); //old_xs.reserve(xs.size());
+    old_vs = std::vector<double> (vs); //old_vs.reserve(xs.size());
+    old_fs = std::vector<double> (fs); //old_fs.reserve(xs.size());
 
 
     for (const auto& panel : panels) {
         old_panels.push_back(Panel (panel));
     }
-    for (int ii = 0; ii < xs.size(); ++ii ) {
-        old_xs.push_back(xs[ii]);
-        old_vs.push_back(vs[ii]);
-        old_fs.push_back(fs[ii]);
-    }
+    
+    // for (int ii = 0; ii < xs.size(); ++ii ) {
+    //     old_xs.push_back(xs[ii]);
+    //     old_vs.push_back(vs[ii]);
+    //     old_fs.push_back(fs[ii]);
+    // }
 
     auto stop = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>(stop - start);
