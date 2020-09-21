@@ -508,13 +508,13 @@ void AMRStructure::interpolate_to_initial_xvs(
         cout << "panel search" << endl;
     }
 #endif
-// #pragma omp parallel
+#pragma omp parallel
 {
     // int num_threads = omp_get_num_threads();
     // if (omp_get_thread_num() == 0) {
     //     cout << "Number of threads from calc_E: " << num_threads << endl;
     // }
-    // #pragma omp for
+    #pragma omp for
     for (int ii = 0; ii < nv; ++ii) {
         int point_ind = ii * nv;
         int leaf_ind_c = first_column_leaf_inds[ii];
