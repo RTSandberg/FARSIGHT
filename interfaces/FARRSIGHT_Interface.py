@@ -13,6 +13,13 @@ plot_phase_space :
 phase_movie :
 logf_movie :
 sim_diagnostics_sample :
+
+Dependencies
+---
+standard Python distribution (i.e. through Anaconda)
+
+ffmpeg for movie writing
+
 """
 
 import json # dump, load
