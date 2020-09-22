@@ -412,7 +412,7 @@ void AMRStructure::interpolate_to_initial_xvs(
 
     auto start = high_resolution_clock::now();
     // verbose = true;
-#ifndef DEBUG
+#ifdef DEBUG
     cout << "shifting " << endl;
 #endif
     std::vector<double> shifted_xs(xs.size() );
@@ -431,7 +431,7 @@ void AMRStructure::interpolate_to_initial_xvs(
     // have to sort points:
     start = high_resolution_clock::now();
 
-#ifndef DEBUG
+#ifdef DEBUG
     cout << " sorting " << endl;
 #endif
     std::vector<int> sort_indices(xs.size());
@@ -482,7 +482,7 @@ void AMRStructure::interpolate_to_initial_xvs(
     int leaf_ind = find_leaf_containing_xv_recursively(sortxs[0], sortvs[0], 0, verbose);
     std::vector<int> first_column_leaf_inds(nv);
 
-#ifndef DEBUG
+#ifdef DEBUG
     if (verbose) {
         std::cout << "nx x nv= " << nx << " x " << nv << endl;
         cout << "xs size: " << xs.size() << endl; 
@@ -503,7 +503,7 @@ void AMRStructure::interpolate_to_initial_xvs(
 
         // cout << "point " << sort_indices[point_ind] << " in panel " << leaf_ind << " (sorted ind " << point_ind << ")" << endl;
     }
-#ifndef DEBUG
+#ifdef DEBUG
     if (verbose) {
         cout << "panel search" << endl;
     }

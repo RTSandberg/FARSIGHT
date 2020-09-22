@@ -455,7 +455,7 @@ void AMRStructure::test_panel(int panel_ind, bool verbose) {
         panel_fs[ii] = fs[panel_it->point_inds[ii]];
     }
     // std::vector<bool> criteria(amr_epsilons.size(), true);
-    bool refine_criteria_met = true;
+    bool refine_criteria_met = false;
     if (amr_epsilons.size() > 0) {
         double max_f = panel_fs[0];
         double min_f = panel_fs[0];
@@ -474,9 +474,26 @@ void AMRStructure::test_panel(int panel_ind, bool verbose) {
             }
             cout << endl;
         }
-        refine_criteria_met = refine_criteria_met && (max_f - min_f > amr_epsilons[0]);
+        #ifdef DEBUG
+        cout << "panel fs: " << endl;
+        for (int ii = 0; ii < 9; ii++) {
+            cout << panel_fs[ii] << " ";
+        }
+        cout << "max_f " << max_f << ", min f " << min_f << endl;
+        #endif
+        refine_criteria_met = refine_criteria_met || (max_f - min_f > amr_epsilons[0]);
+
+
+        if (amr_epsilons.size() > 1) {
+            refine_criteria_met = refine_criteria_met || (max_f - min_f) / panel_fs[4] > amr_epsilons[1];
+        }
+
+        if (amr_epsilons.size() > 2) {
+            refine_criteria_met = refine_criteria_met || max_f / min_f > amr_epsilons[2];
+        }
+
     }
-    if (amr_epsilons.size() > 1) {
+    if (amr_epsilons.size() > 3) {
         int i0, i3;
         i0 = panel_it->point_inds[0];
         i3 = panel_it->point_inds[3];
@@ -489,9 +506,14 @@ void AMRStructure::test_panel(int panel_ind, bool verbose) {
         for (int ii = 1; ii < 6; ++ii) {
             if (max_dfdx < abs_dfdxs[ii]) { max_dfdx = abs_dfdxs[ii];}
         }
-        refine_criteria_met = refine_criteria_met && (max_dfdx > amr_epsilons[1]);
+#ifdef DEBUG
+    cout << endl;
+    cout << "dx " << dx << endl;;
+    cout << "max_dfdx at panel " << panel_ind << " is " << max_dfdx << endl;
+#endif
+        refine_criteria_met = refine_criteria_met || (max_dfdx > amr_epsilons[3]);
     }
-    if (amr_epsilons.size() > 2) {
+    if (amr_epsilons.size() > 4) {
         int i0, i1;
         i0 = panel_it->point_inds[0];
         i1 = panel_it->point_inds[1];
@@ -506,7 +528,11 @@ void AMRStructure::test_panel(int panel_ind, bool verbose) {
         for (int ii = 1; ii < 6; ++ii) {
             if (max_dfdv < abs_dfdvs[ii]) { max_dfdv = abs_dfdvs[ii];}
         }
-        refine_criteria_met = refine_criteria_met && (max_dfdv > amr_epsilons[2]);
+#ifdef DEBUG
+    cout << "dv " << dv << endl;
+    cout << "max_dfdv at panel " << panel_ind << " is " << max_dfdv << endl;
+#endif
+        refine_criteria_met = refine_criteria_met || (max_dfdv > amr_epsilons[4]);
     }
     // criteria[0] = (max_f - min_f > 100);
     // criteria[1] = (max_dfdx > 100);

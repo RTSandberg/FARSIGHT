@@ -2,3 +2,5 @@
 build
 inc_eigen/
 *.pyc
+CMakeCache.txt
+cmake.check_cache
