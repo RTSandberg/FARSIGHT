@@ -832,6 +832,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None):
     total_entropy = np.zeros_like(diag_times)
     total_negative_area = np.zeros_like(diag_times)
     num_negative = np.zeros_like(diag_times)
+    num_points = np.zeros_like(diag_times)
     frac_negative = np.zeros_like(diag_times) 
 
     l1f = np.zeros_like(diag_times)
@@ -851,6 +852,8 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None):
         panel_point_inds = np.fromfile(output_dir + f'panels/leaf_point_inds_{iter_num}',dtype='int32')
         pinds = np.reshape(panel_point_inds, (int(panel_point_inds.size/9),9))
         
+        num_points[ii] = xs.size
+
         total_charge[ii] = np.sum(qws)
         total_momentum[ii] = 1/qm * np.dot(vs, qws)
         total_kinetic[ii] = 1/qm * np.dot(vs **2, qws)
@@ -928,6 +931,22 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None):
     plt.plot(diag_times, frac_negative)
     plt.grid()
     plt.savefig(sim_dir_str + 'frac_negatives.png')
+    plt.close()
+    #---------------------------------
+
+    plt.figure()
+    plt.plot(diag_times,num_points,'.',label='number of points')
+    n_diags = sd['num_steps']+1
+    initial_nx = 2**(sd['initial_height']+1) + 1
+    max_nx = 2**(sd['max_height']+1) + 1
+    plt.plot(diag_times, initial_nx**2 * np.ones_like(num_points),label=r'$%i^2$ points'%initial_nx)
+    plt.plot(diag_times, max_nx**2 * np.ones_like(num_points),label=r'$%i^2$ points'%max_nx)
+    plt.grid()
+    plt.xlabel('t')
+    plt.title('number of points in simulation')
+    plt.legend()
+
+    plt.savefig(sim_dir + 'num_points.png')
     plt.close()
     #---------------------------------
 
