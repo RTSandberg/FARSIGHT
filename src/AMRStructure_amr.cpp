@@ -439,19 +439,19 @@ void AMRStructure::generate_mesh(std::function<double (double,double)> f,
     int num_panels_pre_refine = panels.size();
 
 // for debugging
-        cout << "test initial grid for refinement" << endl;
-        for (int ii = minimum_unrefined_index; ii < num_panels_pre_refine; ++ii) {
-            test_panel(ii, false);
-        }
+        // cout << "test initial grid for refinement" << endl;
+        // for (int ii = minimum_unrefined_index; ii < num_panels_pre_refine; ++ii) {
+        //     test_panel(ii, false);
+        // }
 // end debug
 
     if (do_adaptive_refine) {
-        cout << "test initial grid for refinement" << endl;
+        // cout << "test initial grid for refinement" << endl;
         for (int ii = minimum_unrefined_index; ii < num_panels_pre_refine; ++ii) {
             test_panel(ii, false);
         }
         while (need_further_refinement) {
-            cout << "making additional refinement passes" << endl;
+            // cout << "making additional refinement passes" << endl;
             need_further_refinement = false;
             refine_panels(f, true);
         }

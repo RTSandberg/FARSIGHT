@@ -1028,6 +1028,7 @@ if __name__ == '__main__':
     parser.add_argument('--run',action='store_true', help='Run the simulation using deck in deck directory, store output in sim_dir')
     parser.add_argument('--gpu',dest='use_gpu', action='store_true', help='boolean switch for using gpu')
     parser.add_argument('--phase_movie','-pha',action='store_true', help='use this flag to make phase space movie from data in sim_dir')
+    parser.add_argument('--show_panels','-p',action='store_true', help='use this flag to show panels in phase space movie')
     parser.add_argument('--logf_movie','-log',action='store_true', help='use this flag to make log f movie')
     parser.add_argument('--plot_diagnostics','-pd',action='store_true',help='use this flag to plot diagnostics')
     args = parser.parse_args()
@@ -1102,6 +1103,9 @@ if __name__ == '__main__':
             flim = (0,0.8)
         do_show_panels = False
         phase_movie(sim_dir, simulation_dictionary, do_show_panels, flim=flim, can_do_movie=can_do_movie)
+        if args.show_panels:
+            do_show_panels = True
+            phase_movie(sim_dir, simulation_dictionary, do_show_panels, flim=flim, can_do_movie=can_do_movie)
 
     if args.logf_movie:
         logf_movie(sim_dir, simulation_dictionary, can_do_movie=can_do_movie)

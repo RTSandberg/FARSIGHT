@@ -170,7 +170,7 @@ int main(int argc, char** argv) {
     cout << x_min << " <= x <= " << x_max << endl;
     cout << v_min << " <= v <= " << v_max << endl;
     switch (bcs) {
-        case (open) : cout << "Using open boundary conditions" << endl;
+        case (open_bcs) : cout << "Using open boundary conditions" << endl;
             break;
         default : // periodic
             cout << "Using periodic boundary conditions" << endl;
@@ -180,7 +180,7 @@ int main(int argc, char** argv) {
     cout << "height " << initial_height << endl;
     cout << "green's epsilon = " << greens_epsilon << endl;
     cout << "Taking " << num_steps << " steps with dt = " << dt << endl;
-    cout << "Remesh every " << n_steps_remesh << ", diagnostic dump every " << n_steps_diag << endl;
+    cout << "Remesh every " << n_steps_remesh << " step(s), diagnostic dump every " << n_steps_diag << " step(s)" << endl;
     cout << "use treecode flag " << use_treecode << endl;
     if (use_treecode > 0) { 
         if (0 <= beta && beta <= 1.0) {
