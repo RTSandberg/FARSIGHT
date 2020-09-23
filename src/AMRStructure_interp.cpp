@@ -1,16 +1,17 @@
 #include "AMRStructure.hpp"
 
+// #ifndef DEBUG
+// #define DEBUG
 
 int AMRStructure::find_leaf_containing_point_from_neighbor(double& tx, double& tv, int leaf_ind, std::set<int>& history, bool verbose) {
 
-    // trouble with interpolation and amr.  What?
-    // double px1 = 11.781, px2 = 8.84;
-    // double pv1 = -2.625, pv2 = -1.875, pv3 = -4.5;
-    
 
-    // if ( (fabs(tx) < 0.1 || fabs(tx -12.5664) < 0.1) && fabs(tv - 1.125) < 0.1 ) { verbose = true; }
-    // if (iter_num > 57 && (fabs(tx-12.5664) < 0.01 || fabs(tx) < 0.01) && fabs(tv) < 0.01) { verbose = true; }
-    // else {verbose = false; }
+    // trouble with interpolation and amr.  What?
+#ifdef DEBUG
+if (iter_num == 9) {
+    verbose = true;
+}
+#endif
     // verbose = true;
     // end trouble shooting verbosity change
 
@@ -150,7 +151,11 @@ int AMRStructure::find_leaf_containing_point_from_neighbor(double& tx, double& t
                                 cout << "shifting across boundary, now tx= " << tx << endl;
                             }
                         }
-                        if (panel->left_nbr_ind != -1) {
+                        if (panel->left_nbr_ind == -1) {
+#ifdef DEBUG
+cout << "panel left: " << panel_left_nbr_ind << endl;
+cout <<"length of panels_list " << old_panels.size() << endl;
+#endif
                             new_leaf_ind = old_panels[panel->parent_ind].left_nbr_ind;
                             if (verbose) {
                                 cout << "in parent left" << endl;
@@ -423,7 +428,7 @@ void AMRStructure::interpolate_to_initial_xvs(
     std::vector<double> shifted_xs(xs.size() );
     if (bcs == periodic_bcs) {
 #ifdef DEBUG
-        cout << "shifting " << endl;
+cout << "shifting " << endl;
 #endif
         shift_xs(shifted_xs, xs, vs);
         if (verbose) {
@@ -445,7 +450,7 @@ void AMRStructure::interpolate_to_initial_xvs(
     start = high_resolution_clock::now();
 
 #ifdef DEBUG
-    cout << " sorting " << endl;
+cout << " sorting " << endl;
 #endif
     std::vector<int> sort_indices(xs.size());
     for (int ii = 0; ii < xs.size(); ii++ ) { sort_indices[ii] = ii; }
@@ -493,14 +498,14 @@ void AMRStructure::interpolate_to_initial_xvs(
     std::vector<std::vector<int> > point_in_leaf_panels_by_inds(old_panels.size() );
 
     int leaf_ind = find_leaf_containing_xv_recursively(sortxs[0], sortvs[0], 0, verbose);
-    // std::vector<int> first_column_leaf_inds(nv);
+    std::vector<int> first_column_leaf_inds(nv);
     std::vector<int> first_column_ind_in_old_mesh(nv);
 
-#ifdef DEBUG
+#ifdef DEBUG 
+cout << "searching first column" << endl;
     if (verbose) {
         std::cout << "nx x nv= " << nx << " x " << nv << endl;
-        cout << "xs size: " << xs.size() << endl; 
-        cout << "searching first column" << endl;
+        cout << "xs size: " << xs.size() << endl;
     }
 #endif
 
@@ -511,11 +516,14 @@ void AMRStructure::interpolate_to_initial_xvs(
             history.emplace(leaf_ind);
             // cout << "testing point " << point_ind << ", x= " << sortxs[point_ind] << ", v= " << sortvs[point_ind] << endl;
             leaf_ind = find_leaf_containing_point_from_neighbor(sortxs[point_ind], sortvs[point_ind], leaf_ind, history, verbose);
-            // first_column_leaf_inds[ii] = leaf_ind;
+            first_column_leaf_inds[ii] = leaf_ind;
             // point_in_leaf_panels_by_inds[leaf_ind].push_back(point_ind);
             leaf_panel_of_points[point_ind] = leaf_ind;
             // cout << "point " << sort_indices[point_ind] << " in panel " << leaf_ind << " (sorted ind " << point_ind << ")" << endl;
         }
+#ifdef DEBUG
+cout << "made it through column" << endl;
+#endif
     } else { // open bcs
         for (int ii =0; ii < nv; ++ii) {
             int jj = 0;
@@ -534,9 +542,9 @@ void AMRStructure::interpolate_to_initial_xvs(
         }    
     }
 #ifdef DEBUG
-    if (verbose) {
+    // if (verbose) {
         cout << "panel search" << endl;
-    }
+    // }
 #endif
 #pragma omp parallel
 {
@@ -593,7 +601,9 @@ void AMRStructure::interpolate_to_initial_xvs(
     auto search_stop = high_resolution_clock::now();
     add_time(search_time, duration_cast<duration<double>>(search_stop - search_start) );
     
-    cout << "eval interpolant" << endl;
+#ifdef DEBUG
+cout << "eval interpolant" << endl;
+#endif
     start = high_resolution_clock::now();
     for (int panel_ind = 0; panel_ind < old_panels.size(); panel_ind++) {
         if (point_in_leaf_panels_by_inds[panel_ind].size() > 0) {
