@@ -43,8 +43,8 @@ extern "C" {
 #include "FieldStructure.hpp"
 
 
-
-enum Quadrature {simpsons, trap};
+enum BoundaryConditions {periodic, open, last_bc};
+enum Quadrature {simpsons, trap, last_quad};
 enum ProfileTypes {sim_time, step_time, field_time, 
                 remesh_time, interp_time, search_time, 
                 eval_time, file_time, last_time};
@@ -55,6 +55,7 @@ struct AMRStructure {
     double Lx, Lv;
     double x_min, x_max;
     double v_min, v_max;
+    BoundaryConditions bcs;
 
     // species parameters
     double q, qm;
@@ -122,12 +123,14 @@ struct AMRStructure {
         AMRStructure(std::string sim_dir, distribution* f0, //std::function<double (double,double)>& f0, 
                 int initial_height, int max_height,
                 double x_min, double x_max, double v_min, double v_max, 
+                BoundaryConditions bcs,
                 ElectricField* calculate_e, int num_steps, double dt,
                 bool do_adaptively_refine, std::vector<double>& amr_epsilons);
         AMRStructure(std::string sim_dir, distribution* f0, //std::function<double (double,double)>& f0, 
                 double q, double m, 
                 int initial_height, int max_height, 
                 double x_min, double x_max, double v_min, double v_max, 
+                BoundaryConditions bcs,
                 ElectricField* calculate_e, Quadrature quad, int num_steps, double dt, 
                 bool do_adaptively_refine, std::vector<double>& amr_epsilons);
 

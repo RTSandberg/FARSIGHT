@@ -46,6 +46,9 @@ from matplotlib.patches import Rectangle, Polygon
 plt.rcParams.update({'font.size': 14})
 
 from enum import IntEnum
+class BoundaryConditions(IntEnum):
+    PERIODIC = 0
+    OPEN = 1
 class SimType(IntEnum):
     WEAK_LD = 1
     STRONG_LD = 2
@@ -134,6 +137,11 @@ def generate_standard_names_dirs(simulation_dictionary, root_dir=None):
         simulations_dir = 'simulations/'
 
     sd = simulation_dictionary
+    bcs_string = BoundaryConditions(0).name
+    if 'bcs' in sd:
+        bcs_string = sd['bcs'].name
+    bcs_string += '_bcs'
+        
     tc_string = ''
     # if 'use_treecode' not in sd
     if 'use_treecode' in sd and sd['use_treecode']:
@@ -154,7 +162,7 @@ def generate_standard_names_dirs(simulation_dictionary, root_dir=None):
 #         sim_group = ''
 #         sim_name = ''
     tf = sd['dt'] * sd['num_steps']
-    physical_parameters = 'vth_%.3f_vstr_%.3f_amp_%.3f_normal_k_%.3f_tf_%.1f'%(sd['vth'], sd['vstr'], sd['amp'], sd['normalized_wavenumber'], tf)
+    physical_parameters = bcs_string + '_vth_%.3f_vstr_%.3f_amp_%.3f_normal_k_%.3f_tf_%.1f'%(sd['vth'], sd['vstr'], sd['amp'], sd['normalized_wavenumber'], tf)
     numerical_parameters = 'height0_%i_vm_%.1f_g_eps_%.3f_dt_%.3f_diag_freq_%i'%(sd['initial_height'], sd['vmax'], sd['greens_epsilon'], sd['dt'], sd['diag_period'])
     amr_treecode_paramters = amr_string + tc_string
 #         sim_name = f'height0_{self.initial_height}_vm_{self.vmax:.1f}_g_eps_{self.greens_epsilon:.3f}_dt_{self.dt:.3f}_tf_{self.tf:.1f}_diag_freq_{self.diag_freq}' + tc_string
@@ -219,6 +227,7 @@ def make_deck(deck_dir = None, deck_name = None,
         {'project_name':'template',\
         'xmin' : 0.0, 'xmax' : 4*np.pi,\
         'vmin' : -6.0, 'vmax' : 6.0,\
+        'bcs' : BoundaryConditions.PERIODIC.value,\
         'sim_type' : 2,\
         'normalized_wavenumber':1.0,\
         'amp':0.5, 'vth' : 1.0, 'vstr':0.0,\

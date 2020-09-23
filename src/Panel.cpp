@@ -14,7 +14,7 @@
 // Constructors
 Panel::Panel() 
     : panel_ind(0), level(0), parent_ind(-1), which_child(-1),
-      left_nbr_ind(0), right_nbr_ind(0), top_nbr_ind(0), bottom_nbr_ind(0),
+      left_nbr_ind(0), right_nbr_ind(0), top_nbr_ind(-2), bottom_nbr_ind(-2),
       is_left_bdry(false), is_right_bdry(false),
       needs_refinement(false), is_refined(false)
 {

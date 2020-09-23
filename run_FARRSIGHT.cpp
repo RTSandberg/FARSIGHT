@@ -80,6 +80,13 @@ int main(int argc, char** argv) {
     std::string project_name = deck.get<std::string>("project_name", "no_name_found");
     double x_min = deck.get<double>("xmin", 0.0), x_max = deck.get<double>("xmax", 0.0);
     double v_min = deck.get<double>("vmin", -1.0), v_max = deck.get<double>("vmax",1.0);
+    int bcs_int = deck.get<int>("bcs",0);
+    if (bcs_int < 0 || bcs_int >= last_bc) {
+        cout << "Invalid boundary condition provided in input deck. Valid BCs are: " << endl;
+        cout << "0: periodic, 1: open" << endl;
+        return 1;
+    }
+    BoundaryConditions bcs = static_cast<BoundaryConditions> (bcs_int);
 
     double Lx = x_max - x_min;
     double kx = 2.0 * M_PI / Lx * deck.get<double>("normalized_wavenumber",1.0);
@@ -162,6 +169,13 @@ int main(int argc, char** argv) {
     cout << "deck found in: " << input_deck << endl;
     cout << x_min << " <= x <= " << x_max << endl;
     cout << v_min << " <= v <= " << v_max << endl;
+    switch (bcs) {
+        case (open) : cout << "Using open boundary conditions" << endl;
+            break;
+        default : // periodic
+            cout << "Using periodic boundary conditions" << endl;
+            break;
+    }
     cout << "k=" << kx << ", amp = " << amp << ", vth = " << vth << ", vstr = " << vstr <<  endl;
     cout << "height " << initial_height << endl;
     cout << "green's epsilon = " << greens_epsilon << endl;
@@ -192,7 +206,7 @@ int main(int argc, char** argv) {
 
     AMRStructure amr{sim_dir, f0, 
                 initial_height, max_height,
-                x_min, x_max, v_min, v_max, 
+                x_min, x_max, v_min, v_max, bcs,
                 calculate_e, num_steps, dt,
                 do_adaptively_refine, amr_epsilons};
                 

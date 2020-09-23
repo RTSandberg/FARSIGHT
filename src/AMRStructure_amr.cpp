@@ -47,24 +47,31 @@ int AMRStructure::create_prerefined_mesh() {
     //   9   12[1]   16   19[3] 23 (9 by pbcs)
     
     //   0   11     3    18     6 (0 by periodic bcs)
-
-    panels.push_back(Panel{});
-    panels[0].is_left_bdry = true;
-    panels[0].is_right_bdry = true;
-    panels.push_back(Panel{1, 1, 0, 0, 3, 2, 3, -2});
-    panels[1].is_left_bdry = true;
+    if (bcs == periodic) {
+        panels.push_back(Panel{});
+        panels[0].is_left_bdry = true;
+        panels[0].is_right_bdry = true;
+        panels.push_back(Panel{1, 1, 0, 0, 3, 2, 3, -2});
+        panels[1].is_left_bdry = true;
+        panels.push_back(Panel{2, 1, 0, 1, 4, -2, 4, 1});
+        panels[2].is_left_bdry = true;
+        panels.push_back(Panel{3, 1, 0, 2, 1, 4, 1, -2});
+        panels[3].is_right_bdry = true;
+        panels.push_back(Panel{4, 1, 0, 3, 2,-2,2,3});
+        panels[4].is_right_bdry = true;
+    } else if (bcs == open) {
+        panels.push_back(Panel{0, 0, -1, -1, -2, -2, -2, -2});
+        panels.push_back(Panel{1, 1, 0, 0, -2, 2, 3, -2});
+        panels.push_back(Panel{2, 1, 0, 1, -2, -2, 4, 1});
+        panels.push_back(Panel{3, 1, 0, 2, 1, 4, -2, -2});
+        panels.push_back(Panel{4, 1, 0, 3, 2,-2,-2,3});
+    }
     panels[1].set_point_inds(0,9,1,11,12,13,3,16,4);
     panels[1].needs_refinement = true;
-    panels.push_back(Panel{2, 1, 0, 1, 4, -2, 4, 1});
-    panels[2].is_left_bdry = true;
     panels[2].set_point_inds(1,10,2,13,14,15,4,17,5);
     panels[2].needs_refinement = true;
-    panels.push_back(Panel{3, 1, 0, 2, 1, 4, 1, -2});
-    panels[3].is_right_bdry = true;
     panels[3].set_point_inds(3,16,4,18,19,20,6,23,7);
     panels[3].needs_refinement = true;
-    panels.push_back(Panel{4, 1, 0, 3, 2,-2,2,3});
-    panels[4].is_right_bdry = true;
     panels[4].set_point_inds(4,17,5,20,21,22,7,24,8);
     panels[4].needs_refinement = true;
 
@@ -147,7 +154,14 @@ void AMRStructure::refine_panels(std::function<double (double,double)> f, bool d
 
             Panel* panel_parent;
             // check left neighbor
-            if (panel->left_nbr_ind == -1) {
+            if (panel->left_nbr_ind == -2) {
+                child_0_left_nbr_ind = -2;
+                child_1_left_nbr_ind = -2;
+                point_9_ind = new_vert_ind++;
+                point_10_ind = new_vert_ind++;
+                new_xs.push_back(subpanel_xs[0]); new_xs.push_back(subpanel_xs[0]);
+                new_vs.push_back(subpanel_vs[1]); new_vs.push_back(subpanel_vs[3]);
+            } else if (panel->left_nbr_ind == -1) {
                 panel_parent = &(panels[panel->parent_ind]);
                 Panel* parent_left = &(panels[panel_parent->left_nbr_ind]);
                 if (!parent_left->is_refined) {
@@ -175,7 +189,7 @@ void AMRStructure::refine_panels(std::function<double (double,double)> f, bool d
                     child_1_left_nbr_ind = panel_left->child_inds_start + 3;
                     Panel* child_1_left_nbr = &(panels[child_1_left_nbr_ind]);
                     child_1_left_nbr->right_nbr_ind = num_new_panels + 1;
-                    if (panel->is_left_bdry) {
+                    if (panel->is_left_bdry && bcs==periodic) {
                         point_9_ind = new_vert_ind++;
                         point_10_ind = new_vert_ind++;
                         new_xs.push_back(subpanel_xs[0]); new_xs.push_back(subpanel_xs[0]);
@@ -269,7 +283,14 @@ void AMRStructure::refine_panels(std::function<double (double,double)> f, bool d
             }
 
             // check right neighbor
-            if (panel->right_nbr_ind == -1) {
+            if (panel->right_nbr_ind == -2) {
+                child_2_right_nbr_ind = -2;
+                child_3_right_nbr_ind = -2;
+                point_23_ind = new_vert_ind++;
+                point_24_ind = new_vert_ind++;
+                new_xs.push_back(subpanel_xs[4]); new_xs.push_back(subpanel_xs[4]);
+                new_vs.push_back(subpanel_vs[1]); new_vs.push_back(subpanel_vs[3]);
+            } else if (panel->right_nbr_ind == -1) {
                 panel_parent = &(panels[panel->parent_ind]);
                 Panel* parent_right = &(panels[panel_parent->right_nbr_ind]);
                 if (!parent_right->is_refined ) {
@@ -296,7 +317,7 @@ void AMRStructure::refine_panels(std::function<double (double,double)> f, bool d
                     Panel* child_3_right_nbr = &(panels[child_3_right_nbr_ind]);
                     child_3_right_nbr->left_nbr_ind = num_new_panels + 3;
 
-                    if (panel->is_right_bdry) {
+                    if (panel->is_right_bdry and bcs==periodic) {
                         point_23_ind = new_vert_ind++;
                         point_24_ind = new_vert_ind++;
                         new_xs.push_back(subpanel_xs[4]); new_xs.push_back(subpanel_xs[4]);
