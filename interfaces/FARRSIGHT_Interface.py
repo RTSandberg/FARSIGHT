@@ -897,11 +897,11 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None):
     # if FS.simtype is SimType.STRONG_LD:
         g_strong1 = .2920
         g_strong2 = .0815
-        damping1_ind = 5
-        damping1_times = diag_times[:25]
-        grow1_start_ind = 28
-        grow1_times = diag_times[grow1_start_ind:90]
-        grow1_ind = 19
+        damping1_ind = int(0.5/dt * 5)
+        damping1_times = diag_times[:int(0.5/dt * 25)]
+        grow1_start_ind = int(0.5/dt * 28)
+        grow1_times = diag_times[grow1_start_ind:int(0.5/dt * 90)]
+        grow1_ind = int(0.5/dt * 19)
         grow1_ind_e = grow1_start_ind + grow1_ind
         plt.semilogy(damping1_times,l2e[damping1_ind]*np.exp(- g_strong1 * (damping1_times - damping1_times[damping1_ind])),'-.',label=r'$\sim e^{- %.05f t}$'%g_strong1)
         plt.semilogy(grow1_times,l2e[grow1_ind_e]*np.exp(g_strong2*(grow1_times-grow1_times[grow1_ind])),'-.k')
