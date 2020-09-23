@@ -32,13 +32,13 @@ int AMRStructure::find_leaf_containing_point_from_neighbor(double& tx, double& t
             cout << "(x,v)_tr = (" << x_tr << ", " << v_tr << ")" << endl;
         }
         // need to correct periodic distance
-        if (tx - x_mid >= Lx/2 && bcs == periodic) { 
+        if (tx - x_mid >= Lx/2 && bcs == periodic_bcs) { 
             tx -= Lx; 
             if (verbose) {
                 cout << "shifting across boundary, tx= " << tx << endl;
             }
         }
-        if (tx - x_mid < -Lx/2 && bcs == periodic) { 
+        if (tx - x_mid < -Lx/2 && bcs == periodic_bcs) { 
             tx += Lx; 
             if (verbose) {
                 cout << "shifting across boundary, tx= " << tx << endl;
@@ -62,7 +62,7 @@ int AMRStructure::find_leaf_containing_point_from_neighbor(double& tx, double& t
             cout << "ineq_left " << ineq_left << endl;
         }
         if (! ineq_right && panel->right_nbr_ind != -2) {
-            if (panel->is_right_bdry && bcs == periodic) { 
+            if (panel->is_right_bdry && bcs == periodic_bcs) { 
                 tx -= Lx; 
                 if (verbose) {
                     cout << "shifting across boundary, tx= " << tx << endl;
@@ -144,7 +144,7 @@ int AMRStructure::find_leaf_containing_point_from_neighbor(double& tx, double& t
                 } // end if checking bottom boundary 
                 else {
                     if (! ineq_left && panel->left_nbr_ind != -2) {
-                        if (panel->is_left_bdry && bcs == periodic) { 
+                        if (panel->is_left_bdry && bcs == periodic_bcs) { 
                             tx += Lx; 
                             if (verbose) {
                                 cout << "shifting across boundary, now tx= " << tx << endl;
@@ -257,7 +257,7 @@ int AMRStructure::find_leaf_containing_xv_recursively(double  &x, const double &
                 }
                 else {
                     subpanel_ind = child_1_left_nbr_ind;
-                    if (panel->is_left_bdry and bcs==periodic) {
+                    if (panel->is_left_bdry and bcs==periodic_bcs) {
                         x += Lx;
                     }
                 }
@@ -281,7 +281,7 @@ int AMRStructure::find_leaf_containing_xv_recursively(double  &x, const double &
                 }
                 else {
                     subpanel_ind = child_3_right_nbr_ind;
-                    if (panel->is_right_bdry && bcs==periodic) {
+                    if (panel->is_right_bdry && bcs==periodic_bcs) {
                         x -= Lx;
                     }
                 }
@@ -309,7 +309,7 @@ int AMRStructure::find_leaf_containing_xv_recursively(double  &x, const double &
                     }
                     else {
                         subpanel_ind = child_0_left_nbr_ind;
-                        if (panel->is_left_bdry && bcs==periodic) { x += Lx; }
+                        if (panel->is_left_bdry && bcs==periodic_bcs) { x += Lx; }
                     }
                 } else {
                     subpanel_ind = child_0_bottom_nbr_ind;
@@ -330,7 +330,7 @@ int AMRStructure::find_leaf_containing_xv_recursively(double  &x, const double &
                     }
                     else {
                         subpanel_ind = child_2_right_nbr_ind;
-                        if (panel->is_right_bdry && bcs == periodic) {
+                        if (panel->is_right_bdry && bcs == periodic_bcs) {
                             x -= Lx;
                         }
                     }
@@ -421,7 +421,7 @@ void AMRStructure::interpolate_to_initial_xvs(
     auto start = high_resolution_clock::now();
     // verbose = true;
     std::vector<double> shifted_xs(xs.size() );
-    if (bcs == periodic) {
+    if (bcs == periodic_bcs) {
 #ifdef DEBUG
         cout << "shifting " << endl;
 #endif
@@ -504,7 +504,7 @@ void AMRStructure::interpolate_to_initial_xvs(
     }
 #endif
 
-    if (bcs == periodic) {
+    if (bcs == periodic_bcs) {
         for (int ii =0; ii < nv; ++ii) {
             int point_ind = ii * nv;
             std::set<int> history;

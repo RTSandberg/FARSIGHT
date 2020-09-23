@@ -19,7 +19,7 @@ AMRStructure::AMRStructure(std::string sim_dir, distribution* f0, //std::functio
                            : f0(f0), q(-1.0), qm(-1.0), 
                            initial_height(initial_height) , height(initial_height), max_height(initial_height),
                            x_min(x_min), x_max(x_max),
-                           v_min(v_min), v_max(v_max), bcs(periodic),
+                           v_min(v_min), v_max(v_max), bcs(periodic_bcs),
                            iter_num(0), num_steps(num_steps), dt(dt),
                            calculate_e(calculate_e), quad(trap),
                            is_initial_mesh_set(false), minimum_unrefined_index(0), need_further_refinement(false),

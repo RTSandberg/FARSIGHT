@@ -47,7 +47,7 @@ int AMRStructure::create_prerefined_mesh() {
     //   9   12[1]   16   19[3] 23 (9 by pbcs)
     
     //   0   11     3    18     6 (0 by periodic bcs)
-    if (bcs == periodic) {
+    if (bcs == periodic_bcs) {
         panels.push_back(Panel{});
         panels[0].is_left_bdry = true;
         panels[0].is_right_bdry = true;
@@ -59,7 +59,7 @@ int AMRStructure::create_prerefined_mesh() {
         panels[3].is_right_bdry = true;
         panels.push_back(Panel{4, 1, 0, 3, 2,-2,2,3});
         panels[4].is_right_bdry = true;
-    } else if (bcs == open) {
+    } else if (bcs == open_bcs) {
         panels.push_back(Panel{0, 0, -1, -1, -2, -2, -2, -2});
         panels.push_back(Panel{1, 1, 0, 0, -2, 2, 3, -2});
         panels.push_back(Panel{2, 1, 0, 1, -2, -2, 4, 1});
@@ -189,7 +189,7 @@ void AMRStructure::refine_panels(std::function<double (double,double)> f, bool d
                     child_1_left_nbr_ind = panel_left->child_inds_start + 3;
                     Panel* child_1_left_nbr = &(panels[child_1_left_nbr_ind]);
                     child_1_left_nbr->right_nbr_ind = num_new_panels + 1;
-                    if (panel->is_left_bdry && bcs==periodic) {
+                    if (panel->is_left_bdry && bcs==periodic_bcs) {
                         point_9_ind = new_vert_ind++;
                         point_10_ind = new_vert_ind++;
                         new_xs.push_back(subpanel_xs[0]); new_xs.push_back(subpanel_xs[0]);
@@ -317,7 +317,7 @@ void AMRStructure::refine_panels(std::function<double (double,double)> f, bool d
                     Panel* child_3_right_nbr = &(panels[child_3_right_nbr_ind]);
                     child_3_right_nbr->left_nbr_ind = num_new_panels + 3;
 
-                    if (panel->is_right_bdry and bcs==periodic) {
+                    if (panel->is_right_bdry and bcs==periodic_bcs) {
                         point_23_ind = new_vert_ind++;
                         point_24_ind = new_vert_ind++;
                         new_xs.push_back(subpanel_xs[4]); new_xs.push_back(subpanel_xs[4]);
