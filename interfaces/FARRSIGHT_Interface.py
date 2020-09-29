@@ -8,6 +8,7 @@ make_dirs [DEPRECATED]:
 generate_standard_names_dirs :
 dict_to_deck :
 deck_to_dict :
+update_dictionary:
 run_sim :
 plot_phase_space :
 phase_movie :
@@ -54,6 +55,7 @@ class SimType(IntEnum):
     STRONG_LD = 2
     STRONG_TWO_STREAM = 3
     COLDER_TWO_STREAM = 4
+    FRIEDMAN_BEAM = 5
 
 sim_type_to_flim = {SimType.WEAK_LD : (0, 0.44),
                 SimType.STRONG_LD : (0, 0.47),
@@ -139,7 +141,7 @@ def generate_standard_names_dirs(simulation_dictionary, root_dir=None):
     sd = simulation_dictionary
     bcs_string = BoundaryConditions(0).name
     if 'bcs' in sd:
-        bcs_string = sd['bcs'].name
+        bcs_string = BoundaryConditions(sd['bcs']).name
     bcs_string += '_bcs'
         
     tc_string = ''
@@ -217,12 +219,17 @@ def deck_to_dict(deck_dir = None, deck_name = None):
     return simulation_dictionary
 # end deck_to_dict
 
-def make_deck(deck_dir = None, deck_name = None, 
+def update_dictionary(deck_dir = None, deck_name = None, 
                 from_existing = False, **sim_vars):
     simulation_dictionary = {}
     if from_existing:
-        simulation_dictionary = deck_to_dict(deck_dir, deck_name)
-    else:
+        try:
+            simulation_dictionary = deck_to_dict(deck_dir, deck_name)
+        except FileNotFoundError:
+            print('unable to find input deck ', deck_name, ', looking in ', deck_dir)
+            print('Creating default dictionary')
+            from_existing = False
+    if not from_existing:
         simulation_dictionary = \
         {'project_name':'template',\
         'xmin' : 0.0, 'xmax' : 4*np.pi,\
@@ -247,7 +254,9 @@ def make_deck(deck_dir = None, deck_name = None,
         'adaptively_refine' : 0,\
         'amr_epsilons':[]}
     simulation_dictionary.update(sim_vars)
-# end of make_deck
+    dict_to_deck(simulation_dictionary, deck_dir=deck_dir, deck_name=deck_name)
+    return simulation_dictionary
+# end of update_dictionary
 
 def run_sim(sim_dir=None, deck_dir = None, deck_name = None, force_deck_cwd = False, use_gpu = False):
     sim_dir_str = ''
@@ -1025,13 +1034,31 @@ if __name__ == '__main__':
     parser.add_argument('--standard_tree', '-std', action='store_true', help='Get simulation directory from deck in deck directory (default cwd) + root directory')
     parser.add_argument('--deck_dir_cwd', '-cwd', action='store_true', help='force use of deck found in current working directory')
     parser.add_argument('--deck_name', '-dn', help='Name of input_deck.  Default is "deck.json"', default='deck.json')
+    parser.add_argument('--make_deck', '-make', help='')
     parser.add_argument('--run',action='store_true', help='Run the simulation using deck in deck directory, store output in sim_dir')
     parser.add_argument('--gpu',dest='use_gpu', action='store_true', help='boolean switch for using gpu')
     parser.add_argument('--phase_movie','-pha',action='store_true', help='use this flag to make phase space movie from data in sim_dir')
     parser.add_argument('--show_panels','-p',action='store_true', help='use this flag to show panels in phase space movie')
     parser.add_argument('--logf_movie','-log',action='store_true', help='use this flag to make log f movie')
     parser.add_argument('--plot_diagnostics','-pd',action='store_true',help='use this flag to plot diagnostics')
+    parser.add_argument('dict_args',help='optional edits to deck, of the form name, value, type.' +\
+                        ' For example,  dt 0.5 float',nargs=argparse.REMAINDER)
     args = parser.parse_args()
+
+    # convert other arguments to a dictionary
+    num_dict_entries = len(args.dict_args)//3
+    wrong_num_entries = len(args.dict_args) % 3
+
+    dict_args = {}
+    for ii in range(num_dict_entries):
+        if (ii != num_dict_entries or wrong_num_entries == 0):
+            if (args.dict_args[ii+2] == 'int'):
+                dict_args[args.dict_args[ii]] = int(args.dict_args[ii+1])
+            elif (args.dict_args[ii+2] == 'float'):
+                dict_args[args.dict_args[ii]] = float(args.dict_args[ii+1])
+            else:
+                dict_args[args.dict_args[ii]] = args.dict_args[ii+1]
+    
 
     root_dir_str = ''
     if args.root_dir is not None:
@@ -1057,7 +1084,8 @@ if __name__ == '__main__':
         else:
             deck_dir_str += args.deck_name
         # get sim_dir from deck
-        simulation_dictionary = deck_to_dict(deck_dir = deck_dir, deck_name=args.deck_name)
+        # simulation_dictionary = deck_to_dict(deck_dir = deck_dir, deck_name=args.deck_name)
+        simulation_dictionary = update_dictionary(deck_dir=deck_dir, deck_name = args.deck_name, **dict_args)
         sim_dir_str, directories_found = generate_standard_names_dirs(simulation_dictionary, root_dir=args.root_dir)
         sim_dir = sim_dir_str
         shutil.copy2(deck_dir_str, sim_dir_str)
@@ -1086,7 +1114,8 @@ if __name__ == '__main__':
                 deck_dir = args.deck_dir
                 if args.deck_dir[-1] != '/':
                     deck_dir += '/'
-        simulation_dictionary = deck_to_dict(deck_dir = deck_dir, deck_name=args.deck_name)
+        # simulation_dictionary = deck_to_dict(deck_dir = deck_dir, deck_name=args.deck_name)
+        simulation_dictionary = update_dictionary(deck_dir=deck_dir, deck_name = args.deck_name, **dict_args)
         dictionaries_found = True
         # end not-from-deck option
     if args.run:

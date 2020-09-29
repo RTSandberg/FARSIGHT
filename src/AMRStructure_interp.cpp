@@ -1,7 +1,7 @@
 #include "AMRStructure.hpp"
 
 // #ifndef DEBUG
-// #define DEBUG
+#define DEBUG
 
 int AMRStructure::find_leaf_containing_point_from_neighbor(double& tx, double& tv, int leaf_ind, std::set<int>& history, bool verbose) {
 
@@ -153,7 +153,7 @@ if (iter_num == 9) {
                         }
                         if (panel->left_nbr_ind == -1) {
 #ifdef DEBUG
-cout << "panel left: " << panel_left_nbr_ind << endl;
+cout << "panel left: " << panel->left_nbr_ind << endl;
 cout <<"length of panels_list " << old_panels.size() << endl;
 #endif
                             new_leaf_ind = old_panels[panel->parent_ind].left_nbr_ind;
@@ -218,6 +218,8 @@ int AMRStructure::find_leaf_containing_xv_recursively(double  &x, const double &
 
     if (verbose) {
         cout << "In panel " << panel_ind << endl;
+        cout << *panel << endl;
+        cout << "testing (x,v)=(" << x << ", " << v << ")" << endl;
     }
     if (! panel->is_refined ) {
         leaf_ind = panel_ind;
@@ -450,7 +452,7 @@ cout << "shifting " << endl;
     start = high_resolution_clock::now();
 
 #ifdef DEBUG
-cout << " sorting " << endl;
+cout << "sorting " << endl;
 #endif
     std::vector<int> sort_indices(xs.size());
     for (int ii = 0; ii < xs.size(); ii++ ) { sort_indices[ii] = ii; }
@@ -472,6 +474,9 @@ cout << " sorting " << endl;
         // cout << "sort_indices.size " << sort_indices.size() << endl;
         // cout << "shifted_xs.size " << shifted_xs.size() << endl;
     }
+#ifdef DEBUG
+cout << "Done sorting" << endl;
+#endif
     std::vector<double> sortxs(shifted_xs.size()), sortvs(vs.size());
     for (int ii = 0; ii < xs.size(); ii++) {
         sortxs[ii] = shifted_xs[sort_indices[ii]];
@@ -497,7 +502,14 @@ cout << " sorting " << endl;
     std::vector<int> leaf_panel_of_points(xs.size() );
     std::vector<std::vector<int> > point_in_leaf_panels_by_inds(old_panels.size() );
 
+#ifdef DEBUG
+cout << "finding panel of first point" << endl;
+verbose=true;
+#endif
     int leaf_ind = find_leaf_containing_xv_recursively(sortxs[0], sortvs[0], 0, verbose);
+#ifdef DEBUG
+cout << "found first panel" << endl;
+#endif
     std::vector<int> first_column_leaf_inds(nv);
     std::vector<int> first_column_ind_in_old_mesh(nv);
 
@@ -521,9 +533,6 @@ cout << "searching first column" << endl;
             leaf_panel_of_points[point_ind] = leaf_ind;
             // cout << "point " << sort_indices[point_ind] << " in panel " << leaf_ind << " (sorted ind " << point_ind << ")" << endl;
         }
-#ifdef DEBUG
-cout << "made it through column" << endl;
-#endif
     } else { // open bcs
         for (int ii =0; ii < nv; ++ii) {
             int jj = 0;
@@ -531,6 +540,7 @@ cout << "made it through column" << endl;
             std::set<int> history;
             history.emplace(leaf_ind);
             int temp_leaf_ind = find_leaf_containing_point_from_neighbor(sortxs[point_ind], sortvs[point_ind], leaf_ind, history, verbose);
+            leaf_panel_of_points[point_ind] = temp_leaf_ind;
 
             while (temp_leaf_ind == 0 && jj < nx) {
                 jj++;
@@ -542,6 +552,16 @@ cout << "made it through column" << endl;
         }    
     }
 #ifdef DEBUG
+cout << "after first column" << endl;
+cout << "first column ind in old mesh" << endl;
+std::copy(first_column_ind_in_old_mesh.begin(), first_column_ind_in_old_mesh.end(),
+        std::ostream_iterator<int>(cout, " "));
+cout << endl;
+
+    cout << "leaf_panel_of_points " << endl;
+    for (int ii = 0; ii < xs.size(); ++ii) {
+        cout << "point (sorted ind) " << ii <<", unsorted ind " << sort_indices[ii] << ": (x,v)=(" << sortxs[ii] << ", " << sortvs[ii] << ") is in panel " << leaf_panel_of_points[ii] << endl;
+    }
     // if (verbose) {
         cout << "panel search" << endl;
     // }
@@ -575,10 +595,11 @@ cout << "made it through column" << endl;
         point_in_leaf_panels_by_inds[leaf_panel_of_points[ii]].push_back(ii);
     }
 
-    // cout << "leaf_panel_of_points " << endl;
-    // for (int ii = 0; ii < xs.size(); ++ii) {
-    //     cout << "point (sorted ind) " << ii <<", unsorted ind " << sort_indices[ii] << ": (x,v)=(" << sortxs[ii] << ", " << sortvs[ii] << ") is in panel " << leaf_panel_of_points[ii] << endl;
-    // }
+#ifdef DEBUG
+    cout << "leaf_panel_of_points " << endl;
+    for (int ii = 0; ii < xs.size(); ++ii) {
+        cout << "point (sorted ind) " << ii <<", unsorted ind " << sort_indices[ii] << ": (x,v)=(" << sortxs[ii] << ", " << sortvs[ii] << ") is in panel " << leaf_panel_of_points[ii] << endl;
+    }
 
     // cout << "point in leaf panels by inds " << endl;
     // for (auto ii = 0; ii < point_in_leaf_panels_by_inds.size(); ++ii) {
@@ -597,7 +618,7 @@ cout << "made it through column" << endl;
     // cout << "leaf_panel_of_points[498] = " << leaf_panel_of_points[498] << endl;
     // cout << "leaf_panel_of_points[sort_indicies[498]] = " << leaf_panel_of_points[sort_indices[498]] << endl;
 //
-
+#endif
     auto search_stop = high_resolution_clock::now();
     add_time(search_time, duration_cast<duration<double>>(search_stop - search_start) );
     

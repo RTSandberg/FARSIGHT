@@ -32,6 +32,16 @@ class E_MQ_DirectSum : public ElectricField {
         ~E_MQ_DirectSum();
 };
 
+class E_MQ_DirectSum_openbcs : public ElectricField {
+    public:
+        E_MQ_DirectSum_openbcs();
+        E_MQ_DirectSum_openbcs(double epsilon);
+        double epsilon;
+        void operator() (double* es, double* targets, int nt, 
+                        double* sources, double* q_ws, int ns);
+        ~E_MQ_DirectSum_openbcs();
+};
+
 class E_MQ_Treecode : public ElectricField {
     public:
         KERNEL kernel;

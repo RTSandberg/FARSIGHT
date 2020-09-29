@@ -28,6 +28,8 @@ namespace pt = boost::property_tree;
 #include "AMRStructure.hpp"
 #include "initial_distributions.hpp"
 
+#define DEBUG // for debugging purposes
+
 int main(int argc, char** argv) {
 
     int rank, numProcs;
@@ -96,6 +98,7 @@ int main(int argc, char** argv) {
     int sim_type = deck.get<int>("sim_type", 1);//atoi(argv[6]);
 
     distribution* f0;
+    double q = -1.0, m = 1.0;
 
     switch (sim_type)
     {
@@ -111,11 +114,19 @@ int main(int argc, char** argv) {
         case 4: // 'colder' two-stream
             f0 = new F0_colder_two_stream(vth, vstr, kx, amp);
             break;
+        case 5: // Friedman beam problem 
+        {
+            double Tstar = vth * vth;
+            f0 = new F0_Friedman_beam(amp, Tstar, x_max);
+            q = 1.0;
+        }
+            break;
         default:
             f0 = new F0_LD(vth, kx, amp);
             break;
     }
     
+    Quadrature quad = trap;
     int initial_height = deck.get<int>("initial_height",6);//atoi(argv[11]);//6; 
     int max_height = deck.get<int>("max_height", initial_height);
     double greens_epsilon = deck.get<double>("greens_epsilon",0.2);//atof(argv[12]);//0.2;
@@ -131,17 +142,26 @@ int main(int argc, char** argv) {
 
     ElectricField* calculate_e;
     if (use_treecode > 0) {
-        if (0 <= beta && beta <= 1.0) {
-            calculate_e = new E_MQ_Treecode(Lx, greens_epsilon, beta);
-        } else {
-            int verbosity = 0;
-            calculate_e = new E_MQ_Treecode(Lx, greens_epsilon, 
-                                            mac, degree, 
-                                            max_source, max_target, 
-                                            verbosity);
+        if (bcs==periodic_bcs) {
+            if (0 <= beta && beta <= 1.0) {
+                calculate_e = new E_MQ_Treecode(Lx, greens_epsilon, beta);
+            } else {
+                int verbosity = 0;
+                calculate_e = new E_MQ_Treecode(Lx, greens_epsilon, 
+                                                mac, degree, 
+                                                max_source, max_target, 
+                                                verbosity);
+            }
+        } else { // open_bcs
+            cout << "Open bcs not implemented for treecode yet." << endl;
+            return 1;
         }
     } else {
-        calculate_e = new E_MQ_DirectSum(Lx, greens_epsilon);
+        if (bcs==periodic_bcs) {
+            calculate_e = new E_MQ_DirectSum(Lx, greens_epsilon);
+        } else { //open bcs
+            calculate_e = new E_MQ_DirectSum_openbcs(greens_epsilon);
+        }
     }
 
     int num_steps = deck.get<int>("num_steps", 10);//atoi(argv[19]);//120;
@@ -204,13 +224,25 @@ int main(int argc, char** argv) {
     auto sim_start = high_resolution_clock::now();
 
 
-    AMRStructure amr{sim_dir, f0, 
+    AMRStructure amr{sim_dir, f0, q, m,
                 initial_height, max_height,
                 x_min, x_max, v_min, v_max, bcs,
-                calculate_e, num_steps, dt,
+                calculate_e, quad, num_steps, dt,
                 do_adaptively_refine, amr_epsilons};
                 
     // cout << amr << endl;
+#ifdef DEBUG
+cout << "================================" << endl;
+cout << "initial" << endl;
+cout << "xs: ";
+std::copy(amr.xs.begin(), amr.xs.end(), std::ostream_iterator<double>(cout, " "));
+cout << endl;
+cout << "--------------------------------" << endl;
+cout << "vs: ";
+std::copy(amr.vs.begin(), amr.vs.end(), std::ostream_iterator<double>(cout, " "));
+cout << endl;
+cout << "--------------------------------" << endl;
+#endif
 
 // ------ problem with tc!  
 /*
@@ -276,12 +308,55 @@ int main(int argc, char** argv) {
         stop = high_resolution_clock::now();
         amr.add_time(step_time, duration_cast<duration<double>>(stop - start) );
 
+#ifdef DEBUG
+cout << "================================" << endl;
+cout << "post step" << endl;
+cout << "xs: ";
+std::copy(amr.xs.begin(), amr.xs.end(), std::ostream_iterator<double>(cout, " "));
+cout << endl;
+cout << "--------------------------------" << endl;
+cout << "vs: ";
+std::copy(amr.vs.begin(), amr.vs.end(), std::ostream_iterator<double>(cout, " "));
+cout << endl;
+cout << "--------------------------------" << endl;
+
+cout << "es: ";
+std::copy(amr.es.begin(), amr.es.end(), std::ostream_iterator<double>(cout, " "));
+cout << endl;
+cout << "--------------------------------" << endl;
+cout << "fs: ";
+std::copy(amr.fs.begin(), amr.fs.end(), std::ostream_iterator<double>(cout, " "));
+cout << endl;
+cout << "--------------------------------" << endl;
+#endif
+
         start = high_resolution_clock::now();
         amr.remesh();
         stop = high_resolution_clock::now();
         amr.add_time(remesh_time, duration_cast<duration<double>>(stop - start) );
 
         
+#ifdef DEBUG
+cout << "================================" << endl;
+cout << "post remesh" << endl;
+cout << "xs: ";
+std::copy(amr.xs.begin(), amr.xs.end(), std::ostream_iterator<double>(cout, " "));
+cout << endl;
+cout << "--------------------------------" << endl;
+cout << "vs: ";
+std::copy(amr.vs.begin(), amr.vs.end(), std::ostream_iterator<double>(cout, " "));
+cout << endl;
+
+cout << "--------------------------------" << endl;
+cout << "es: ";
+std::copy(amr.es.begin(), amr.es.end(), std::ostream_iterator<double>(cout, " "));
+cout << endl;
+cout << "--------------------------------" << endl;
+cout << "fs: ";
+std::copy(amr.fs.begin(), amr.fs.end(), std::ostream_iterator<double>(cout, " "));
+cout << endl;
+cout << "--------------------------------" << endl;
+#endif
 
         if ((ii) % n_steps_diag == 0) {
 

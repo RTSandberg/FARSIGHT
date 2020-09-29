@@ -35,6 +35,34 @@ void E_MQ_DirectSum::operator() (double* es, double* targets, int nt,
     }
 }
 
+E_MQ_DirectSum_openbcs::E_MQ_DirectSum_openbcs() {}
+E_MQ_DirectSum_openbcs::E_MQ_DirectSum_openbcs(double epsilon) : epsilon(epsilon) {}
+E_MQ_DirectSum_openbcs::~E_MQ_DirectSum_openbcs() = default;
+
+void E_MQ_DirectSum_openbcs::operator() (double* es, double* targets, int nt, 
+                        double* sources, double* q_ws, int ns)
+{    
+    double eps_sq = epsilon * epsilon;
+
+#ifdef OPENACC_ENABLED
+#pragma acc parallel loop independent
+#else
+#pragma omp parallel for
+#endif
+    for (int ii = 0; ii < nt; ++ii) {
+        double xi = targets[ii];
+        double ei = 0.0;
+#ifdef OPENACC_ENABLED
+#pragma acc loop independent reduction(+:ei)
+#endif
+        for (int jj = 0; jj < ns; ++jj) {
+            double z = xi - sources[jj];
+            ei += q_ws[jj] * 0.5 * z / sqrt(z * z + eps_sq);
+        }
+        es[ii] = ei - xi;
+    }
+}
+
 E_MQ_Treecode::E_MQ_Treecode() {}
 E_MQ_Treecode::E_MQ_Treecode(double L, double epsilon, double beta) : 
     kernel(MQ), 

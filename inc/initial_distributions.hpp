@@ -58,4 +58,18 @@ class F0_colder_two_stream : public distribution {
         double get_amp();
 };
 
+class F0_Friedman_beam : public distribution {
+    double nhat, Tstar, xmax;
+    double k_beta_0, lambda_D, beta_b, gamma_b, x_convert_factor;
+    std::vector<double> xs, Ns;
+    F0_M maxwellian;
+    double Delta;
+    public:
+        F0_Friedman_beam();
+        F0_Friedman_beam(double nhat, double Tstar, double xmax);
+        double operator() (double x, double v);
+        void generate_Ns(double xmax);
+        double interpolate_N(double x);
+};
+
 #endif  /*  INITITIAL_DISTRIBUTIONS_HPP */

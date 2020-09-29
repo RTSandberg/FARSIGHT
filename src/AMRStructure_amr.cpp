@@ -10,7 +10,7 @@ int AMRStructure::create_prerefined_mesh() {
     double dv = (v_max - v_min) / 4;
     std::vector<double> xs_init, vs_init;
     for(int ii = 0; ii < 5; ++ii) {
-        xs_init.push_back(ii * dx);
+        xs_init.push_back(x_min + ii * dx);
         vs_init.push_back(v_min + ii * dv);
     }
     panels.clear();
@@ -61,6 +61,7 @@ int AMRStructure::create_prerefined_mesh() {
         panels[4].is_right_bdry = true;
     } else if (bcs == open_bcs) {
         panels.push_back(Panel{0, 0, -1, -1, -2, -2, -2, -2});
+        panels[0].set_point_inds(0,1,2,3,4,5,6,7,8);
         panels.push_back(Panel{1, 1, 0, 0, -2, 2, 3, -2});
         panels.push_back(Panel{2, 1, 0, 1, -2, -2, 4, 1});
         panels.push_back(Panel{3, 1, 0, 2, 1, 4, -2, -2});
