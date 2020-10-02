@@ -155,8 +155,8 @@ def generate_standard_names_dirs(simulation_dictionary, root_dir=None):
         tc_string = '_dsum'
 
     if 'adaptively_refine' in sd and sd['adaptively_refine']:
-        amr_string = 'max_height_%i'%sd['max_height']
-        amr_string += '_amr_epsilons'
+        amr_string = 'amr_max_height_%i'%sd['max_height']
+        amr_string += '_epsilons'
         for eps in sd['amr_epsilons']:
             amr_string += '_%.03f'%(eps)
     else:
