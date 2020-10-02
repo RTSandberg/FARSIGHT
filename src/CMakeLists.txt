@@ -33,6 +33,7 @@ if(ENABLE_GPU_BUILD)
                                                 MPI::MPI_CXX
                                                 OpenACC_CXX
                                                 $<$<CXX_COMPILER_ID:GNU>:m>)
+    target_compile_options(FieldObj_gpu PRIVATE -O0)
     target_include_directories(FieldObj_gpu PUBLIC ${INCLUDE_HEADERS})
 
 #    set(TRGT AMRObj_gpu)
