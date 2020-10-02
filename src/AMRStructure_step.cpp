@@ -88,7 +88,7 @@ void AMRStructure::step(bool get_4th_e) {
         start = high_resolution_clock::now();
         xtemp_cpy = xs;
         xtemp_cpy2 = xs;
-        (*calculate_e)(es.data(), xstemp_cpydata(), xs.size(),
+        (*calculate_e)(es.data(), xtemp_cpy.data(), xs.size(),
                         xtemp_cpy2.data(), q_ws.data(), xs.size());
         stop = high_resolution_clock::now();
         add_time(field_time, duration_cast<duration<double>>(stop - start) );
