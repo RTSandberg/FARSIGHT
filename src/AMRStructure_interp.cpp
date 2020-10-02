@@ -1,7 +1,7 @@
 #include "AMRStructure.hpp"
 
 // #ifndef DEBUG
-#define DEBUG
+// #define DEBUG
 
 int AMRStructure::find_leaf_containing_point_from_neighbor(double& tx, double& tv, int leaf_ind, std::set<int>& history, bool verbose) {
 

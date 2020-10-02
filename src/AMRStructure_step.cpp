@@ -33,8 +33,9 @@ void AMRStructure::step(bool get_4th_e) {
     auto start = high_resolution_clock::now();
     
     std::vector<double> xtemp_cpy (xtemp);
-    (*calculate_e)(a2.data(), xtemp.data(), a2.size(),
-                    xtemp_cpy.data(), q_ws.data(), xtemp.size());
+    std::vector<double> xtemp_cpy2 (xtemp);
+    (*calculate_e)(a2.data(), xtemp_cpy.data(), a2.size(),
+                    xtemp_cpy2.data(), q_ws.data(), xtemp.size());
     auto stop = high_resolution_clock::now();
     add_time(field_time, duration_cast<duration<double>>(stop - start) );
     for (int ii = 0; ii < N; ++ii) {
@@ -49,8 +50,9 @@ void AMRStructure::step(bool get_4th_e) {
     }
     start = high_resolution_clock::now();
     xtemp_cpy = xtemp;
-    (*calculate_e)(a3.data(), xtemp.data(), a3.size(),
-                    xtemp_cpy.data(), q_ws.data(), xtemp.size());
+    xtemp_cpy2 = xtemp;
+    (*calculate_e)(a3.data(), xtemp_cpy.data(), a3.size(),
+                    xtemp_cpy2.data(), q_ws.data(), xtemp.size());
     stop = high_resolution_clock::now();
     add_time(field_time, duration_cast<duration<double>>(stop - start) );
     for (int ii = 0; ii < N; ++ii) {
@@ -65,8 +67,9 @@ void AMRStructure::step(bool get_4th_e) {
     start = high_resolution_clock::now();
 
     xtemp_cpy = xtemp;
-    (*calculate_e)(a4.data(), xtemp.data(), a4.size(), 
-                    xtemp_cpy.data(), q_ws.data(), xtemp.size());
+    xtemp_cpy2 = xtemp;
+    (*calculate_e)(a4.data(), xtemp_cpy.data(), a4.size(), 
+                    xtemp_cpy2.data(), q_ws.data(), xtemp.size());
     stop = high_resolution_clock::now();
     add_time(field_time, duration_cast<duration<double>>(stop - start) );
 
@@ -84,8 +87,9 @@ void AMRStructure::step(bool get_4th_e) {
     if (get_4th_e) {
         start = high_resolution_clock::now();
         xtemp_cpy = xs;
-        (*calculate_e)(es.data(), xs.data(), xs.size(),
-                        xtemp_cpy.data(), q_ws.data(), xs.size());
+        xtemp_cpy2 = xs;
+        (*calculate_e)(es.data(), xstemp_cpydata(), xs.size(),
+                        xtemp_cpy2.data(), q_ws.data(), xs.size());
         stop = high_resolution_clock::now();
         add_time(field_time, duration_cast<duration<double>>(stop - start) );
     }

@@ -62,4 +62,14 @@ class E_MQ_Treecode : public ElectricField {
                         double* sources, double* q_ws, int ns);
         ~E_MQ_Treecode();
 };
+
+class E_MQ_Treecode_openbcs : public ElectricField {
+    public:
+        E_MQ_Treecode_openbcs();
+        E_MQ_Treecode_openbcs(double epsilon);
+        double epsilon;
+        void operator() (double* es, double* targets, int nt, 
+                        double* sources, double* q_ws, int ns);
+        ~E_MQ_Treecode_openbcs();
+};
 #endif /* FIELD_STRUCTURE_HPP */
