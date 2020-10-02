@@ -180,6 +180,7 @@ void E_MQ_Treecode::operator() (double* es, double* targets, int nt,
 E_MQ_Treecode::~E_MQ_Treecode() = default;
 
 // -------- open bc treecode ----------
+/*
 E_MQ_Treecode_openbcs::E_MQ_Treecode_openbcs() {}
 E_MQ_Treecode_openbcs::E_MQ_Treecode_openbcs(double L, double epsilon, double beta) : 
     kernel(MQ), 
@@ -282,7 +283,7 @@ void E_MQ_Treecode_openbcs::operator() (double* es, double* targets, int nt,
     }
     std::cout << std::endl;   
     */
-
+/*
     BaryTreeInterface(nt, ns, xT.data(), yT.data(), 
                     targets, qT.data(),
                     xS.data(), yS.data(), 
@@ -295,4 +296,4 @@ void E_MQ_Treecode_openbcs::operator() (double* es, double* targets, int nt,
 }
     
 E_MQ_Treecode_openbcs::~E_MQ_Treecode_openbcs() = default;
-
+*/
