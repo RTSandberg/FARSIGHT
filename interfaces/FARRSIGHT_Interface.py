@@ -220,7 +220,7 @@ def deck_to_dict(deck_dir = None, deck_name = None):
 # end deck_to_dict
 
 def update_dictionary(deck_dir = None, deck_name = None, 
-                from_existing = False, **sim_vars):
+                from_existing = True, **sim_vars):
     simulation_dictionary = {}
     if from_existing:
         try:
@@ -1070,25 +1070,25 @@ if __name__ == '__main__':
     dictionaries_found = False
     if args.standard_tree:
         deck_dir = None
-        deck_dir_str = 'deck.json'
+        deck_str = 'deck.json'
         if args.deck_dir is None or args.deck_dir_cwd:
-            deck_dir_str = ''
+            deck_str = ''
             deck_dir = None
         else:
-            deck_dir_str = args.deck_dir
+            deck_str = args.deck_dir
             if args.deck_dir[-1] != '/':
-                deck_dir_str += '/'
+                deck_str += '/'
             deck_dir = deck_dir_str
         if args.deck_name is None:
-            deck_dir_str += 'deck.json'
+            deck_str += 'deck.json'
         else:
-            deck_dir_str += args.deck_name
+            deck_str += args.deck_name
         # get sim_dir from deck
         # simulation_dictionary = deck_to_dict(deck_dir = deck_dir, deck_name=args.deck_name)
         simulation_dictionary = update_dictionary(deck_dir=deck_dir, deck_name = args.deck_name, **dict_args)
         sim_dir_str, directories_found = generate_standard_names_dirs(simulation_dictionary, root_dir=args.root_dir)
         sim_dir = sim_dir_str
-        shutil.copy2(deck_dir_str, sim_dir_str)
+        shutil.copy2(deck_str, sim_dir_str)
         # end standard tree from deck option
     else:
         sim_dir = None
