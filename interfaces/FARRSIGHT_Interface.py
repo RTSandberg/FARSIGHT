@@ -1041,7 +1041,7 @@ if __name__ == '__main__':
     parser.add_argument('--show_panels','-p',action='store_true', help='use this flag to show panels in phase space movie')
     parser.add_argument('--logf_movie','-log',action='store_true', help='use this flag to make log f movie')
     parser.add_argument('--plot_diagnostics','-pd',action='store_true',help='use this flag to plot diagnostics')
-    parser.add_argument('dict_args',help='optional edits to deck, of the form name, value, type.' +\
+    parser.add_argument('dict_args',help='optional edits to deck, of the form $ python FARRSIGHT_Interface.py ...args... name value type.' +\
                         ' For example,  dt 0.5 float',nargs=argparse.REMAINDER)
     args = parser.parse_args()
 
