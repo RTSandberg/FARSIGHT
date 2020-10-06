@@ -142,19 +142,17 @@ int main(int argc, char** argv) {
 
     ElectricField* calculate_e;
     if (use_treecode > 0) {
-        if (bcs==periodic_bcs) {
-            if (0 <= beta && beta <= 1.0) {
-                calculate_e = new E_MQ_Treecode(Lx, greens_epsilon, beta);
-            } else {
-                int verbosity = 0;
-                calculate_e = new E_MQ_Treecode(Lx, greens_epsilon, 
-                                                mac, degree, 
-                                                max_source, max_target, 
-                                                verbosity);
-            }
-        } else { // open_bcs
-            cout << "Open bcs not implemented for treecode yet." << endl;
-            return 1;
+        if (bcs!=periodic_bcs) { // open_bcs
+            Lx = -1.0; // this is currently how open_bcs are flagged
+        }
+        if (0 <= beta && beta <= 1.0) {
+            calculate_e = new E_MQ_Treecode(Lx, greens_epsilon, beta);
+        } else {
+            int verbosity = 0;
+            calculate_e = new E_MQ_Treecode(Lx, greens_epsilon, 
+                                            mac, degree, 
+                                            max_source, max_target, 
+                                            verbosity);
         }
     } else {
         if (bcs==periodic_bcs) {
