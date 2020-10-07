@@ -26,7 +26,7 @@ ffmpeg for movie writing
 import json # dump, load
 import numpy as np
 from matplotlib import pyplot as plt
-import os # path.exists, makedirs
+import os # path.exists, makedirs, getcwd
 import shutil # rmtree, copy2
 import subprocess # run, PIPE
 import sys # path.append
@@ -933,7 +933,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None):
     if simtype == 1:
     # if FS.simtype is SimType.WEAK_LD:
     #     pass
-        plt.ylim([1e-8,1e-1])
+        plt.ylim([1e-16,1e-1])
     #strong LD
     # if type_str == 'strong_LD' or type_str == 'strong_2str':
     if simtype in [2,3,4]:
@@ -969,9 +969,9 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None):
     #---------------------------------
 
     plt.figure()
-    plt.title(r'percent variation in total charge, $\sum_i q w^n_i - \sum_i q w^0_i$')
+    plt.title(r'relative variation in total charge')
     plt.xlabel('t')
-    plt.plot(diag_times, 100 * (total_charge - total_charge[0])/total_charge[0])
+    plt.plot(diag_times, (total_charge - total_charge[0])/total_charge[0])
     plt.grid()
     plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
     plt.savefig(sim_dir_str + 'percent_charge_conservation.png')
@@ -986,7 +986,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None):
     plt.close()
     #---------------------------------
     plt.figure()
-    plt.title(r'percent variation in $L_2(f^n)$, $\sum_i (f^n_i)^2 w^n_i - \sum_i (f^n_i)^2 w^0_i$')
+    plt.title(r'relative variation in $L_2(f^n)$')
     plt.xlabel('t')
     plt.plot(diag_times, 100*(l2f - l2f[0])/l2f[0])
     plt.grid()
@@ -995,10 +995,10 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None):
     plt.close()
     #---------------------------------
     plt.figure()
-    plt.title('percent energy variation')
+    plt.title('relative energy variation')
     plt.xlabel('t')
     total_energy = total_potential + total_kinetic
-    plt.plot(diag_times, 100 * (total_energy - total_energy[0])/total_energy[0])
+    plt.plot(diag_times, (total_energy - total_energy[0])/total_energy[0])
     plt.grid()
     plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
     plt.savefig(sim_dir_str + 'relative_energy_conservation.png')
@@ -1065,6 +1065,9 @@ if __name__ == '__main__':
         root_dir_str = args.root_dir
         if root_dir_str[-1] != '/':
             root_dir_str += '/'
+        print('root directory ', root_dir_str)
+    else:
+        print('no root dir provided, working in ', os.getcwd() )
     simulation_dictionary = None
     sim_dir_str = ''
     dictionaries_found = False
@@ -1118,8 +1121,15 @@ if __name__ == '__main__':
         simulation_dictionary = update_dictionary(deck_dir=deck_dir, deck_name = args.deck_name, **dict_args)
         dictionaries_found = True
         # end not-from-deck option
+    if sim_dir is not None:
+        print('sim directory', sim_dir_str)
+
     if args.run:
         run_sim(sim_dir=sim_dir, deck_dir=deck_dir, deck_name=args.deck_name, use_gpu=args.use_gpu)
+
+    if args.plot_diagnostics:
+        sim_diagnostics_sample(simulation_dictionary, sim_dir=sim_dir)
+
     if args.phase_movie:
         simtype = simulation_dictionary['sim_type']
         if simtype == 1:
@@ -1139,48 +1149,7 @@ if __name__ == '__main__':
     if args.logf_movie:
         logf_movie(sim_dir, simulation_dictionary, can_do_movie=can_do_movie)
     
-    if args.plot_diagnostics:
-        sim_diagnostics_sample(simulation_dictionary, sim_dir=sim_dir)
 
-
-    # parser.add_argument('project_name')
-    # parser.add_argument('xmin', type=float)
-    # parser.add_argument('xmax', type=float)
-    # parser.add_argument('vmin', type=float)
-    # parser.add_argument('vmax', type=float)
-    # parser.add_argument('simtype', type=int, choices=range(1,5), help='1: weak LD, 2: strong LD, 3: strong two-stream, 4: ''colder'' two-stream')
-    # parser.add_argument('vth',type=float)
-    # parser.add_argument('vstr', type=float)
-    # parser.add_argument('normalized_wavenumber', metavar='kn', type=float)
-    # parser.add_argument('amp', type=float)
-    # parser.add_argument('initial_height', metavar='height', type=int)
-    # parser.add_argument('greens_epsilon', metavar='eps', type=float)
-    # parser.add_argument('num_steps', metavar='nt', type=int)
-    # parser.add_argument('diag_freq', type=int)
-    # parser.add_argument('dt', type=float)
-    # parser.add_argument('--gpu',dest='use_gpu', action='store_true', help='boolean switch for using gpu')
-    # parser.add_argument('--treecode','-tc',dest='use_treecode', action='store_true', help='boolean switch for using treecode')
-    # parser.add_argument('--beta','-tc_b',type=float,default=-1.0, help='tunable treecode accuracy parameter. Barytree defaults to using this if 0<= beta <= 1.  Beta->0 is less accurate, Beta->1 is more accurate')
-    # parser.add_argument('--mac','-tc_mac',type=float,default=-1.0,help='treecode multipole acceptance criterion. 0 <= mac <= 1')
-    # parser.add_argument('--degree','-tc_d',type=int,default=-1,help='degree of treecode interpolation, must be nonnegative integer')
-    # parser.add_argument('--maxSourceLeafSize','-s_l',type=int,default=200,help='maximum number of particles per source leaf')
-    # parser.add_argument('--maxTargetLeafSize','-t_l',type=int,default=200,help='maximum number of particles per target leaf')
-    # parser.add_argument('--root_dir',help='where to store simulation data')
-    # args = parser.parse_args()
-
-    # remesh_period = 1
-    # FS = FarrsightInterface(args.project_name, args.xmin, args.xmax, args.vmin, args.vmax,\
-    #                         SimType(args.simtype), 
-    #                         args.normalized_wavenumber, args.amp, args.vth, args.vstr,\
-    #                         args.initial_height,args.greens_epsilon,\
-    #                         args.use_treecode, args.beta, args.mac,\
-    #                         args.degree, args.maxSourceLeafSize, args.maxTargetLeafSize,\
-    #                         args.num_steps, remesh_period, args.diag_freq, args.dt,\
-    #                         root_dir = args.root_dir, can_do_movie=can_do_movie)
-
-    # FS.run_farrsight(use_gpu = args.use_gpu)
-
-
-
+    print('done with this run')
 
 # %%
