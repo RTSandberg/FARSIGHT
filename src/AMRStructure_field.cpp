@@ -106,14 +106,16 @@ void AMRStructure::init_e() {
     (*calculate_e)(sort_es.data(), unique_xs.data(), unique_xs.size(),
                     unique_xs_cpy.data(), sort_ws.data(), unique_xs.size() );
     // }
-
-    double mean_e = 0;
-    for (int ii = 0; ii < sort_es.size(); ++ii) {
-        mean_e += sort_ws[ii] * sort_es[ii];
-    }
-    mean_e *= 1.0 / Q0;
-    for (int ii = 0; ii < sort_es.size(); ++ii) {
-        sort_es[ii] -= mean_e;
+    bool do_subtract_mean_e = false;
+    if (do_subtract_mean_e) {
+        double mean_e = 0;
+        for (int ii = 0; ii < sort_es.size(); ++ii) {
+            mean_e += sort_ws[ii] * sort_es[ii];
+        }
+        mean_e *= 1.0 / Q0;
+        for (int ii = 0; ii < sort_es.size(); ++ii) {
+            sort_es[ii] -= mean_e;
+        }
     }
     // es.clear();
     es = std::vector<double>(xs.size());
