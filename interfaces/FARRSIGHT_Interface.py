@@ -894,7 +894,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None):
         where_positive = np.nonzero(fs > 0)
         total_entropy[ii] = 1/q * np.dot(fs[where_positive] * np.log10(fs[where_positive]), qws[where_positive])
         
-        l1f[ii] = 1/q * np.sum(abs(qws))
+        l1f[ii] = 1/abs(q) * np.sum(abs(qws))
         l2f[ii] = 1/q * np.dot(qws,fs)
 
 
@@ -986,12 +986,21 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None):
     plt.close()
     #---------------------------------
     plt.figure()
-    plt.title(r'relative variation in $L_2(f^n)$')
+    plt.title(r'relative variation in $L_1(f^n)$')
     plt.xlabel('t')
-    plt.plot(diag_times, 100*(l2f - l2f[0])/l2f[0])
+    plt.plot(diag_times, (l1f - l1f[0])/l1f[0])
     plt.grid()
     plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
-    plt.savefig(sim_dir_str + 'percent_l2f_conservation.png')
+    plt.savefig(sim_dir_str + 'relative_l1f_conservation.png')
+    plt.close()
+    #---------------------------------
+    plt.figure()
+    plt.title(r'relative variation in $L_2(f^n)$')
+    plt.xlabel('t')
+    plt.plot(diag_times, (l2f - l2f[0])/l2f[0])
+    plt.grid()
+    plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+    plt.savefig(sim_dir_str + 'relative_l2f_conservation.png')
     plt.close()
     #---------------------------------
     plt.figure()
