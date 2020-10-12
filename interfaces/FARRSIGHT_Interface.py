@@ -853,6 +853,9 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None):
     num_points = np.zeros_like(diag_times)
     frac_negative = np.zeros_like(diag_times) 
 
+    min_f = np.zeros_like(diag_times)
+    max_f = np.zeros_like(diag_times)
+
     l1f = np.zeros_like(diag_times)
     l2f = np.zeros_like(diag_times)
 
@@ -894,6 +897,8 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None):
         where_positive = np.nonzero(fs > 0)
         total_entropy[ii] = 1/q * np.dot(fs[where_positive] * np.log10(fs[where_positive]), qws[where_positive])
         
+        min_f[ii] = np.min(fs)
+        max_f[ii] = np.max(fs)
         l1f[ii] = 1/abs(q) * np.sum(abs(qws))
         l2f[ii] = 1/q * np.dot(qws,fs)
 
@@ -943,6 +948,24 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None):
     # end l2e diagnostic
     #---------------------------------
 
+    plt.figure()
+    plt.title(r'relative variation in maximum')
+    plt.xlabel('t')
+    plt.plot(diag_times, (max_f - max_f[0])/max_f[0])
+    plt.grid()
+    plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+    plt.savefig(sim_dir_str + 'relative_maxf_conservation.png')
+    plt.close()
+    #---------------------------------
+    plt.figure()
+    plt.title(r'relative variation in minimum')
+    plt.xlabel('t')
+    plt.plot(diag_times, (min_f - min_f[0])/min_f[0])
+    plt.grid()
+    plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+    plt.savefig(sim_dir_str + 'relative_minf_conservation.png')
+    plt.close()
+    #---------------------------------
     plt.figure()
     plt.title(r'fraction of negative f values')
     plt.xlabel('t')
