@@ -1084,12 +1084,12 @@ if __name__ == '__main__':
     dict_args = {}
     for ii in range(num_dict_entries):
         if (ii != num_dict_entries or wrong_num_entries == 0):
-            if (args.dict_args[ii+2] == 'int'):
-                dict_args[args.dict_args[ii]] = int(args.dict_args[ii+1])
-            elif (args.dict_args[ii+2] == 'float'):
-                dict_args[args.dict_args[ii]] = float(args.dict_args[ii+1])
+            if (args.dict_args[3*ii+2] == 'int'):
+                dict_args[args.dict_args[3*ii]] = int(args.dict_args[3*ii+1])
+            elif (args.dict_args[3*ii+2] == 'float'):
+                dict_args[args.dict_args[3*ii]] = float(args.dict_args[3*ii+1])
             else:
-                dict_args[args.dict_args[ii]] = args.dict_args[ii+1]
+                dict_args[args.dict_args[3*ii]] = args.dict_args[3*ii+1]
     
 
     root_dir_str = ''
