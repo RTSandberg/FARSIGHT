@@ -1,5 +1,8 @@
 #include "AMRStructure.hpp"
 
+// #define DEBUG
+
+
 int calculate_E_mq(double* es, const double* targets, int nt, 
                 const double* sources, const double* q_ws, int ns, 
                 double L, double epsilon) {
@@ -88,24 +91,26 @@ void AMRStructure::init_e() {
     }
     // calculate reduced E
     std::vector<double> sort_es(sort_ws.size());
-
-    // #pragma omp parallel 
-    // {
-    // int num_threads = omp_get_num_threads();
-    // if (omp_get_thread_num() == 0) {
-        // cout << "Number of threads from init_e(): " << num_threads << endl;
-    // }
-    // calculate_E_mq(sort_es.data(), unique_xs.data(), unique_xs.size(),
-    //                 unique_xs.data(), sort_ws.data(), unique_xs.size(),
-    //                 Lx, greens_epsilon);
-    // calculate_e(sort_es.data(), )
-
-
     std::vector<double> unique_xs_cpy (unique_xs);
+
+#ifdef DEBUG
+cout << "reduced xs just before calculate_e in init_e" << endl;
+std::copy(unique_xs.begin(), unique_xs.end(), std::ostream_iterator<double>(cout, " "));
+cout << endl;
+cout << "reduced weights just before calculate_e in init_e" << endl;
+std::copy(sort_ws.begin(), sort_ws.end(), std::ostream_iterator<double>(cout, " "));
+cout << endl;
+#endif /* DEBUG */
 
     (*calculate_e)(sort_es.data(), unique_xs.data(), unique_xs.size(),
                     unique_xs_cpy.data(), sort_ws.data(), unique_xs.size() );
-    // }
+
+#ifdef DEBUG
+cout << "es just after calculate-e on reduced sort" << endl;
+std::copy(sort_es.begin(), sort_es.end(), std::ostream_iterator<double>(cout, " "));
+cout << endl;
+#endif /* DEBUG */
+
     bool do_subtract_mean_e = false;
     if (do_subtract_mean_e) {
         double mean_e = 0;
@@ -123,6 +128,11 @@ void AMRStructure::init_e() {
         // es.push_back(sort_es[inv_inds[ii]]);
         es[ii] = sort_es[inv_inds[ii]];
     }
+#ifdef DEBUG
+cout << "es at end of init_e()" << endl;
+std::copy(es.begin(), es.end(), std::ostream_iterator<double>(cout, " "));
+cout << endl;
+#endif /* DEBUG */
 }
 
 // void AMRStructure::calculate_e() {

@@ -68,6 +68,8 @@ AMRStructure::AMRStructure(std::string sim_dir, distribution* f0, //std::functio
     Lv = v_max - v_min;
     npanels_x = int(pow(2, initial_height));
     npanels_v = int(pow(2, initial_height));
+    initial_dx = Lx / npanels_x;
+    initial_dv = Lv / npanels_v;
     this->amr_epsilons = amr_epsilons;
 
     // create_prerefined_mesh();
@@ -100,6 +102,8 @@ AMRStructure::AMRStructure(std::string sim_dir, distribution* f0, //std::functio
     Lv = v_max - v_min;
     npanels_x = int(pow(2, initial_height));
     npanels_v = int(pow(2, initial_height));
+    initial_dx = Lx / npanels_x;
+    initial_dv = Lv / npanels_v;
     this->amr_epsilons = amr_epsilons;
 
     // create_prerefined_mesh();

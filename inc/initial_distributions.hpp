@@ -5,6 +5,8 @@
 #include <math.h> // exp, sqrt, cos
 #include <vector> // vector
 
+#define FRIEDMAN_BEAM_MIN_N 1e-150
+
 class distribution {
     public:
         virtual double operator() (double x, double v)=0;

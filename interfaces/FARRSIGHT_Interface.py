@@ -949,7 +949,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None):
     #---------------------------------
 
     plt.figure()
-    plt.title(r'relative variation in maximum')
+    plt.title(r'relative variation in maximum of f')
     plt.xlabel('t')
     plt.plot(diag_times, (max_f - max_f[0])/max_f[0])
     plt.grid()
@@ -958,7 +958,16 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None):
     plt.close()
     #---------------------------------
     plt.figure()
-    plt.title(r'relative variation in minimum')
+    plt.title(r'variation in minimum of f')
+    plt.xlabel('t')
+    plt.plot(diag_times, min_f - min_f[0])
+    plt.grid()
+    plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+    plt.savefig(sim_dir_str + 'relative_minf_conservation.png')
+    plt.close()
+    #---------------------------------
+    plt.figure()
+    plt.title(r'relative variation in minimum of f')
     plt.xlabel('t')
     plt.plot(diag_times, (min_f - min_f[0])/min_f[0])
     plt.grid()
@@ -997,7 +1006,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None):
     plt.plot(diag_times, (total_charge - total_charge[0])/total_charge[0])
     plt.grid()
     plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
-    plt.savefig(sim_dir_str + 'percent_charge_conservation.png')
+    plt.savefig(sim_dir_str + 'relative_charge_conservation.png')
     plt.close()
     #---------------------------------
     plt.figure()

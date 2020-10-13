@@ -1,5 +1,7 @@
 #include "AMRStructure.hpp"
 
+// #define DEBUG
+
 
 int AMRStructure::create_prerefined_mesh() {
     // printf("setting initial mesh of height %i.\n", initial_height);
@@ -440,11 +442,12 @@ void AMRStructure::generate_mesh(std::function<double (double,double)> f,
     int num_panels_pre_refine = panels.size();
 
 // for debugging
-        // cout << "test initial grid for refinement" << endl;
-        // for (int ii = minimum_unrefined_index; ii < num_panels_pre_refine; ++ii) {
-        //     test_panel(ii, false);
-        // }
-// end debug
+#ifdef DEBUG
+        cout << "test initial grid for refinement" << endl;
+        for (int ii = minimum_unrefined_index; ii < num_panels_pre_refine; ++ii) {
+            test_panel(ii, false);
+        }
+#endif /* DEBUG */
 
     if (do_adaptive_refine) {
         // cout << "test initial grid for refinement" << endl;
@@ -458,6 +461,12 @@ void AMRStructure::generate_mesh(std::function<double (double,double)> f,
         }
   
     }
+
+// #ifdef DEBUG
+// cout << "fs at initialization" << endl;
+// std::copy(fs.begin(), fs.end(), std::ostream_iterator<double>(cout, " "));
+// cout << endl;
+// #endif /* DEBUG */
 
     set_leaves_weights();
 
@@ -487,7 +496,7 @@ void AMRStructure::test_panel(int panel_ind, bool verbose) {
             if (min_f > fii) { min_f = fii; }
         }
         // finding trouble panels in amr
-        if (max_f - min_f >= 0.8) {
+        if (max_f - min_f >= 10000) {
             cout << "interpolation trouble at panel " << panel_ind << endl;
             cout << "max f " << max_f << ", min f" << min_f << ", difference= " << max_f - min_f << endl;
             for (int ii = 0; ii < 9; ++ii) {
@@ -497,11 +506,11 @@ void AMRStructure::test_panel(int panel_ind, bool verbose) {
             cout << endl;
         }
         #ifdef DEBUG
-        cout << "panel fs: " << endl;
-        for (int ii = 0; ii < 9; ii++) {
-            cout << panel_fs[ii] << " ";
-        }
-        cout << "max_f " << max_f << ", min f " << min_f << endl;
+        // cout << "panel fs: " << endl;
+        // for (int ii = 0; ii < 9; ii++) {
+        //     cout << panel_fs[ii] << " ";
+        // }
+        // cout << "max_f " << max_f << ", min f " << min_f << endl;
         #endif
         refine_criteria_met = refine_criteria_met || (max_f - min_f > amr_epsilons[0]);
 

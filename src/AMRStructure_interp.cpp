@@ -3,23 +3,27 @@
 // #ifndef DEBUG
 // #define DEBUG
 
-int AMRStructure::find_leaf_containing_point_from_neighbor(double& tx, double& tv, int leaf_ind, std::set<int>& history, bool verbose) {
+int AMRStructure::find_leaf_containing_point_from_neighbor(double& tx, double& tv, bool& beyond_boundary, int leaf_ind, std::set<int>& history, bool verbose) {
 
 
     // trouble with interpolation and amr.  What?
 #ifdef DEBUG
-if (iter_num == 9) {
-    verbose = true;
-}
+// if (iter_num >= 9) {
+//     verbose = true;
+// }
+// if (fabs(tx + 0.0314) < 0.0003 && fabs(tv - 0.0122) < 0.0003) {
+//     verbose = true;
+// }
+verbose=true;
 #endif
     // verbose = true;
     // end trouble shooting verbosity change
 
     if (leaf_ind == 0) {
         history.emplace(leaf_ind);
+        cout << "If you see this then you are sending in a leaf ind 0 somewhere you hoped not to." << endl;
         return leaf_ind;
     } else {
-
         Panel* panel = &(old_panels[leaf_ind]);
         double x_bl = old_xs[panel->point_inds[0]]; double v_bl = old_vs[panel->point_inds[0]];
         double x_tl = old_xs[panel->point_inds[2]]; double v_tl = old_vs[panel->point_inds[2]];
@@ -153,8 +157,8 @@ if (iter_num == 9) {
                         }
                         if (panel->left_nbr_ind == -1) {
 #ifdef DEBUG
-cout << "panel left: " << panel->left_nbr_ind << endl;
-cout <<"length of panels_list " << old_panels.size() << endl;
+// cout << "panel left: " << panel->left_nbr_ind << endl;
+// cout <<"length of panels_list " << old_panels.size() << endl;
 #endif
                             new_leaf_ind = old_panels[panel->parent_ind].left_nbr_ind;
                             if (verbose) {
@@ -194,16 +198,32 @@ cout <<"length of panels_list " << old_panels.size() << endl;
             if (verbose) {
                 cout << "running find_leaf again for (x,v)=(" << tx << ", " << tv << ")" << endl;
             }
-            new_leaf_ind = find_leaf_containing_point_from_neighbor(tx,tv,new_leaf_ind, history, verbose);
+            new_leaf_ind = find_leaf_containing_point_from_neighbor(tx,tv,beyond_boundary, new_leaf_ind, history, verbose);
         } else if (verbose)
         {
-            cout << "done searching.  Point (" << tx << ", " << tv << ") is in panel " << new_leaf_ind << endl;
+            cout << "done searching." << endl;
+        }
+        if (!allow_boundary_extrapolation) {
+            bool boundary_extrapolating_right = !ineq_right && panel->right_nbr_ind==-2;
+            bool boundary_extrapolating_left = !ineq_left && panel->left_nbr_ind==-2;
+            bool boundary_extrapolating_top = !ineq_top && panel->top_nbr_ind==-2;
+            bool boundary_extrapolating_bottom = !ineq_bottom && panel->bottom_nbr_ind==-2;
+            if (boundary_extrapolating_left || boundary_extrapolating_right || 
+                boundary_extrapolating_top || boundary_extrapolating_bottom) {
+                if (verbose) {
+                    cout << "Not allowing boundary extrapolation and this point is flagged as beyond the boundary" << endl;
+                }
+                beyond_boundary = true;
+            }
+        }
+        if (verbose) {
+            cout << "Point (" << tx << ", " << tv << ") is in panel " << new_leaf_ind << endl;
         }
         return new_leaf_ind;
     }
 }
 
-int AMRStructure::find_leaf_containing_xv_recursively(double  &x, const double &v, int panel_ind, bool verbose) {
+int AMRStructure::find_leaf_containing_xv_recursively(double  &x, const double &v, bool& beyond_boundary, int panel_ind, bool verbose) {
     int leaf_ind;
     int subpanel_ind;
     int child_inds_start;
@@ -225,6 +245,28 @@ int AMRStructure::find_leaf_containing_xv_recursively(double  &x, const double &
         leaf_ind = panel_ind;
         if (verbose) {
             cout << "leaf panel!" << endl;
+        }
+
+        if (!allow_boundary_extrapolation) {
+            double x_bl = old_xs[panel->point_inds[0]]; double v_bl = old_vs[panel->point_inds[0]];
+            double x_tl = old_xs[panel->point_inds[2]]; double v_tl = old_vs[panel->point_inds[2]];
+            double x_br = old_xs[panel->point_inds[6]]; double v_br = old_vs[panel->point_inds[6]];
+            double x_tr = old_xs[panel->point_inds[8]]; double v_tr = old_vs[panel->point_inds[8]];
+            bool ineq_right = (x_tr - x_br) * (v - v_br) > (v_tr - v_br) * (x - (x_br));
+            bool ineq_left = (x_tl - x_bl) * (v - v_bl) <= (v_tl - v_bl) * (x - x_bl);
+            bool ineq_top = (x_tr - x_tl) * (v - v_tl) < (v_tr - v_tl) * (x - x_tl);
+            bool ineq_bottom = (x_br - x_bl) * (v - v_bl) >= (v_br - v_bl) * (x - x_bl);
+            bool boundary_extrapolating_right = !ineq_right && panel->right_nbr_ind==-2;
+            bool boundary_extrapolating_left = !ineq_left && panel->left_nbr_ind==-2;
+            bool boundary_extrapolating_top = !ineq_top && panel->top_nbr_ind==-2;
+            bool boundary_extrapolating_bottom = !ineq_bottom && panel->bottom_nbr_ind==-2;
+            if (boundary_extrapolating_left || boundary_extrapolating_right || 
+                boundary_extrapolating_top || boundary_extrapolating_bottom) {
+                if (verbose) {
+                    cout << "Not allowing boundary extrapolation and this point is flagged for beyond the boundary" << endl;
+                }
+                beyond_boundary = true;
+            }
         }
     } else {
         double x_bl = old_xs[panel->point_inds[0]]; double v_bl = old_vs[panel->point_inds[0]];
@@ -348,7 +390,7 @@ int AMRStructure::find_leaf_containing_xv_recursively(double  &x, const double &
             
         }
 
-        leaf_ind = find_leaf_containing_xv_recursively(x, v, subpanel_ind, verbose);
+        leaf_ind = find_leaf_containing_xv_recursively(x, v, beyond_boundary, subpanel_ind, verbose);
 
     }
     return leaf_ind;
@@ -458,11 +500,12 @@ cout << "sorting " << endl;
     for (int ii = 0; ii < xs.size(); ii++ ) { sort_indices[ii] = ii; }
     // std::iota(sort_indices.begin(), sort_indices.end(), 0);
     bool do_sort = true;
+    double sort_threshold = initial_dv / 10.0;
     if (do_sort) {
         std::sort(sort_indices.begin(), sort_indices.end(),
             [&] (int a, int b) 
             { 
-                if (vs[a] != vs[b]) { return vs[a] < vs[b]; }
+                if (fabs(vs[a] - vs[b]) >= sort_threshold) { return vs[a] < vs[b]; }
                 else {
                     return shifted_xs[a] < shifted_xs[b];
                 }
@@ -483,7 +526,7 @@ cout << "Done sorting" << endl;
         sortvs[ii] = vs[sort_indices[ii]];
     }
     if (verbose) {
-        cout << "sorted xs: " << endl;
+        cout << "sorted xs" << endl;
         std::copy(sortxs.begin(), sortxs.end(), std::ostream_iterator<double>(cout, ", "));
         cout << endl << "sorted vs: " << endl;
         std::copy(sortvs.begin(), sortvs.end(), std::ostream_iterator<double>(cout, ", "));
@@ -503,65 +546,107 @@ cout << "Done sorting" << endl;
     std::vector<std::vector<int> > point_in_leaf_panels_by_inds(old_panels.size() );
 
 #ifdef DEBUG
+// counting how many xs to vs
+// int ind_debug = 0;
+// std::vector<int> size_v;
+// std::vector<double> unique_vs;
+// size_v.reserve(nv);
+// unique_vs.reserve(nv);
+// while (ind_debug < sortxs.size() ) {
+//     int cntr = 0;
+//     double debug_v = sortvs[ind_debug];
+//     unique_vs.push_back(debug_v);
+//     cntr++;
+//     int ind_debug2 = ind_debug + 1;
+//     while (fabs(sortvs[ind_debug2] - debug_v) < sort_threshold) {
+//         ind_debug2++;
+//         cntr++;
+//     }
+//     ind_debug += cntr;
+//     size_v.push_back(cntr);
+// }
+// cout << "nv = " << nv << ", and there are " << size_v.size() << " distinct v values" << endl;
+// for (int ii = 0; ii < size_v.size(); ++ii) {
+//     cout << "at v= " << unique_vs[ii] << " there are " << size_v[ii] << " points" << endl;
+// }
+verbose = false;
 cout << "finding panel of first point" << endl;
-verbose=true;
+// verbose=true;
 #endif
-    int leaf_ind = find_leaf_containing_xv_recursively(sortxs[0], sortvs[0], 0, verbose);
+    bool beyond_boundary = false;
+    int leaf_ind = find_leaf_containing_xv_recursively(sortxs[0], sortvs[0], beyond_boundary, 0, verbose);
 #ifdef DEBUG
 cout << "found first panel" << endl;
 #endif
     std::vector<int> first_column_leaf_inds(nv);
-    std::vector<int> first_column_ind_in_old_mesh(nv);
+    // std::vector<int> first_column_ind_in_old_mesh(nv);
 
 #ifdef DEBUG 
 cout << "searching first column" << endl;
+if (iter_num >= 4) { verbose = true;} 
     if (verbose) {
         std::cout << "nx x nv= " << nx << " x " << nv << endl;
         cout << "xs size: " << xs.size() << endl;
     }
+cout << "First column points" << endl;
+for (int ii = 0; ii < nv; ++ii) {
+    int point_ind = ii * nv;
+    cout << "sort point " << point_ind << " (x,v)=(" << sortxs[point_ind] << ", " << sortvs[point_ind] << ")" << endl;
+}
 #endif
 
-    if (bcs == periodic_bcs) {
+    // if (bcs == periodic_bcs) {
         for (int ii =0; ii < nv; ++ii) {
+            beyond_boundary = false;
             int point_ind = ii * nv;
             std::set<int> history;
             history.emplace(leaf_ind);
             // cout << "testing point " << point_ind << ", x= " << sortxs[point_ind] << ", v= " << sortvs[point_ind] << endl;
-            leaf_ind = find_leaf_containing_point_from_neighbor(sortxs[point_ind], sortvs[point_ind], leaf_ind, history, verbose);
+            leaf_ind = find_leaf_containing_point_from_neighbor(sortxs[point_ind], sortvs[point_ind], beyond_boundary, 
+                                                                leaf_ind, history, verbose);
             first_column_leaf_inds[ii] = leaf_ind;
             // point_in_leaf_panels_by_inds[leaf_ind].push_back(point_ind);
-            leaf_panel_of_points[point_ind] = leaf_ind;
+            if (beyond_boundary) {
+                leaf_panel_of_points[point_ind] = 0;
+            } else {
+                leaf_panel_of_points[point_ind] = leaf_ind;
+            }
             // cout << "point " << sort_indices[point_ind] << " in panel " << leaf_ind << " (sorted ind " << point_ind << ")" << endl;
         }
-    } else { // open bcs
-        for (int ii =0; ii < nv; ++ii) {
-            int jj = 0;
-            int point_ind = ii * nv;
-            std::set<int> history;
-            history.emplace(leaf_ind);
-            int temp_leaf_ind = find_leaf_containing_point_from_neighbor(sortxs[point_ind], sortvs[point_ind], leaf_ind, history, verbose);
-            leaf_panel_of_points[point_ind] = temp_leaf_ind;
+//     } else { // open bcs
+//         for (int ii =0; ii < nv; ++ii) {
+//             int jj = 0;
+//             int point_ind = ii * nv;
+//             std::set<int> history;
+//             history.emplace(leaf_ind);
+//             int temp_leaf_ind = find_leaf_containing_point_from_neighbor(sortxs[point_ind], sortvs[point_ind], leaf_ind, history, verbose);
+//             leaf_panel_of_points[point_ind] = temp_leaf_ind;
 
-            while (temp_leaf_ind == 0 && jj < nx) {
-                jj++;
-                point_ind++;
-                temp_leaf_ind = find_leaf_containing_point_from_neighbor(sortxs[point_ind], sortvs[point_ind], leaf_ind, history, verbose);
-                leaf_panel_of_points[point_ind] = temp_leaf_ind;
-            }
-            first_column_ind_in_old_mesh[ii] = jj;
-        }    
-    }
+//             while (temp_leaf_ind == 0 && jj < nx) {
+// #ifdef DEBUG
+// cout << "temp_leaf_ind was assigned 0!" << endl;
+// #endif
+//                 jj++;
+//                 point_ind++;
+//                 temp_leaf_ind = find_leaf_containing_point_from_neighbor(sortxs[point_ind], sortvs[point_ind], leaf_ind, history, verbose);
+//                 leaf_panel_of_points[point_ind] = temp_leaf_ind;
+//             }
+//             leaf_ind = temp_leaf_ind;
+//             first_column_ind_in_old_mesh[ii] = jj;
+//         }    
+//     }
 #ifdef DEBUG
+verbose = false;
 cout << "after first column" << endl;
-cout << "first column ind in old mesh" << endl;
-std::copy(first_column_ind_in_old_mesh.begin(), first_column_ind_in_old_mesh.end(),
-        std::ostream_iterator<int>(cout, " "));
-cout << endl;
+// cout << "first column ind in old mesh" << endl;
+// std::copy(first_column_ind_in_old_mesh.begin(), first_column_ind_in_old_mesh.end(),
+//         std::ostream_iterator<int>(cout, " "));
+// cout << endl;
 
-    cout << "leaf_panel_of_points " << endl;
-    for (int ii = 0; ii < xs.size(); ++ii) {
-        cout << "point (sorted ind) " << ii <<", unsorted ind " << sort_indices[ii] << ": (x,v)=(" << sortxs[ii] << ", " << sortvs[ii] << ") is in panel " << leaf_panel_of_points[ii] << endl;
-    }
+//     cout << "leaf_panel_of_points " << endl;
+//     for (int ii = 0; ii < xs.size(); ++ii) {
+//         cout << "point (sorted ind) " << ii <<", unsorted ind " << sort_indices[ii] << ": (x,v)=(" << sortxs[ii] << ", " << sortvs[ii] << ") is in panel " << leaf_panel_of_points[ii] << endl;
+//     }
     // if (verbose) {
         cout << "panel search" << endl;
     // }
@@ -574,17 +659,23 @@ cout << endl;
     // }
     #pragma omp for
     for (int ii = 0; ii < nv; ++ii) {
-        int jj0 = first_column_ind_in_old_mesh[ii];
+        // int jj0 = first_column_ind_in_old_mesh[ii];
+        int jj0 = 0;
         int point_ind = ii * nv + jj0;
-        int leaf_ind_c = leaf_panel_of_points[point_ind];//first_column_leaf_inds[ii];
+        int leaf_ind_c = first_column_leaf_inds[ii];//leaf_panel_of_points[point_ind];
         for (int jj = jj0+1; jj < nx; ++jj) {
+            beyond_boundary = false;
             point_ind++;
             // cout << "Testing point " << point_ind << ", (x,v)= (" << sortxs[point_ind] << ", " << sortvs[point_ind] << ")" << endl;
             std::set<int> history;
             history.emplace(leaf_ind_c);
-            leaf_ind_c = find_leaf_containing_point_from_neighbor(sortxs[point_ind], sortvs[point_ind], leaf_ind_c, history, verbose);
+            leaf_ind_c = find_leaf_containing_point_from_neighbor(sortxs[point_ind], sortvs[point_ind], beyond_boundary, leaf_ind_c, history, verbose);
             // point_in_leaf_panels_by_inds[leaf_ind_c].push_back(point_ind);
-            leaf_panel_of_points[point_ind] = leaf_ind_c;
+            if (beyond_boundary) {
+                leaf_panel_of_points[point_ind] = 0;
+            } else {
+                leaf_panel_of_points[point_ind] = leaf_ind_c;
+            }
 
             // cout << "sorted ind " << point_ind << ", ind " << sort_indices[point_ind] << " is in panel " << leaf_ind << endl;
         }
@@ -596,10 +687,10 @@ cout << endl;
     }
 
 #ifdef DEBUG
-    cout << "leaf_panel_of_points " << endl;
-    for (int ii = 0; ii < xs.size(); ++ii) {
-        cout << "point (sorted ind) " << ii <<", unsorted ind " << sort_indices[ii] << ": (x,v)=(" << sortxs[ii] << ", " << sortvs[ii] << ") is in panel " << leaf_panel_of_points[ii] << endl;
-    }
+    // cout << "leaf_panel_of_points " << endl;
+    // for (int ii = 0; ii < xs.size(); ++ii) {
+    //     cout << "point (sorted ind) " << ii <<", unsorted ind " << sort_indices[ii] << ": (x,v)=(" << sortxs[ii] << ", " << sortvs[ii] << ") is in panel " << leaf_panel_of_points[ii] << endl;
+    // }
 
     // cout << "point in leaf panels by inds " << endl;
     // for (auto ii = 0; ii < point_in_leaf_panels_by_inds.size(); ++ii) {
@@ -843,7 +934,11 @@ double AMRStructure::interpolate_from_panel(double x, double v, int panel_ind, b
 }
 
 double AMRStructure::interpolate_from_mesh(double x, double v, bool verbose) {
-    int leaf_containing = find_leaf_containing_xv_recursively(x,v,0, verbose);
+    bool beyond_boundary = false;
+    int leaf_containing = find_leaf_containing_xv_recursively(x,v,beyond_boundary,0, verbose);
+    if (beyond_boundary) {
+        leaf_containing = 0;
+    }
     return interpolate_from_panel(x,v,leaf_containing, verbose);
 }
 
@@ -854,7 +949,11 @@ void AMRStructure::interpolate_from_mesh(std::vector<double>& values, std::vecto
     std::vector<int> leaves;
     std::vector<std::vector<int> > point_in_leaf_panels_by_inds(old_panels.size() );
     for (int ii = 0; ii < xs.size(); ++ii) {
-        int leaf_ind = find_leaf_containing_xv_recursively(shifted_xs[ii], vs[ii], 0, verbose);
+        bool beyond_boundary = false;
+        int leaf_ind = find_leaf_containing_xv_recursively(shifted_xs[ii], vs[ii], beyond_boundary, 0, verbose);
+        if (beyond_boundary) {
+            leaf_ind = 0;
+        }
         leaves.push_back(leaf_ind);
         point_in_leaf_panels_by_inds[leaf_ind].push_back(ii);
     }
@@ -877,7 +976,8 @@ void AMRStructure::interpolate_from_mesh_slow(std::vector<double>& values, std::
     // std::vector<double> values;
     values = std::vector<double> ();
     for (int ii = 0; ii < xs.size(); ++ii) {
-        leaves.push_back(find_leaf_containing_xv_recursively(shifted_xs[ii], vs[ii], 0, verbose));
+        bool beyond_boundary = false;
+        leaves.push_back(find_leaf_containing_xv_recursively(shifted_xs[ii], vs[ii],beyond_boundary, 0, verbose));
         values.push_back(interpolate_from_panel(shifted_xs[ii], vs[ii], leaves[ii], verbose));
     }
     // cout << endl << "interpolated fs: ";
