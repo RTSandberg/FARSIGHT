@@ -996,7 +996,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None):
     plt.title('number of points in simulation')
     plt.legend()
 
-    plt.savefig(sim_dir + 'num_points.png')
+    plt.savefig(sim_dir_str + 'num_points.png')
     plt.close()
     #---------------------------------
 
@@ -1076,7 +1076,7 @@ if __name__ == '__main__':
     parser.add_argument('--deck_dir_cwd', '-cwd', action='store_true', help='force use of deck found in current working directory')
     parser.add_argument('--deck_name', '-dn', help='Name of input_deck.  Default is "deck.json"', default='deck.json')
     parser.add_argument('--make_deck', '-make', help='')
-    parser.add_argument('--run',action='store_true', help='Run the simulation using deck in deck directory, store output in sim_dir')
+    parser.add_argument('--run','-r',action='store_true', help='Run the simulation using deck in deck directory, store output in sim_dir')
     parser.add_argument('--gpu',dest='use_gpu', action='store_true', help='boolean switch for using gpu')
     parser.add_argument('--phase_movie','-pha',action='store_true', help='use this flag to make phase space movie from data in sim_dir')
     parser.add_argument('--show_panels','-p',action='store_true', help='use this flag to show panels in phase space movie')

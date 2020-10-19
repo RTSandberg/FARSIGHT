@@ -28,7 +28,7 @@ namespace pt = boost::property_tree;
 #include "AMRStructure.hpp"
 #include "initial_distributions.hpp"
 
-// #define DEBUG // for debugging purposes
+#define DEBUG // for debugging purposes
 
 int main(int argc, char** argv) {
 
@@ -247,6 +247,14 @@ cout << endl;
 cout << "--------------------------------" << endl;
 cout << "vs: ";
 std::copy(amr.vs.begin(), amr.vs.end(), std::ostream_iterator<double>(cout, " "));
+cout << endl;
+cout << "--------------------------------" << endl;
+cout << "fs: ";
+std::copy(amr.fs.begin(), amr.fs.end(), std::ostream_iterator<double>(cout, " "));
+cout << endl;
+cout << "--------------------------------" << endl;
+cout << "qws: ";
+std::copy(amr.q_ws.begin(), amr.q_ws.end(), std::ostream_iterator<double>(cout, " "));
 cout << endl;
 cout << "--------------------------------" << endl;
 #endif
