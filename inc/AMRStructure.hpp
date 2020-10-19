@@ -91,7 +91,7 @@ struct AMRStructure {
     // InterpolateDistribution interp_f;
     // interpolation parameters
     bool allow_boundary_extrapolation = false;
-    bool do_unshear = true;
+    bool do_unshear = false;
 
     // time stepping parameters
     int iter_num;

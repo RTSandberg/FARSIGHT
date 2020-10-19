@@ -63,4 +63,25 @@ class E_MQ_Treecode : public ElectricField {
         ~E_MQ_Treecode();
 };
 
+class E_MQ_Treecode_openbcs : public ElectricField {
+    public:
+        KERNEL kernel;
+        std::vector<double> kernelParams;
+        SINGULARITY singularity;
+        APPROXIMATION approximation;
+        COMPUTE_TYPE compute_type;
+        double beta, theta;
+        int interpDegree, maxPerSourceLeaf, maxPerTargetLeaf;
+        int verbosity;
+
+        E_MQ_Treecode_openbcs();
+        E_MQ_Treecode_openbcs(double epsilon, double beta);
+        E_MQ_Treecode_openbcs(double epsilon,
+            double theta, int interpDegree, int maxPerSourceLeaf, int maxPerTargetLeaf,
+            int verbosity);
+        void operator() (double* es, double* targets, int nt, 
+                        double* sources, double* q_ws, int ns);
+        ~E_MQ_Treecode_openbcs();
+};
+
 #endif /* FIELD_STRUCTURE_HPP */

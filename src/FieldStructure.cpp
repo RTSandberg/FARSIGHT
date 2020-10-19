@@ -178,3 +178,53 @@ void E_MQ_Treecode::operator() (double* es, double* targets, int nt,
 }
     
 E_MQ_Treecode::~E_MQ_Treecode() = default;
+
+
+E_MQ_Treecode_openbcs::E_MQ_Treecode_openbcs() {}
+E_MQ_Treecode_openbcs::E_MQ_Treecode_openbcs(double epsilon, double beta) : 
+    kernel(MQ), 
+    singularity(SKIPPING), approximation(LAGRANGE), compute_type(PARTICLE_CLUSTER),
+    beta(beta), theta(-1.0), interpDegree(-1), maxPerSourceLeaf(1), maxPerTargetLeaf(1),
+    verbosity(0)
+{
+    kernelParams.push_back(-1.0); kernelParams.push_back(epsilon);
+}
+
+E_MQ_Treecode_openbcs::E_MQ_Treecode_openbcs(double epsilon,
+    double theta, int interpDegree, int maxPerSourceLeaf, int maxPerTargetLeaf,
+    int verbosity) :
+        kernel(MQ), 
+        singularity(SKIPPING), approximation(LAGRANGE), compute_type(PARTICLE_CLUSTER),
+        beta(-1.0), theta(theta), interpDegree(interpDegree), 
+        maxPerSourceLeaf(maxPerSourceLeaf), maxPerTargetLeaf(maxPerTargetLeaf),
+        verbosity(verbosity)
+{
+    kernelParams.push_back(-1.0); kernelParams.push_back(epsilon);
+}
+
+void E_MQ_Treecode_openbcs::operator() (double* es, double* targets, int nt, 
+                double* sources, double* q_ws, int ns)
+{
+    std::vector <double> xS(ns);
+    std::vector <double> yS(ns);
+    std::vector <double> wS(ns, 1.0);
+
+    std::vector <double> xT(nt);
+    std::vector <double> yT(nt);
+    std::vector <double> qT(nt, 1.0);
+
+    BaryTreeInterface(nt, ns, xT.data(), yT.data(), 
+                    targets, qT.data(),
+                    xS.data(), yS.data(), 
+                    sources, q_ws, wS.data(),
+                    es,
+                    kernel, kernelParams.size(), kernelParams.data(),
+                    singularity, approximation, compute_type,
+                    theta, interpDegree, maxPerSourceLeaf, maxPerTargetLeaf,
+                    1.0, beta, verbosity);
+    for (int ii = 0; ii < nt; ++ii) {
+        es[ii] -= targets[ii];
+    }
+}
+    
+E_MQ_Treecode_openbcs::~E_MQ_Treecode_openbcs() = default;

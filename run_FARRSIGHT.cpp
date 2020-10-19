@@ -143,16 +143,25 @@ int main(int argc, char** argv) {
     ElectricField* calculate_e;
     if (use_treecode > 0) {
         if (bcs!=periodic_bcs) { // open_bcs
-            Lx = -1.0; // this is currently how open_bcs are flagged
-        }
-        if (0 <= beta && beta <= 1.0) {
-            calculate_e = new E_MQ_Treecode(Lx, greens_epsilon, beta);
+            if (0 <= beta && beta <= 1.0) {
+                calculate_e = new E_MQ_Treecode_openbcs(greens_epsilon, beta);
+            } else {
+                int verbosity = 0;
+                calculate_e = new E_MQ_Treecode_openbcs(greens_epsilon, 
+                                                mac, degree, 
+                                                max_source, max_target, 
+                                                verbosity);
+            }
         } else {
-            int verbosity = 0;
-            calculate_e = new E_MQ_Treecode(Lx, greens_epsilon, 
-                                            mac, degree, 
-                                            max_source, max_target, 
-                                            verbosity);
+            if (0 <= beta && beta <= 1.0) {
+                calculate_e = new E_MQ_Treecode(Lx, greens_epsilon, beta);
+            } else {
+                int verbosity = 0;
+                calculate_e = new E_MQ_Treecode(Lx, greens_epsilon, 
+                                                mac, degree, 
+                                                max_source, max_target, 
+                                                verbosity);
+            }
         }
     } else {
         if (bcs==periodic_bcs) {
