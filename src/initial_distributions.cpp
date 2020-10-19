@@ -77,14 +77,14 @@ double F0_colder_two_stream::get_amp() { return amp; }
 F0_Friedman_beam::F0_Friedman_beam() : Delta(5.522e-8), Tstar(3.463e-7), xmax(0.001)
 {
     double vth = sqrt(Tstar);
-    double nhat = 1.0 / (1.0 + Delta);
+    nhat = 1.0 / (1.0 + Delta);
     k_beta_0 = 2.0*M_PI / 3.0;
     lambda_D = 2.81e-4;
     beta_b = 2.343e-3;
     gamma_b = 1.0 / sqrt(1 + beta_b * beta_b);
     x_convert_factor = 1/k_beta_0 / lambda_D / gamma_b;
-    // mu = 1.25;
-    mu=1.0;
+    mu = 1.25;
+    // mu=1.0;
     maxwellian = F0_M(vth);
     generate_Ns(xmax);
 }
@@ -98,8 +98,8 @@ F0_Friedman_beam::F0_Friedman_beam(double Delta, double Tstar, double xmax) :
     beta_b = 2.343e-3;
     gamma_b = 1.0 / sqrt(1 + beta_b * beta_b);
     x_convert_factor = 1/k_beta_0 / lambda_D / gamma_b;
-    // mu = 1.25;
-    mu=1.0;
+    mu = 1.25;
+    // mu=1.0;
     maxwellian = F0_M(vth);
     generate_Ns(xmax);
 }

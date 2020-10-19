@@ -1,7 +1,7 @@
 #include "AMRStructure.hpp"
 
 // #ifndef DEBUG
-#define DEBUG
+// #define DEBUG
 
 int AMRStructure::find_leaf_containing_point_from_neighbor(double& tx, double& tv, bool& beyond_boundary, int leaf_ind, std::set<int>& history, bool verbose) {
 
@@ -775,8 +775,18 @@ void AMRStructure::interpolate_from_panel_to_points(
             panel_vs[ii] = old_vs[pind];
             panel_fs[ii] = old_fs[pind];
         }
+
+        if (do_unshear) {
+            for (int ii = 0; ii < 9; ++ii) {
+                panel_xs[ii] -= dt * (panel_vs[ii] - panel_vs[4]); // assumes remesh frequency = 1
+            }
+            // for (int ii = 0; ii < xs.size(); ++ii) {
+            //     xs[ii] -= dt * (vs[ii] - )
+            // }
+            std::transform(xs.begin(), xs.end(), vs.begin(), xs.begin(), [&](double a, double b) {return a - (b - panel_vs[4])*dt; });
+        }
 #ifdef DEBUG
-    if (iter_num >= 240) {
+    // if (iter_num >= 240) {
         // for (int ii = 0; ii < 9; ++ii) {
         //     if (panel_vs[ii] >= 0.013) {
         //         if (panel_xs[ii] >= 0.005 && panel_xs[ii] <= 0.015) {
@@ -791,17 +801,13 @@ void AMRStructure::interpolate_from_panel_to_points(
         //     if (point_inds[ii] == 9172 || point_inds[ii] == 9272 || point_inds[ii] == 9275  || point_inds[ii] == 9234) {verbose = true; }
         // }
         
-        for (int ii =0; ii < xs.size(); ++ii) {
-            if (point_inds[ii] == 8896) {
-                    cout << "(x,v,f)_" << ii << "=(" << xs[ii] << ", " << vs[ii] << ", " << fs[ii] <<") is in panel " << panel_ind<<endl;
-                }
-        }
-    }
+        // for (int ii =0; ii < xs.size(); ++ii) {
+        //     if (point_inds[ii] == 8896) {
+        //             cout << "(x,v,f)_" << ii << "=(" << xs[ii] << ", " << vs[ii] << ", " << fs[ii] <<") is in panel " << panel_ind<<endl;
+        //         }
+        // }
+    // }
 
-    if (verbose) {
-        cout << "From panel " << panel_ind << endl;
-        cout << "Getting panel points" << endl;
-    }
 #endif
 
         if (verbose) {
@@ -898,8 +904,109 @@ void AMRStructure::interpolate_from_panel_to_points(
 }
 
 double AMRStructure::interpolate_from_panel(double x, double v, int panel_ind, bool verbose) {
-    
-    // probably need to shift x!
+    if (panel_ind == 0) { return 0.0; }
+    else {
+        Panel* panel = &(old_panels[panel_ind]);
+        const int* point_inds = panel->point_inds;
+        double panel_xs[9], panel_vs[9], panel_fs[9];
+
+        for (int ii = 0; ii < 9; ++ii) {
+            int vind = point_inds[ii];
+            panel_xs[ii] = old_xs[vind];
+            panel_vs[ii] = old_vs[vind];
+            panel_fs[ii] = old_fs[vind];
+        }
+        if (do_unshear) {
+            for (int ii = 0; ii < 9; ++ii) {
+                panel_xs[ii] -= dt * (panel_vs[ii] - panel_vs[4]); // assumes remesh frequency = 1
+            }
+            x -= dt * (v - panel_vs[4]);
+        }
+        #ifdef DEBUG
+        // if (iter_num >= 240) {
+        //     if (panel_ind == 2964 || panel_ind == 2816 || panel_ind == 2892) {
+        //         verbose = true;
+        //     }
+        // }
+        // if (iter_num >= 240) {
+        //     for (int ii = 0; ii < 9; ++ii) {
+        //         if (panel_vs[ii] >= 0.013) {
+        //             if (panel_xs[ii] >= 0.005 && panel_xs[ii] <= 0.015) {
+        //                 // cout << "(x,v,f)_" << ii << "=(" << xs[ii] << ", " << vs[ii] << ", " << fs[ii] <<")"<<endl;
+        //                 if (panel_fs[ii] > 15 || panel_fs[ii] < -0.5) {
+        //                     verbose = true;
+        //                 }
+        //             }
+        //         }
+        //     }
+            // for (int ii =0; ii < xs.size(); ++ii) {
+            //     if (point_inds[ii] == 9172 || point_inds[ii] == 9272 || point_inds[ii] == 9275  || point_inds[ii] == 9234) {verbose = true; }
+            // }
+            
+        //     for (int ii =0; ii < xs.size(); ++ii) {
+        //         if (point_inds[ii] == 8896) {
+        //                 cout << "(x,v,f)_" << ii << "=(" << xs[ii] << ", " << vs[ii] << ", " << fs[ii] <<") is in panel " << panel_ind<<endl;
+        //             }
+        //     }
+        // }
+        #endif /*DEBUG*/
+
+        if (verbose) {
+            std::cout << "Interpolating from " << std::endl;
+            for (int ii = 0; ii < 9; ++ii) {
+                std::cout << "(x,v,f)=(" << panel_xs[ii] << ", " << panel_vs[ii] << ", " << panel_fs[ii] << ")" << std::endl;
+            }
+        
+            std::cout << "onto (" << x << ", " << v << ")\n";
+        }
+
+        double dx, dv, panel_dx[9], panel_dv[9];
+        dx = x - panel_xs[4];
+        dv = v - panel_vs[4];
+        for (int ii = 0; ii < 9; ii ++) {
+            panel_dx[ii] = panel_xs[ii] - panel_xs[4];
+            panel_dv[ii] = panel_vs[ii] - panel_vs[4];
+        }
+
+        if (verbose) {
+            std::cout << "test point distance from midpoint: dx=" << dx <<", dv=" << dv << std::endl;
+            std::cout << "panel vertex distances from midpoint:" << std::endl;
+            for (int ii = 0; ii < 9; ii++ ) {
+                std::cout << ii << ": " << panel_dx[ii] << ", " << panel_dv[ii] << std::endl;
+            }
+        }
+
+        Eigen::Matrix<double,9,9> A;
+        for (int ii = 0; ii < 9; ++ii) {
+            A(ii,0) = 1; A(ii,1) = panel_dx[ii];
+            A(ii,2) = panel_dx[ii] * panel_dv[ii];
+            A(ii,3) = panel_dv[ii];
+            A(ii,4) = panel_dx[ii] * panel_dx[ii];
+            A(ii,5) =  panel_dx[ii] * panel_dx[ii] * panel_dv[ii];
+            A(ii,6) = panel_dx[ii] * panel_dx[ii] * panel_dv[ii] * panel_dv[ii];
+            A(ii,7) = panel_dx[ii] * panel_dv[ii] * panel_dv[ii];
+            A(ii,8) = panel_dv[ii] * panel_dv[ii];
+        }
+        Eigen::Map<Eigen::Matrix<double,9,1>> b(panel_fs);
+        Eigen::Matrix<double,9,1> c = A.lu().solve(b);
+
+
+        if (verbose) {
+            std::cout << "Here is the matrix A:\n" << A << std::endl;
+            std::cout << "Here is the f vector b:\n" << b << std::endl;
+            std::cout << "Here is the coefficient vector c:\n" << c << std::endl;
+        }
+
+        double val = c(0) + c(1)*dx + c(2) * dx*dv + c(3) * dv +
+                c(4) * dx*dx + c(5) * dx*dx*dv + c(6) * dx*dx*dv*dv +
+                c(7) * dx*dv*dv + c(8) * dv*dv;
+        if (verbose) { cout << "Result = " << val << endl; }
+        return val;
+    }
+}
+
+double AMRStructure::interpolate_from_mesh(double x, double v, bool verbose) {
+    // probably need to shift xs
     std::vector<double> xs(1,x);
     std::vector<double> shifted_xs(1,x);
     std::vector<double> vs(1,v);
@@ -908,75 +1015,35 @@ double AMRStructure::interpolate_from_panel(double x, double v, int panel_ind, b
     }
     double shifted_x = shifted_xs[0];
 
-    Panel* panel = &(old_panels[panel_ind]);
-    const int* point_inds = panel->point_inds;
-    double panel_xs[9], panel_vs[9], panel_fs[9];
-
-    for (int ii = 0; ii < 9; ++ii) {
-        int vind = point_inds[ii];
-        panel_xs[ii] = old_xs[vind];
-        panel_vs[ii] = old_vs[vind];
-        panel_fs[ii] = old_fs[vind];
-    }
-
-    if (verbose) {
-        std::cout << "Interpolating from " << std::endl;
-        for (int ii = 0; ii < 9; ++ii) {
-            std::cout << "(x,v,f)=(" << panel_xs[ii] << ", " << panel_vs[ii] << ", " << panel_fs[ii] << ")" << std::endl;
-        }
-    
-        std::cout << "onto (" << x << ", " << v << ")\n";
-    }
-
-    double dx, dv, panel_dx[9], panel_dv[9];
-    dx = x - panel_xs[4];
-    dv = v - panel_vs[4];
-    for (int ii = 0; ii < 9; ii ++) {
-        panel_dx[ii] = panel_xs[ii] - panel_xs[4];
-        panel_dv[ii] = panel_vs[ii] - panel_vs[4];
-    }
-
-    if (verbose) {
-        std::cout << "test point distance from midpoint: dx=" << dx <<", dv=" << dv << std::endl;
-        std::cout << "panel vertex distances from midpoint:" << std::endl;
-        for (int ii = 0; ii < 9; ii++ ) {
-            std::cout << ii << ": " << panel_dx[ii] << ", " << panel_dv[ii] << std::endl;
-        }
-    }
-
-    Eigen::Matrix<double,9,9> A;
-    for (int ii = 0; ii < 9; ++ii) {
-        A(ii,0) = 1; A(ii,1) = panel_dx[ii];
-        A(ii,2) = panel_dx[ii] * panel_dv[ii];
-        A(ii,3) = panel_dv[ii];
-        A(ii,4) = panel_dx[ii] * panel_dx[ii];
-        A(ii,5) =  panel_dx[ii] * panel_dx[ii] * panel_dv[ii];
-        A(ii,6) = panel_dx[ii] * panel_dx[ii] * panel_dv[ii] * panel_dv[ii];
-        A(ii,7) = panel_dx[ii] * panel_dv[ii] * panel_dv[ii];
-        A(ii,8) = panel_dv[ii] * panel_dv[ii];
-    }
-    Eigen::Map<Eigen::Matrix<double,9,1>> b(panel_fs);
-    Eigen::Matrix<double,9,1> c = A.lu().solve(b);
-
-
-    if (verbose) {
-        std::cout << "Here is the matrix A:\n" << A << std::endl;
-        std::cout << "Here is the f vector b:\n" << b << std::endl;
-        std::cout << "Here is the coefficient vector c:\n" << c << std::endl;
-    }
-
-    return c(0) + c(1)*dx + c(2) * dx*dv + c(3) * dv +
-            c(4) * dx*dx + c(5) * dx*dx*dv + c(6) * dx*dx*dv*dv +
-            c(7) * dx*dv*dv + c(8) * dv*dv;
-}
-
-double AMRStructure::interpolate_from_mesh(double x, double v, bool verbose) {
     bool beyond_boundary = false;
-    int leaf_containing = find_leaf_containing_xv_recursively(x,v,beyond_boundary,0, verbose);
+    int leaf_containing = find_leaf_containing_xv_recursively(shifted_x,v,beyond_boundary,0, verbose);
     if (beyond_boundary) {
         leaf_containing = 0;
     }
-    return interpolate_from_panel(x,v,leaf_containing, verbose);
+#ifdef DEBUG
+if (iter_num >= 240) {
+    if (fabs(x - 0.0118) < initial_dx/5 && fabs(v - 0.0143) < initial_dv/5) {
+        cout << "(x,v)=(" << x << ", " << v << ") is in panel " << leaf_containing << endl;
+        verbose = true;
+    }
+    if (fabs(x - 0.0054) < initial_dx/5 && fabs(v - 0.0145) < initial_dv/5) {
+        cout << "(x,v)=(" << x << ", " << v << ") is in panel " << leaf_containing << endl;
+        verbose = true;
+    }
+    if (fabs(x - 0.0093) < initial_dx/5 && fabs(v - 0.01337) < initial_dv/5) {
+        cout << "(x,v)=(" << x << ", " << v << ") is in panel " << leaf_containing << endl;
+        verbose = true;
+    }
+}
+// find problem panel:
+// if (iter_num >= 240) {
+// }
+#endif /* DEBUG */
+    double val = interpolate_from_panel(shifted_x,v,leaf_containing, verbose);
+    if (verbose) {
+        cout << "(" << shifted_x << ", " << v << ") is in panel " << leaf_containing << ", f_interpolated(x,v) = " << val << endl;
+    }
+    return val;
 }
 
 void AMRStructure::interpolate_from_mesh(std::vector<double>& values, std::vector<double>& xs, std::vector<double>& vs, bool verbose) {
@@ -999,14 +1066,7 @@ void AMRStructure::interpolate_from_mesh(std::vector<double>& values, std::vecto
         }
         point_in_leaf_panels_by_inds[leaf_ind].push_back(ii);
     }
-#ifdef DEBUG
-if (iter_num >= 240) {
-    cout << "I think I reach this stage of interpolation" << endl;
 
-    for (int ii = 0; ii < xs.size(); ii++) {
-        cout <<" "
-    }
-}
     for (int panel_ind = 0; panel_ind < old_panels.size(); panel_ind++) {
         if (point_in_leaf_panels_by_inds[panel_ind].size() > 0) {
             interpolate_from_panel_to_points(values,shifted_xs,vs,point_in_leaf_panels_by_inds[panel_ind], panel_ind, use_limiter, limit_val);

@@ -410,12 +410,13 @@ void AMRStructure::refine_panels(std::function<double (double,double)> f, bool d
         // particles.push_back(Particle(new_xs.at(ii), new_vs.at(ii), new_fs.at(ii), 0.0));
     }
 
+
     // test 
-    if (do_adaptive_refine) { 
-        for (int ii = 0; ii < prospective_leaf_inds.size(); ++ii) {
-            test_panel(prospective_leaf_inds.at(ii), false);
-        }
-    }
+    // if (do_adaptive_refine) { 
+    //     for (int ii = 0; ii < prospective_leaf_inds.size(); ++ii) {
+    //         test_panel(prospective_leaf_inds.at(ii), false);
+    //     }
+    // }
 }
 
 void AMRStructure::generate_mesh(std::function<double (double,double)> f, 
@@ -443,24 +444,46 @@ void AMRStructure::generate_mesh(std::function<double (double,double)> f,
 
 // for debugging
 #ifdef DEBUG
-        cout << "test initial grid for refinement" << endl;
-        for (int ii = minimum_unrefined_index; ii < num_panels_pre_refine; ++ii) {
-            test_panel(ii, false);
+    if (iter_num >= 236) {
+        for (int ii = 0; ii < xs.size(); ++ii) {
+            if (vs[ii] > 0.013) {
+                if (xs[ii] > 0.005 && xs[ii] < 0.015) {
+                    cout << "(x,v,f)_" << ii << "=(" << xs[ii] << ", " << vs[ii] << ", " << fs[ii]<< ")"<<endl;
+                }
+            }
         }
+    }
+        // cout << "test initial grid for refinement" << endl;
+        // for (int ii = minimum_unrefined_index; ii < num_panels_pre_refine; ++ii) {
+        //     test_panel(ii, false);
+        // }
 #endif /* DEBUG */
 
     if (do_adaptive_refine) {
         // cout << "test initial grid for refinement" << endl;
         for (int ii = minimum_unrefined_index; ii < num_panels_pre_refine; ++ii) {
-            test_panel(ii, false);
+            test_panel(ii, verbose);
         }
         while (need_further_refinement) {
             // cout << "making additional refinement passes" << endl;
             need_further_refinement = false;
-            refine_panels(f, true);
+            refine_panels(f, do_adaptive_refine);
         }
   
     }
+    #ifdef DEBUG
+
+    if (iter_num >= 236) {
+        cout << "trying to debug" << endl;
+        for (int ii = 0; ii < xs.size(); ++ii) {
+            if (vs[ii] >= 0.013) {
+                if (xs[ii] >= 0.005 && xs[ii] <= 0.015) {
+                    cout << "(x,v,f)_" << ii << "=(" << xs[ii] << ", " << vs[ii] << ", " << fs[ii] <<")"<<endl;
+                }
+            }
+        }
+    }
+    #endif
 
 // #ifdef DEBUG
 // cout << "fs at initialization" << endl;
@@ -496,7 +519,7 @@ void AMRStructure::test_panel(int panel_ind, bool verbose) {
             if (min_f > fii) { min_f = fii; }
         }
         // finding trouble panels in amr
-        if (max_f - min_f >= 10000) {
+        if (max_f - min_f >= 800) {
             cout << "interpolation trouble at panel " << panel_ind << endl;
             cout << "max f " << max_f << ", min f" << min_f << ", difference= " << max_f - min_f << endl;
             for (int ii = 0; ii < 9; ++ii) {
