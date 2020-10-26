@@ -28,7 +28,8 @@ namespace pt = boost::property_tree;
 #include "AMRStructure.hpp"
 #include "initial_distributions.hpp"
 
-#define DEBUG // for debugging purposes
+// #define DEBUG // for debugging purposes
+
 
 int main(int argc, char** argv) {
 
