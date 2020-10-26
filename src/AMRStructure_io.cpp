@@ -189,6 +189,12 @@ void AMRStructure::print_times() {
     cout << ". Total remeshing time " << time_operations[remesh_time].count() << " seconds" << endl;
     cout << "- " << num_operations[remesh_time] << " remeshings made at ";
     cout << time_operations[remesh_time].count() / num_operations[remesh_time] << " seconds per remeshing" << endl;
+    cout << ".. Initial tree building  + refinement time " << time_operations[tree_build_time].count() << " seconds (this includes the interpolations for mesh refinement)" << endl;
+    cout << "- " << num_operations[tree_build_time] << " not sure what these ops all are, at ";
+    cout << time_operations[tree_build_time].count() / num_operations[tree_build_time] << " seconds per op" << endl;
+    cout <<"... Total panel-testing-in-amr time " << time_operations[panel_test_time].count() << " seconds" << endl;
+    cout << "- " << num_operations[panel_test_time] << " test sessions made at ";
+    cout << time_operations[panel_test_time].count() / num_operations[panel_test_time] << " seconds per session" << endl;
     cout << ".. Total interpolation time " << time_operations[interp_time].count() << " seconds" << endl;
     cout << "- " << num_operations[interp_time] << " interpolations made at ";
     cout << time_operations[interp_time].count() / num_operations[interp_time] << " seconds per interpolation" << endl;
@@ -198,4 +204,5 @@ void AMRStructure::print_times() {
     cout << "... Total interpolant evaluation time " << time_operations[eval_time].count() << " seconds" << endl;
     cout << "- " << num_operations[eval_time] << " evaluations made at ";
     cout <<  time_operations[eval_time].count() / num_operations[eval_time] << " seconds per evaluation " << endl;
+    cout <<". Total file writing time " << time_operations[file_time].count() << " seconds" << endl;
 }

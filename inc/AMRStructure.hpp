@@ -46,7 +46,7 @@ extern "C" {
 enum BoundaryConditions {periodic_bcs, open_bcs, last_bc};
 enum Quadrature {simpsons, trap, last_quad};
 enum ProfileTypes {sim_time, step_time, field_time, 
-                remesh_time, interp_time, search_time, 
+                remesh_time, tree_build_time, panel_test_time, interp_time, search_time, 
                 eval_time, file_time, last_time};
 
 struct AMRStructure {
@@ -91,7 +91,10 @@ struct AMRStructure {
     // InterpolateDistribution interp_f;
     // interpolation parameters
     bool allow_boundary_extrapolation = false;
+    // bool do_unshear = false;
     bool do_unshear = false;
+    // bool sqrt_f = false;
+    bool sqrt_f = true;
 
     // time stepping parameters
     int iter_num;
