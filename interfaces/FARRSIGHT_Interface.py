@@ -165,7 +165,7 @@ def generate_standard_names_dirs(simulation_dictionary, root_dir=None):
 #         sim_name = ''
     tf = sd['dt'] * sd['num_steps']
     physical_parameters = bcs_string + '_vth_%.3f_vstr_%.3f_amp_%.3f_normal_k_%.3f_tf_%.1f'%(sd['vth'], sd['vstr'], sd['amp'], sd['normalized_wavenumber'], tf)
-    numerical_parameters = 'height0_%i_vm_%.1f_g_eps_%.3f_dt_%.3f_diag_freq_%i'%(sd['initial_height'], sd['vmax'], sd['greens_epsilon'], sd['dt'], sd['diag_period'])
+    numerical_parameters = 'height0_%i_vm_%.1f_g_eps_%.5f_dt_%.3f_diag_freq_%i'%(sd['initial_height'], sd['vmax'], sd['greens_epsilon'], sd['dt'], sd['diag_period'])
     amr_treecode_paramters = amr_string + tc_string
 #         sim_name = f'height0_{self.initial_height}_vm_{self.vmax:.1f}_g_eps_{self.greens_epsilon:.3f}_dt_{self.dt:.3f}_tf_{self.tf:.1f}_diag_freq_{self.diag_freq}' + tc_string
     sim_dir = simulations_dir + sd['project_name'] + '/' + physical_parameters + '/'
@@ -802,7 +802,7 @@ def logf_movie_standard_tree(simulation_dictionary,root_dir=None,simulation_has_
     sim_dir, directories_found = generate_standard_names_dirs(simulation_dictionary,root_dir)
     logf_movie(sim_dir, simulation_dictionary)
 
-def sim_diagnostics_sample(simulation_dictionary, sim_dir = None):
+def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45.0]):
     """Generate and plot diagnostics 
 
     This is a convenience function.  Diagnostics will need to be developed on a project-by-project basis.
@@ -842,7 +842,15 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None):
     vmax = sd['vmax']
 
     output_dir = sim_dir_str + 'simulation_output/'
+    # file_list = os.listdir('simulation_output/fs')
+    # iterations = []
+    # for file_name in file_list:
+    #     iterations.append(int(file_name[3:]))
+    # iterations = np.sort(iterations)
+    # diag_times = dt * iterations
+
     diag_times = np.arange(0,num_steps+1,diag_freq) * dt
+    iterations = (diag_times / dt).astype('int')
     total_charge = np.zeros_like(diag_times)
     total_momentum = np.zeros_like(diag_times)
     total_kinetic = np.zeros_like(diag_times)
@@ -1048,6 +1056,66 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None):
     t2 = time.time()
     print(f'Done plotting diagnostics')
     print(f'Diagnostic collection and plot time {t2-t1:.3f}s')
+    #--------------- f(v) plots --------
+    nx0 = 2**(sd["initial_height"]+1) + 1
+    dx0 = (sd["xmax"] - sd["xmin"]) / nx0
+    for test_time in test_times:
+        if simtype in [SimType.WEAK_LD, SimType.STRONG_LD]:# create new diagnostic : f(x=a,t=b,v)
+            try:
+                step_ii = np.nonzero(diag_times <= test_time)[0][-1]
+                xs = np.fromfile(output_dir + f'xs/xs_{step_ii}')
+                vs = np.fromfile(output_dir + f'vs/vs_{step_ii}')
+                fs = np.fromfile(output_dir + f'fs/fs_{step_ii}')
+                inds = np.lexsort([vs,xs])
+                xtest = 4 * np.pi - 0.005
+                inds_xtest = np.nonzero(abs(xs - xtest) <= dx0/4.0)
+                vs_xtest = vs[inds_xtest]
+                fs_xtest = fs[inds_xtest]
+                sort_inds = np.argsort(vs_xtest)
+                plt.figure()
+                ax = plt.gca()
+                simtime = step_ii * dt
+                plt.title(f'f(t={simtime:.2f}, x={xtest:.2f}, v)')
+                plt.plot(vs_xtest[sort_inds],fs_xtest[sort_inds],'r')
+                plt.xlabel('v')
+                plt.grid()
+                plt.xlim(4.8,6.3)
+                plt.ylim(-2e-6,6e-6)
+                ax.ticklabel_format(axis='y',style='sci',scilimits=(0,1))
+                plt.savefig(sim_dir_str + f'fv_t_{simtime:.0f}.png')
+            except IndexError:
+                print(f'time {test_time:.1f} is less than all simulation times')
+        if simtype in [SimType.STRONG_TWO_STREAM]:
+            # test_iter = int(test_time / dt)
+            try:
+                test_iter = np.nonzero(diag_times <= test_time)[0][-1]
+
+                xs = np.fromfile(output_dir + f'xs/xs_{test_iter}')
+                vs = np.fromfile(output_dir + f'vs/vs_{test_iter}')
+                fs = np.fromfile(output_dir + f'fs/fs_{test_iter}')
+                inds = np.lexsort([vs,xs])
+                xtest = 2 * np.pi
+                inds_xtest = np.nonzero(abs(xs - xtest) <= dx0 / 4.0)
+                vs_xtest = vs[inds_xtest]
+                fs_xtest = fs[inds_xtest]
+                sort_inds = np.argsort(vs_xtest)
+
+                plt.figure()
+                simtime = test_iter * dt
+                plt.title(f'f(t={simtime:.2f}, x={xtest:.2f}, v)')
+                plt.plot(vs_xtest[sort_inds],fs_xtest[sort_inds],'r')
+                plt.xlabel('v')
+                plt.grid()
+                plt.ylim(-0.05,0.45)
+                plt.xlim(-6,6)
+                plt.savefig(sim_dir_str + f'fv_t_{simtime:.1f}.png')
+            except IndexError:
+                print(f'time {test_time:.1f} is less than all simulation times')
+
+
+        
+
+
 # end sim_diagnostics_sample
     
 def diagnostics_sample_standard_tree(simulation_dictionary,root_dir=None):
