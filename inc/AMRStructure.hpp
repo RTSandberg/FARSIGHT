@@ -94,7 +94,7 @@ struct AMRStructure {
     // bool do_unshear = false;
     bool do_unshear = false;
     // bool sqrt_f = false;
-    bool sqrt_f = true;
+    bool sqrt_f = false;
 
     // time stepping parameters
     int iter_num;

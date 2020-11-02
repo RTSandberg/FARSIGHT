@@ -170,6 +170,7 @@ void AMRStructure::refine_panels(std::function<double (double,double)> f, bool d
                 if (!parent_left->is_refined) {
                     parent_left->needs_refinement = true;
                     need_further_refinement = true;
+                    // cout << "refine: setting refinement flag in panel " << jj << endl;
                 }
                 point_9_ind = new_vert_ind;
                 // point_10_ind = new_vert_ind++;
@@ -218,6 +219,9 @@ void AMRStructure::refine_panels(std::function<double (double,double)> f, bool d
                 if (!parent_bottom->is_refined ) {
                     parent_bottom->needs_refinement = true;
                     need_further_refinement = true;
+                    #ifdef DEBUG
+                    cout << "refine: setting refinement flag in panel " << jj << endl;
+                    #endif
                 }
                 point_11_ind = new_vert_ind++;
                 point_18_ind = new_vert_ind++;
@@ -259,6 +263,7 @@ void AMRStructure::refine_panels(std::function<double (double,double)> f, bool d
                 if (!parent_top->is_refined ) {
                     parent_top->needs_refinement = true;
                     need_further_refinement = true;
+                    // cout << "refine: setting refinement flag in panel " << jj << endl;
                 }
                 point_15_ind = new_vert_ind++;
                 point_22_ind = new_vert_ind++;
@@ -299,6 +304,7 @@ void AMRStructure::refine_panels(std::function<double (double,double)> f, bool d
                 if (!parent_right->is_refined ) {
                     parent_right->needs_refinement = true;
                     need_further_refinement = true;
+                    // cout << "refine: setting refinement flag in panel " << jj << endl;
                 }
                 point_23_ind = new_vert_ind++;
                 point_24_ind = new_vert_ind++;
@@ -423,8 +429,15 @@ void AMRStructure::generate_mesh(std::function<double (double,double)> f,
                                  bool do_adaptive_refine, bool is_initial_step) 
 {
     bool verbose=false;
-    create_prerefined_mesh();
 
+    auto start = high_resolution_clock::now();
+    create_prerefined_mesh();
+    auto stop = high_resolution_clock::now();
+    add_time(tree_build_time,  duration_cast<duration<double>>(stop - start) );
+
+
+
+    start = high_resolution_clock::now();
     if (is_initial_step) {
         for (int ii = 0; ii < xs.size(); ii++) {
             fs[ii] = (*f0)(xs[ii],vs[ii]);
@@ -433,12 +446,11 @@ void AMRStructure::generate_mesh(std::function<double (double,double)> f,
         int nx_points = 2*npanels_x + 1;
         int nv_points = 2*npanels_v + 1;
 
-        auto start = high_resolution_clock::now();
         // cout << "interpolating to grid " << endl;
         interpolate_to_initial_xvs(fs,xs,vs, nx_points, nv_points,verbose);
-        auto stop = high_resolution_clock::now();
-        add_time(interp_time, duration_cast<duration<double>>(stop - start) );
     }
+    stop = high_resolution_clock::now();
+    add_time(interp_time, duration_cast<duration<double>>(stop - start) );
 
     int num_panels_pre_refine = panels.size();
 
@@ -460,15 +472,39 @@ void AMRStructure::generate_mesh(std::function<double (double,double)> f,
 #endif /* DEBUG */
 
     if (do_adaptive_refine) {
-        // cout << "test initial grid for refinement" << endl;
-        for (int ii = minimum_unrefined_index; ii < num_panels_pre_refine; ++ii) {
+        start = high_resolution_clock::now();
+
+        for (int ii = minimum_unrefined_index; ii < panels.size(); ++ii) {
             test_panel(ii, verbose);
         }
+        stop = high_resolution_clock::now();
+        add_time(panel_test_time,  duration_cast<duration<double>>(stop - start) );
+
+
         while (need_further_refinement) {
-            // cout << "making additional refinement passes" << endl;
+            #ifdef DEBUG
+            cout << "making additional refinement passes" << endl;
+            int current_max_height = 0;
+            for (int ii = minimum_unrefined_index; ii < panels.size(); ++ii) {
+                current_max_height = std::max(current_max_height, panels[ii].level);
+            }
+            cout << "highest current level is " << current_max_height << ", max allowed is " << max_height << endl;
+            #endif /* DEBUG */
             need_further_refinement = false;
             refine_panels(f, do_adaptive_refine);
+
+            start = high_resolution_clock::now();
+            // cout << "test initial grid for refinement" << endl;
+            for (int ii = minimum_unrefined_index; ii < panels.size(); ++ii) {
+                if (!panels[ii].is_refined) {
+                    test_panel(ii, verbose);
+                }
+            }
+            stop = high_resolution_clock::now();
+            add_time(panel_test_time,  duration_cast<duration<double>>(stop - start) );
         }
+        stop = high_resolution_clock::now();
+        add_time(tree_build_time,  duration_cast<duration<double>>(stop - start) );
   
     }
     #ifdef DEBUG
@@ -668,10 +704,20 @@ void AMRStructure::recursively_set_leaves_weights(int panel_ind) {
     }
 }
 
+double mysqrt(double a) { return sqrt(a);};
+double mysqr(double a) { return a*a;};
+
 void AMRStructure::remesh() {
+
+    if (sqrt_f) {
+        // std::transform(fs.begin(), fs.end(), fs.begin(), mysqrt);
+        for (int ii = 0; ii < fs.size(); ++ii) {
+            fs[ii] = 2 * fs[ii];//sqrt(fs[ii]);
+        }
+    }
     // create copy of current panels and particle data
 
-    auto start = high_resolution_clock::now();
+    // auto start = high_resolution_clock::now();
     old_panels = std::vector<Panel> (); old_panels.reserve(panels.size() );
     old_xs = std::vector<double> (xs); //old_xs.reserve(xs.size());
     old_vs = std::vector<double> (vs); //old_vs.reserve(xs.size());
@@ -688,12 +734,20 @@ void AMRStructure::remesh() {
     //     old_fs.push_back(fs[ii]);
     // }
 
-    auto stop = high_resolution_clock::now();
-    auto duration = duration_cast<microseconds>(stop - start);
+    // auto stop = high_resolution_clock::now();
+    // auto duration = duration_cast<microseconds>(stop - start);
 
     // cout << "Old data copy time " << duration.count() << " microseconds." << endl << endl;
 
     bool is_initial_step = false;
     generate_mesh([&] (double x, double v) { return interpolate_from_mesh(x,v,false);} , do_adaptively_refine, is_initial_step);
+
+
+    if (sqrt_f) {
+        // std::transform(fs.begin(), fs.end(), fs.begin(), mysqr);
+        for (int ii = 0; ii < fs.size(); ++ii) {
+            fs[ii] = 0.5 * fs[ii];// * fs[ii];
+        }
+    }
     init_e();
 }
