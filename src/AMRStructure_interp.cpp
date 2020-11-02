@@ -754,6 +754,10 @@ void AMRStructure::interpolate_from_panel_to_points(
     }
     else {
         bool verbose = false;
+        #ifdef DEBUG
+        cout << "in interpolate from panel to points" << endl;
+        // verbose=true;
+        #endif
         // troubleshooting interpolation trouble with amr
         // if (panel_ind == 2459) { verbose = true; }
         // end troubleshooting verbosity change
@@ -778,12 +782,26 @@ void AMRStructure::interpolate_from_panel_to_points(
 
         if (do_unshear) {
             for (int ii = 0; ii < 9; ++ii) {
+                #ifdef DEBUG
+                cout << "panel_xs[ii] " << panel_xs[ii] << "  ";
+                #endif
                 panel_xs[ii] -= dt * (panel_vs[ii] - panel_vs[4]); // assumes remesh frequency = 1
+#ifdef DEBUG
+
+cout << "unshear panel x " << panel_xs[ii] << ", dt " << dt << ", v " << panel_vs[ii] << ", vmid " << panel_vs[4] << endl;
+#endif
             }
-            // for (int ii = 0; ii < xs.size(); ++ii) {
-            //     xs[ii] -= dt * (vs[ii] - )
-            // }
-            std::transform(xs.begin(), xs.end(), vs.begin(), xs.begin(), [&](double a, double b) {return a - (b - panel_vs[4])*dt; });
+            for (int ii = 0; ii < xs.size(); ++ii) {
+                #ifdef DEBUG
+                cout << "xs[ii]" << xs[ii] << "  ";
+                #endif
+                xs[ii] -= dt * (vs[ii] - panel_vs[4]);
+#ifdef DEBUG
+
+cout << "unshear xs[" << ii << "] " << xs[ii] << ", dt " << dt << ", vs[ii] " << vs[ii] << ", vmid " << panel_vs[4] << endl;
+#endif
+            }
+            //std::transform(xs.begin(), xs.end(), vs.begin(), xs.begin(), [&](double a, double b) {return a - (b - panel_vs[4])*dt; });
         }
 #ifdef DEBUG
     // if (iter_num >= 240) {
@@ -919,8 +937,17 @@ double AMRStructure::interpolate_from_panel(double x, double v, int panel_ind, b
         if (do_unshear) {
             for (int ii = 0; ii < 9; ++ii) {
                 panel_xs[ii] -= dt * (panel_vs[ii] - panel_vs[4]); // assumes remesh frequency = 1
+#ifdef DEBUG
+
+cout << "unshear panel x " << panel_xs[ii] << ", dt " << dt << ", v " << v << ", vmid " << panel_vs[4] << endl;
+#endif
             }
             x -= dt * (v - panel_vs[4]);
+#ifdef DEBUG
+
+cout << "unshear x " << x << ", dt " << dt << ", v " << v << ", vmid " << panel_vs[4] << endl;
+#endif
+
         }
         #ifdef DEBUG
         // if (iter_num >= 240) {
@@ -1006,6 +1033,7 @@ double AMRStructure::interpolate_from_panel(double x, double v, int panel_ind, b
 }
 
 double AMRStructure::interpolate_from_mesh(double x, double v, bool verbose) {
+
     // probably need to shift xs
     std::vector<double> xs(1,x);
     std::vector<double> shifted_xs(1,x);
