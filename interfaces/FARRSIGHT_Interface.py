@@ -27,6 +27,7 @@ ffmpeg for movie writing
 import json # dump, load
 import numpy as np
 from matplotlib import pyplot as plt
+from matplotlib import cm
 import os # path.exists, makedirs, getcwd
 import shutil # rmtree, copy2
 import subprocess # run, PIPE
@@ -813,7 +814,7 @@ def panel_height_movie(sim_dir, simulation_dictionary, height_range = [7,11],sim
         if sim_dir[-1] != '/':
             sim_dir_str += '/'
         output_dir = sim_dir_str + 'simulation_output/'
-    print('starting phase space movie')
+    print('starting panel height movie')
     t1 =time.time()
     if not simulation_has_run:
         print('unable to plot; simulation has not run or had errors')
@@ -1055,11 +1056,11 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     # if FS.simtype is SimType.STRONG_LD:
         g_strong1 = .2920
         g_strong2 = .0815
-        damping1_ind = int(0.5/dt * 5)
-        damping1_times = diag_times[:int(0.5/dt * 25)]
-        grow1_start_ind = int(0.5/dt * 28)
-        grow1_times = diag_times[grow1_start_ind:int(0.5/dt * 90)]
-        grow1_ind = int(0.5/dt * 19)
+        damping1_ind = int(0.5/dt * 5 / diag_freq)
+        damping1_times = diag_times[:int(0.5/dt * 25 / diag_freq)]
+        grow1_start_ind = int(0.5/dt * 28 / diag_freq)
+        grow1_times = diag_times[grow1_start_ind:int(0.5/dt * 90 / diag_freq)]
+        grow1_ind = int(0.5/dt * 19 / diag_freq)
         grow1_ind_e = grow1_start_ind + grow1_ind
         plt.semilogy(damping1_times,l2e[damping1_ind]*np.exp(- g_strong1 * (damping1_times - damping1_times[damping1_ind])),'-.',label=r'$\sim e^{- %.05f t}$'%g_strong1)
         plt.semilogy(grow1_times,l2e[grow1_ind_e]*np.exp(g_strong2*(grow1_times-grow1_times[grow1_ind])),'-.k')
@@ -1276,6 +1277,7 @@ if __name__ == '__main__':
     parser.add_argument('--phase_movie','-pha',action='store_true', help='use this flag to make phase space movie from data in sim_dir')
     parser.add_argument('--show_panels','-p',action='store_true', help='use this flag to show panels in phase space movie')
     parser.add_argument('--logf_movie','-log',action='store_true', help='use this flag to make log f movie')
+    parser.add_argument('--panels_movie','-panel',action='store_true', help='use this flag to make panel height movie')
     parser.add_argument('--plot_diagnostics','-pd',action='store_true',help='use this flag to plot diagnostics')
     parser.add_argument('dict_args',help='optional edits to deck, of the form $ python FARRSIGHT_Interface.py ...args... name value type.' +\
                         ' For example,  dt 0.5 float',nargs=argparse.REMAINDER)
@@ -1382,6 +1384,9 @@ if __name__ == '__main__':
         if args.show_panels:
             do_show_panels = True
             phase_movie(sim_dir, simulation_dictionary, do_show_panels, flim=flim, can_do_movie=can_do_movie)
+
+    if args.panels_movie:
+        panel_height_movie(sim_dir, simulation_dictionary, can_do_movie=can_do_movie)
 
     if args.logf_movie:
         logf_movie(sim_dir, simulation_dictionary, can_do_movie=can_do_movie)
