@@ -13,6 +13,7 @@ run_sim :
 plot_phase_space :
 phase_movie :
 logf_movie :
+panel_height_movie : 
 sim_diagnostics_sample :
 
 Dependencies
@@ -802,6 +803,129 @@ def logf_movie_standard_tree(simulation_dictionary,root_dir=None,simulation_has_
     sim_dir, directories_found = generate_standard_names_dirs(simulation_dictionary,root_dir)
     logf_movie(sim_dir, simulation_dictionary)
 
+def panel_height_movie(sim_dir, simulation_dictionary, height_range = [7,11],simulation_has_run=True, can_do_movie=True):
+    sd = simulation_dictionary
+    Lx = sd['xmax'] - sd['xmin']
+    output_dir = 'simulation_output/'
+    sim_dir_str = ''
+    if sim_dir is not None:
+        sim_dir_str = sim_dir
+        if sim_dir[-1] != '/':
+            sim_dir_str += '/'
+        output_dir = sim_dir_str + 'simulation_output/'
+    print('starting phase space movie')
+    t1 =time.time()
+    if not simulation_has_run:
+        print('unable to plot; simulation has not run or had errors')
+        return
+    if not can_do_movie:
+        print('unable to load ffmpeg writer, movie capability inaccessible')
+        return
+
+    FFMpegWriter = manimation.writers['ffmpeg']
+    metadata = dict(title='panel heights', artist='Matplotlib',
+                    comment='')
+    writer = FFMpegWriter(fps=5, metadata=metadata)
+
+    fig, ax = plt.subplots(figsize=(12,10))
+
+    with writer.saving(fig, sim_dir_str + 'panel_heights'+ ".mp4", dpi=100):
+
+
+
+        panels = np.fromfile(output_dir + 'panels/leaf_point_inds_0',dtype='int32')
+        num_panels = int(panels.size/9)
+        panels = np.reshape(panels, (num_panels,9))
+        panels_fs = np.zeros(num_panels)
+        xs = np.fromfile(output_dir + 'xs/xs_0')
+        vs = np.fromfile(output_dir + 'vs/vs_0')
+
+        patches = []
+        pvert = [0,2,8,6]
+        for ii, panel in enumerate(panels):
+            panel_xs = xs[panel]
+            panel_vs = vs[panel]
+            dx = panel_xs[8] - panel_xs[0]
+            
+            panels_fs[ii] = np.log2(Lx / dx)
+            rect_pts = np.vstack([panel_xs[pvert],panel_vs[pvert]]).T
+            patches.append(Polygon(rect_pts))
+            
+        ncolors = height_range[1] - height_range[0] + 1
+        mymap = cm.get_cmap('gist_rainbow_r',ncolors)
+        p = PatchCollection(patches, mymap)
+        p.set_array(panels_fs)
+        p.set_clim(height_range[0] - 0.5, height_range[1] + 0.5)
+        ax.add_collection(p)
+        cb = fig.colorbar(p, ax=ax)
+        cb.set_label('panel height')
+
+        ax.set_xlim([sd['xmin'], sd['xmax']])
+        ax.set_ylim([sd['vmin'],sd['vmax']])
+        ax.set_xlabel('x')
+        ax.set_ylabel('v')
+        ax.set_title(f'panel height, {num_panels} panels, t=0.000')
+
+        fig.canvas.draw()
+        writer.grab_frame()
+
+
+        print_update_frequency = int(np.ceil((sd['num_steps']+1)/6/sd['diag_period']))
+        print_update_counter = 0
+
+        for iter_num in range(sd['diag_period'], sd['num_steps'] + 1, sd['diag_period']):
+            cb.remove()
+            ax.collections.pop()
+
+            panels = np.fromfile(output_dir + f'panels/leaf_point_inds_{iter_num}',dtype='int32')
+            num_panels = int(panels.size/9)
+            panels = np.reshape(panels, (num_panels,9))
+            panels_fs = np.zeros(num_panels)
+            xs = np.fromfile(output_dir + f'xs/xs_{iter_num}')
+            vs = np.fromfile(output_dir + f'vs/vs_{iter_num}')
+
+            patches = []
+            for ii, panel in enumerate(panels):
+                panel_xs = xs[panel]
+                panel_vs = vs[panel]
+                
+                panels_fs[ii] = np.log2(Lx / dx)
+                rect_pts = np.vstack([panel_xs[pvert],panel_vs[pvert]]).T
+                patches.append(Polygon(rect_pts))
+
+            p = PatchCollection(patches, cmap=mymap)
+            p.set_array(panels_fs)
+            p.set_clim(height_range[0] - 0.5, height_range[1] + 0.5)
+            ax.add_collection(p)
+            cb = fig.colorbar(p, ax=ax)
+            cb.set_label('f')
+            ax.set_title(f'panel height, {num_panels} panels, t={iter_num*sd["dt"]:.3f}')
+
+
+            fig.canvas.draw()
+            writer.grab_frame()
+
+
+            if print_update_counter == print_update_frequency:
+                print(f'Movie is about {iter_num/(sd["num_steps"]+1)*100 :0.0f}% complete')
+                print_update_counter = 0
+#                 plt.savefig(mya.sim_dir + f'phase_space_image_t_{iter_num*dt}.svg')
+                plt.savefig(sim_dir_str + f'panel_height_image_t_{iter_num*sd["dt"]}.png')
+            print_update_counter += 1
+
+    plt.savefig(sim_dir_str + f'panel_height_image_t_{iter_num*sd["dt"]}.png')
+    print('panel height movie done!')
+    t2 = time.time()
+    print(f'panels movie took {t2-t1:.3f}s')
+    plt.close()
+# end panels movie
+
+def panel_height_movie_standard_tree(simulation_dictionary,root_dir=None,height_range=(7,11), simulation_has_run=True, can_do_movie=True):
+
+    sim_dir, directories_found = generate_standard_names_dirs(simulation_dictionary,root_dir)
+    panel_height_movie(sim_dir, simulation_dictionary, height_range=height_range, simulation_has_run=simulation_has_run, can_do_movie=can_do_movie)
+
+
 def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45.0]):
     """Generate and plot diagnostics 
 
@@ -1063,7 +1187,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     for test_time in test_times:
         if simtype in [SimType.WEAK_LD, SimType.STRONG_LD]:# create new diagnostic : f(x=a,t=b,v)
             try:
-                step_ii = np.nonzero(diag_times <= test_time)[0][-1]
+                step_ii = iterations[np.nonzero(diag_times <= test_time)[0][-1]]
                 xs = np.fromfile(output_dir + f'xs/xs_{step_ii}')
                 vs = np.fromfile(output_dir + f'vs/vs_{step_ii}')
                 fs = np.fromfile(output_dir + f'fs/fs_{step_ii}')
@@ -1084,12 +1208,13 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
                 plt.ylim(-2e-6,6e-6)
                 ax.ticklabel_format(axis='y',style='sci',scilimits=(0,1))
                 plt.savefig(sim_dir_str + f'fv_t_{simtime:.0f}.png')
+                plt.close()
             except IndexError:
                 print(f'time {test_time:.1f} is less than all simulation times')
         if simtype in [SimType.STRONG_TWO_STREAM]:
             # test_iter = int(test_time / dt)
             try:
-                test_iter = np.nonzero(diag_times <= test_time)[0][-1]
+                test_iter = iterations[np.nonzero(diag_times <= test_time)[0][-1]]
 
                 xs = np.fromfile(output_dir + f'xs/xs_{test_iter}')
                 vs = np.fromfile(output_dir + f'vs/vs_{test_iter}')
@@ -1110,6 +1235,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
                 plt.ylim(-0.05,0.45)
                 plt.xlim(-6,6)
                 plt.savefig(sim_dir_str + f'fv_t_{simtime:.1f}.png')
+                plt.close()
             except IndexError:
                 print(f'time {test_time:.1f} is less than all simulation times')
 
@@ -1239,6 +1365,7 @@ if __name__ == '__main__':
 
     if args.plot_diagnostics:
         sim_diagnostics_sample(simulation_dictionary, sim_dir=sim_dir)
+        plot_phase_space(simulation_dictionary, sim_dir, int(45.0 / simulation_dictionary['dt']), sim_type_to_flim[SimType(simulation_dictionary['sim_type'])])
 
     if args.phase_movie:
         simtype = simulation_dictionary['sim_type']
