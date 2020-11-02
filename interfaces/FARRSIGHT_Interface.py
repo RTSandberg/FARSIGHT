@@ -158,14 +158,14 @@ def generate_standard_names_dirs(simulation_dictionary, root_dir=None):
         amr_string = 'amr_max_height_%i'%sd['max_height']
         amr_string += '_epsilons'
         for eps in sd['amr_epsilons']:
-            amr_string += '_%.03f'%(eps)
+            amr_string += '_%.04f'%(eps)
     else:
         amr_string = 'no_amr'
 #         sim_group = ''
 #         sim_name = ''
     tf = sd['dt'] * sd['num_steps']
     physical_parameters = bcs_string + '_vth_%.3f_vstr_%.3f_amp_%.3f_normal_k_%.3f_tf_%.1f'%(sd['vth'], sd['vstr'], sd['amp'], sd['normalized_wavenumber'], tf)
-    numerical_parameters = 'height0_%i_vm_%.1f_g_eps_%.5f_dt_%.3f_diag_freq_%i'%(sd['initial_height'], sd['vmax'], sd['greens_epsilon'], sd['dt'], sd['diag_period'])
+    numerical_parameters = 'height0_%i_vm_%.1f_g_eps_%.5f_dt_%.4f_diag_freq_%i'%(sd['initial_height'], sd['vmax'], sd['greens_epsilon'], sd['dt'], sd['diag_period'])
     amr_treecode_paramters = amr_string + tc_string
 #         sim_name = f'height0_{self.initial_height}_vm_{self.vmax:.1f}_g_eps_{self.greens_epsilon:.3f}_dt_{self.dt:.3f}_tf_{self.tf:.1f}_diag_freq_{self.diag_freq}' + tc_string
     sim_dir = simulations_dir + sd['project_name'] + '/' + physical_parameters + '/'
@@ -999,6 +999,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     max_nx = 2**(sd['max_height']+1) + 1
     plt.plot(diag_times, initial_nx**2 * np.ones_like(num_points),label=r'$%i^2$ points'%initial_nx)
     plt.plot(diag_times, max_nx**2 * np.ones_like(num_points),label=r'$%i^2$ points'%max_nx)
+    plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
     plt.grid()
     plt.xlabel('t')
     plt.title('number of points in simulation')
@@ -1074,7 +1075,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
                 sort_inds = np.argsort(vs_xtest)
                 plt.figure()
                 ax = plt.gca()
-                simtime = step_ii * dt
+                simtime = diag_times[step_ii]
                 plt.title(f'f(t={simtime:.2f}, x={xtest:.2f}, v)')
                 plt.plot(vs_xtest[sort_inds],fs_xtest[sort_inds],'r')
                 plt.xlabel('v')
@@ -1101,7 +1102,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
                 sort_inds = np.argsort(vs_xtest)
 
                 plt.figure()
-                simtime = test_iter * dt
+                simtime = diag_times[test_iter]
                 plt.title(f'f(t={simtime:.2f}, x={xtest:.2f}, v)')
                 plt.plot(vs_xtest[sort_inds],fs_xtest[sort_inds],'r')
                 plt.xlabel('v')
