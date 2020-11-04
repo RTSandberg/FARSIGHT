@@ -59,6 +59,10 @@ int calculate_E_mq(double* es, const double* targets, int nt,
 
 
 void AMRStructure::init_e() {
+
+
+    auto start = high_resolution_clock::now();
+
     // get unique sort xs, inv_inds
     std::vector<size_t> inds(xs.size()); //(arr_inds, arr_inds +  sizeof(arr_inds) / sizeof(size_t));
     std::iota(inds.begin(), inds.end(), 0);
@@ -133,6 +137,10 @@ cout << "es at end of init_e()" << endl;
 std::copy(es.begin(), es.end(), std::ostream_iterator<double>(cout, " "));
 cout << endl;
 #endif /* DEBUG */
+
+
+    auto stop = high_resolution_clock::now();
+    add_time(field_time, duration_cast<duration<double>>(stop - start) );
 }
 
 // void AMRStructure::calculate_e() {
