@@ -477,8 +477,8 @@ void AMRStructure::generate_mesh(std::function<double (double,double)> f,
         for (int ii = minimum_unrefined_index; ii < panels.size(); ++ii) {
             test_panel(ii, verbose);
         }
-        stop = high_resolution_clock::now();
-        add_time(panel_test_time,  duration_cast<duration<double>>(stop - start) );
+        // stop = high_resolution_clock::now();
+        // add_time(panel_test_time,  duration_cast<duration<double>>(stop - start) );
 
 
         while (need_further_refinement) {
@@ -493,15 +493,15 @@ void AMRStructure::generate_mesh(std::function<double (double,double)> f,
             need_further_refinement = false;
             refine_panels(f, do_adaptive_refine);
 
-            start = high_resolution_clock::now();
+            // start = high_resolution_clock::now();
             // cout << "test initial grid for refinement" << endl;
             for (int ii = minimum_unrefined_index; ii < panels.size(); ++ii) {
                 if (!panels[ii].is_refined) {
                     test_panel(ii, verbose);
                 }
             }
-            stop = high_resolution_clock::now();
-            add_time(panel_test_time,  duration_cast<duration<double>>(stop - start) );
+            // stop = high_resolution_clock::now();
+            // add_time(panel_test_time,  duration_cast<duration<double>>(stop - start) );
         }
         stop = high_resolution_clock::now();
         add_time(tree_build_time,  duration_cast<duration<double>>(stop - start) );
