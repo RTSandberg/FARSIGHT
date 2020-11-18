@@ -166,7 +166,7 @@ def generate_standard_names_dirs(simulation_dictionary, root_dir=None):
 #         sim_group = ''
 #         sim_name = ''
     tf = sd['dt'] * sd['num_steps']
-    physical_parameters = bcs_string + '_vth_%.3f_vstr_%.3f_amp_%.3f_normal_k_%.3f_tf_%.1f'%(sd['vth'], sd['vstr'], sd['amp'], sd['normalized_wavenumber'], tf)
+    physical_parameters = SimType(sd['sim_type']).name + '_' + bcs_string + '_vth_%.3f_vstr_%.3f_amp_%.3f_normal_k_%.3f_tf_%.1f'%(sd['vth'], sd['vstr'], sd['amp'], sd['normalized_wavenumber'], tf)
     numerical_parameters = 'height0_%i_vm_%.1f_g_eps_%.5f_dt_%.4f_diag_freq_%i'%(sd['initial_height'], sd['vmax'], sd['greens_epsilon'], sd['dt'], sd['diag_period'])
     amr_treecode_paramters = amr_string + tc_string
 #         sim_name = f'height0_{self.initial_height}_vm_{self.vmax:.1f}_g_eps_{self.greens_epsilon:.3f}_dt_{self.dt:.3f}_tf_{self.tf:.1f}_diag_freq_{self.diag_freq}' + tc_string
@@ -889,6 +889,7 @@ def panel_height_movie(sim_dir, simulation_dictionary, height_range = [7,11],sim
             for ii, panel in enumerate(panels):
                 panel_xs = xs[panel]
                 panel_vs = vs[panel]
+                dx = panel_xs[8] - panel_xs[0]
                 
                 panels_fs[ii] = np.log2(Lx / dx)
                 rect_pts = np.vstack([panel_xs[pvert],panel_vs[pvert]]).T
@@ -1039,7 +1040,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     # plot diagnostics
     # L2 E diagnostic
     plt.figure()
-    plt.title('l2 E')
+    plt.title(r'$||E||_2$')
     l2e = np.sqrt(total_potential)
     plt.semilogy(diag_times, l2e)
 
@@ -1082,6 +1083,15 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     #---------------------------------
 
     plt.figure()
+    plt.title(r'variation in maximum of f')
+    plt.xlabel('t')
+    plt.plot(diag_times, max_f )
+    plt.grid()
+    plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+    plt.savefig(sim_dir_str + 'maxf_conservation.png')
+    plt.close()
+    #---------------------------------
+    plt.figure()
     plt.title(r'relative variation in maximum of f')
     plt.xlabel('t')
     plt.plot(diag_times, (max_f - max_f[0])/max_f[0])
@@ -1093,16 +1103,16 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     plt.figure()
     plt.title(r'variation in minimum of f')
     plt.xlabel('t')
-    plt.plot(diag_times, min_f - min_f[0])
+    plt.plot(diag_times, min_f)
     plt.grid()
     plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
-    plt.savefig(sim_dir_str + 'relative_minf_conservation.png')
+    plt.savefig(sim_dir_str + 'minf_conservation.png')
     plt.close()
     #---------------------------------
     plt.figure()
     plt.title(r'relative variation in minimum of f')
     plt.xlabel('t')
-    plt.plot(diag_times, (min_f - min_f[0])/min_f[0])
+    plt.plot(diag_times, (min_f - min_f[0])/max_f[0])
     plt.grid()
     plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
     plt.savefig(sim_dir_str + 'relative_minf_conservation.png')
