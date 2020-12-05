@@ -167,7 +167,11 @@ def generate_standard_names_dirs(simulation_dictionary, root_dir=None):
 #         sim_name = ''
     tf = sd['dt'] * sd['num_steps']
     physical_parameters = SimType(sd['sim_type']).name + '_' + bcs_string + '_vth_%.3f_vstr_%.3f_amp_%.3f_normal_k_%.3f_tf_%.1f'%(sd['vth'], sd['vstr'], sd['amp'], sd['normalized_wavenumber'], tf)
-    numerical_parameters = 'height0_%i_vm_%.1f_g_eps_%.5f_dt_%.4f_diag_freq_%i'%(sd['initial_height'], sd['vmax'], sd['greens_epsilon'], sd['dt'], sd['diag_period'])
+    if 'remesh_period' in sd:
+        remesh_period = sd['remesh_period']
+    else:
+        remesh_period = 1
+    numerical_parameters = 'height0_%i_vm_%.1f_g_eps_%.5f_dt_%.4f_remesh_period_diag_freq_%i'%(sd['initial_height'], sd['vmax'], sd['greens_epsilon'], sd['dt'], remesh_period,sd['diag_period'])
     amr_treecode_paramters = amr_string + tc_string
 #         sim_name = f'height0_{self.initial_height}_vm_{self.vmax:.1f}_g_eps_{self.greens_epsilon:.3f}_dt_{self.dt:.3f}_tf_{self.tf:.1f}_diag_freq_{self.diag_freq}' + tc_string
     sim_dir = simulations_dir + sd['project_name'] + '/' + physical_parameters + '/'
