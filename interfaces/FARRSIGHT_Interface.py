@@ -171,7 +171,7 @@ def generate_standard_names_dirs(simulation_dictionary, root_dir=None):
         remesh_period = sd['remesh_period']
     else:
         remesh_period = 1
-    numerical_parameters = 'height0_%i_vm_%.1f_g_eps_%.5f_dt_%.4f_remesh_period_diag_freq_%i'%(sd['initial_height'], sd['vmax'], sd['greens_epsilon'], sd['dt'], remesh_period,sd['diag_period'])
+    numerical_parameters = 'height0_%i_vm_%.1f_g_eps_%.5f_dt_%.4f_remesh_period_%i_diag_freq_%i'%(sd['initial_height'], sd['vmax'], sd['greens_epsilon'], sd['dt'], remesh_period,sd['diag_period'])
     amr_treecode_paramters = amr_string + tc_string
 #         sim_name = f'height0_{self.initial_height}_vm_{self.vmax:.1f}_g_eps_{self.greens_epsilon:.3f}_dt_{self.dt:.3f}_tf_{self.tf:.1f}_diag_freq_{self.diag_freq}' + tc_string
     sim_dir = simulations_dir + sd['project_name'] + '/' + physical_parameters + '/'
@@ -386,7 +386,7 @@ def plot_phase_space(sim_dir, simulation_dictionary, step_ii,flim, simulation_ha
     panels_fs = np.zeros(4*num_panels)
     
     
-    fig,ax = plt.subplots()
+    fig,ax = plt.subplots(figsize=(8,6))
     ax0 = ax
 
     patches = []
@@ -432,7 +432,71 @@ def plot_phase_space(sim_dir, simulation_dictionary, step_ii,flim, simulation_ha
     ax0.set_title(f'{num_panels} panels, t={simtime:.03f}')
     
 plt.close()
+plt.savefig(sim_dir_str + 'final_phase_space.png')
 # end plot_phase_space
+
+def plot_height(sim_dir, simulation_dictionary, iter_num, height_range = [7,11],simulation_has_run=True):
+
+    sd = simulation_dictionary
+    Lx = sd['xmax'] - sd['xmin']
+    output_dir = 'simulation_output/'
+    sim_dir_str = ''
+    if sim_dir is not None:
+        sim_dir_str = sim_dir
+        if sim_dir[-1] != '/':
+            sim_dir_str += '/'
+        output_dir = sim_dir_str + 'simulation_output/'
+    print('starting panel height plot')
+    t1 =time.time()
+    if not simulation_has_run:
+        print('unable to plot; simulation has not run or had errors')
+        return
+
+    fig, ax = plt.subplots(figsize=(8,6))
+
+            
+    ncolors = height_range[1] - height_range[0] + 1
+    mymap = cm.get_cmap('gist_rainbow_r',ncolors)
+    
+
+    ax.set_xlim([sd['xmin'], sd['xmax']])
+    ax.set_ylim([sd['vmin'],sd['vmax']])
+    ax.set_xlabel('x')
+    ax.set_ylabel('v')
+
+
+    panels = np.fromfile(output_dir + f'panels/leaf_point_inds_{iter_num}',dtype='int32')
+    num_panels = int(panels.size/9)
+    panels = np.reshape(panels, (num_panels,9))
+    panels_fs = np.zeros(num_panels)
+    xs = np.fromfile(output_dir + f'xs/xs_{iter_num}')
+    vs = np.fromfile(output_dir + f'vs/vs_{iter_num}')
+
+    patches = []
+    for ii, panel in enumerate(panels):
+        panel_xs = xs[panel]
+        panel_vs = vs[panel]
+        dx = panel_xs[8] - panel_xs[0]
+        
+        panels_fs[ii] = np.log2(Lx / dx)
+        rect_pts = np.vstack([panel_xs[pvert],panel_vs[pvert]]).T
+        patches.append(Polygon(rect_pts))
+
+    p = PatchCollection(patches, cmap=mymap)
+    p.set_array(panels_fs)
+    p.set_clim(height_range[0] - 0.5, height_range[1] + 0.5)
+    ax.add_collection(p)
+    cb = fig.colorbar(p, ax=ax)
+    cb.set_label('panel height')
+    ax.set_title(f't={iter_num*sd["dt"]:.3f}')
+
+    plt.tight_layout()
+    plt.savefig(sim_dir_str + f'panel_height_image_t_{iter_num*sd["dt"]}.png')
+    print('panel height plot done!')
+    t2 = time.time()
+    print(f'panels plot took {t2-t1:.3f}s')
+    plt.close()
+# end plot height
 
 def plot_e(sim_dir, simulation_dictionary, step_ii,flim, simulation_has_run = True, do_save = False):
     sd = simulation_dictionary
@@ -498,7 +562,7 @@ def phase_movie(sim_dir, simulation_dictionary,do_show_panels,flim=(0,.3), simul
                     comment='')
     writer = FFMpegWriter(fps=5, metadata=metadata)
 
-    fig, ax = plt.subplots(figsize=(12,10))
+    fig, ax = plt.subplots(figsize=(8,6))
 
     with writer.saving(fig, sim_dir_str + panel_string + 'phase_space'+ ".mp4", dpi=100):
 
@@ -668,7 +732,7 @@ def logf_movie(sim_dir, simulation_dictionary, simulation_has_run = True, can_do
                     comment='')
     writer = FFMpegWriter(fps=5, metadata=metadata)
 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(8,6))
 
     with writer.saving(fig, sim_dir_str+ 'logf_movie.mp4', dpi=100):
 
@@ -904,7 +968,7 @@ def panel_height_movie(sim_dir, simulation_dictionary, height_range = [7,11],sim
             p.set_clim(height_range[0] - 0.5, height_range[1] + 0.5)
             ax.add_collection(p)
             cb = fig.colorbar(p, ax=ax)
-            cb.set_label('f')
+            cb.set_label('panel height')
             ax.set_title(f't={iter_num*sd["dt"]:.3f}')
 
 
@@ -980,7 +1044,9 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     # diag_times = dt * iterations
 
     diag_times = np.arange(0,num_steps+1,diag_freq) * dt
+    diag_times.tofile(output_dir + 'diag_times')
     iterations = (diag_times / dt).astype('int')
+    iterations.tofile(output_dir + 'iterations')
     total_charge = np.zeros_like(diag_times)
     total_momentum = np.zeros_like(diag_times)
     total_kinetic = np.zeros_like(diag_times)
@@ -1042,11 +1108,26 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
         l1f[ii] = 1/abs(q) * np.sum(abs(qws))
         l2f[ii] = 1/q * np.dot(qws,fs)
 
+    # write diagnostic arrays to file
+    num_points.tofile(output_dir + 'num_points')
+    total_charge.tofile(output_dir + 'total_charge')
+    total_momentum.tofile(output_dir + 'total_momentum')
+    total_kinetic.tofile(output_dir + 'total_kinetic')
+    total_potential.tofile(output_dir + 'total_potential')
+    frac_negative.tofile(output_dir + 'frac_negative')
+    frac_negative_mass.tofile(output_dir + 'frac_negative_mass')
+    total_entropy.tofile(output_dir + 'total_entropy')
+    min_f.tofile(output_dir + 'min_f')
+    max_f.tofile(output_dir + 'max_f')
+    l1f.tofile(output_dir + 'l1f')
+    l2f.tofile(output_dir + 'l2f')
 
     # plot diagnostics
-    plt.rcParams['font.size']=16
+    plt.rcParams['font.size']=18
+    diag_fig_size=(8,6)
     # L2 E diagnostic
-    plt.figure()
+    # plt.figure()
+    plt.figure(figsize=diag_fig_size)
     # plt.title(r'$||E||_2$')
     l2e = np.sqrt(total_potential)
     plt.semilogy(diag_times, l2e)
@@ -1092,7 +1173,8 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     # end l2e diagnostic
     #---------------------------------
 
-    plt.figure()
+    # plt.figure()
+    plt.figure(figsize=diag_fig_size)
     # plt.title(r'maximum of f')
     plt.xlabel('t')
     plt.plot(diag_times, max_f )
@@ -1101,8 +1183,8 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     plt.savefig(sim_dir_str + 'maxf_conservation.png')
     plt.close()
     #---------------------------------
-    # plt.figure(figsize=diag_fig_size)
-    plt.figure()
+    plt.figure(figsize=diag_fig_size)
+    # plt.figure()
     # plt.title(r'relative variation in maximum of f')
     plt.xlabel('t')
     plt.plot(diag_times, (max_f - max_f[0])/max_f[0])
@@ -1112,8 +1194,8 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     plt.savefig(sim_dir_str + 'relative_maxf_conservation.png')
     plt.close()
     #---------------------------------
-    # plt.figure(figsize=diag_fig_size)
-    plt.figure()
+    plt.figure(figsize=diag_fig_size)
+    # plt.figure()
     # plt.title(r'minimum of f')
     plt.xlabel('t')
     plt.plot(diag_times, min_f)
@@ -1123,8 +1205,8 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     plt.savefig(sim_dir_str + 'minf_conservation.png')
     plt.close()
     #---------------------------------
-    # plt.figure(figsize=diag_fig_size)
-    plt.figure()
+    plt.figure(figsize=diag_fig_size)
+    # plt.figure()
     # plt.title(r'relative variation in minimum of f')
     plt.xlabel('t')
     plt.plot(diag_times, (min_f - min_f[0])/max_f[0])
@@ -1134,8 +1216,8 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     plt.savefig(sim_dir_str + 'relative_minf_conservation.png')
     plt.close()
     #---------------------------------
-    # plt.figure(figsize=diag_fig_size)
-    plt.figure()
+    plt.figure(figsize=diag_fig_size)
+    # plt.figure()
     # plt.title(r'fraction of negative f values')
     plt.xlabel('t')
     plt.plot(diag_times, frac_negative)
@@ -1144,8 +1226,8 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     plt.savefig(sim_dir_str + 'frac_negatives.png')
     plt.close()
     #---------------------------------
-    # plt.figure(figsize=diag_fig_size)
-    plt.figure()
+    plt.figure(figsize=diag_fig_size)
+    # plt.figure()
     # plt.title(r'fraction of negative mass')
     plt.xlabel('t')
     plt.plot(diag_times, frac_negative_mass)
@@ -1155,8 +1237,8 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     plt.close()
     #---------------------------------
 
-    # plt.figure(figsize=diag_fig_size)
-    plt.figure()
+    plt.figure(figsize=diag_fig_size)
+    # plt.figure()
     plt.plot(diag_times,num_points,'.',label='number of points')
     n_diags = sd['num_steps']+1
     initial_nx = 2**(sd['initial_height']+1) + 1
@@ -1174,8 +1256,8 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     plt.close()
     #---------------------------------
 
-    # plt.figure(figsize=diag_fig_size)
-    plt.figure()
+    plt.figure(figsize=diag_fig_size)
+    # plt.figure()
     # plt.title(r'relative variation in total charge')
     plt.xlabel('t')
     plt.plot(diag_times, (total_charge - total_charge[0])/total_charge[0])
@@ -1185,8 +1267,8 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     plt.savefig(sim_dir_str + 'relative_charge_conservation.png')
     plt.close()
     #---------------------------------
-    # plt.figure(figsize=diag_fig_size)
-    plt.figure()
+    plt.figure(figsize=diag_fig_size)
+    # plt.figure()
     # plt.title(r'variation in total momentum')
     plt.xlabel('t')
     plt.plot(diag_times, total_momentum - total_momentum[0])
@@ -1195,8 +1277,8 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     plt.savefig(sim_dir_str + 'momentum_conservation.png')
     plt.close()
     #---------------------------------
-    # plt.figure(figsize=diag_fig_size)
-    plt.figure()
+    plt.figure(figsize=diag_fig_size)
+    # plt.figure()
     # plt.title(r'relative variation in $L_1(f^n)$')
     plt.xlabel('t')
     plt.plot(diag_times, (l1f - l1f[0])/l1f[0])
@@ -1206,8 +1288,8 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     plt.savefig(sim_dir_str + 'relative_l1f_conservation.png')
     plt.close()
     #---------------------------------
-    # plt.figure(figsize=diag_fig_size)
-    plt.figure()
+    plt.figure(figsize=diag_fig_size)
+    # plt.figure()
     # plt.title(r'relative variation in $L_2(f^n)$')
     plt.xlabel('t')
     plt.plot(diag_times, (l2f - l2f[0])/l2f[0])
@@ -1217,8 +1299,8 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     plt.savefig(sim_dir_str + 'relative_l2f_conservation.png')
     plt.close()
     #---------------------------------
-    # plt.figure(figsize=diag_fig_size)
-    plt.figure()
+    plt.figure(figsize=diag_fig_size)
+    # plt.figure()
     # plt.title('relative energy variation')
     plt.xlabel('t')
     total_energy = total_potential + total_kinetic
@@ -1248,7 +1330,8 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
                 vs_xtest = vs[inds_xtest]
                 fs_xtest = fs[inds_xtest]
                 sort_inds = np.argsort(vs_xtest)
-                plt.figure()
+                # plt.figure()
+                plt.figure(figsize=diag_fig_size)
                 ax = plt.gca()
                 simtime = diag_times[step_ii]
                 # plt.title(f'f(t={simtime:.2f}, x={xtest:.2f}, v)')
@@ -1277,7 +1360,8 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
                 fs_xtest = fs[inds_xtest]
                 sort_inds = np.argsort(vs_xtest)
 
-                plt.figure()
+                # plt.figure()
+                plt.figure(figsize=diag_fig_size)
                 simtime = diag_times[test_iter]
                 # plt.title(f'f(t={simtime:.2f}, x={xtest:.2f}, v)')
                 plt.plot(vs_xtest[sort_inds],fs_xtest[sort_inds],'r')
@@ -1347,6 +1431,8 @@ if __name__ == '__main__':
                 dict_args[args.dict_args[3*ii]] = float(args.dict_args[3*ii+1])
             else:
                 dict_args[args.dict_args[3*ii]] = args.dict_args[3*ii+1]
+    if 'amr_epsilons' in dict_args:
+        dict_args['amr_epsilons'] = [dict_args['amr_epsilons']]
     
 
     root_dir_str = ''
@@ -1417,8 +1503,14 @@ if __name__ == '__main__':
         run_sim(sim_dir=sim_dir, deck_dir=deck_dir, deck_name=args.deck_name, use_gpu=args.use_gpu)
 
     if args.plot_diagnostics:
+        iterations = np.arange(0,sd['num_steps']+1, sd['diag_period'])
+        final_iter = iterations[-1]
         sim_diagnostics_sample(simulation_dictionary, sim_dir=sim_dir)
-        plot_phase_space(simulation_dictionary, sim_dir, int(45.0 / simulation_dictionary['dt']), sim_type_to_flim[SimType(simulation_dictionary['sim_type'])])
+        if SimType(sd['sim_type']) is not SimType.FRIEDMAN_BEAM:
+            # plot_phase_space(sim_dir, simulation_dictionary, int(45.0 / simulation_dictionary['dt']/simulation_dictionary['diag_period']), sim_type_to_flim[SimType(simulation_dictionary['sim_type'])])
+            plot_phase_space(sim_dir, simulation_dictionary, final_iter, sim_type_to_flim[SimType(simulation_dictionary['sim_type'])])
+        if args.show_panels or args.panels_movie:
+            plot_height(sim_dir, sd, final_iter)
 
     if args.phase_movie:
         simtype = simulation_dictionary['sim_type']
