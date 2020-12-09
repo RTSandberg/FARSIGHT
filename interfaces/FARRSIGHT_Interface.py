@@ -58,6 +58,9 @@ class SimType(IntEnum):
     STRONG_TWO_STREAM = 3
     COLDER_TWO_STREAM = 4
     FRIEDMAN_BEAM = 5
+class Quadrature(IntEnum):
+    TRAP = 1
+    SIMPSONS = 2
 
 sim_type_to_flim = {SimType.WEAK_LD : (0, 0.44),
                 SimType.STRONG_LD : (0, 0.47),
@@ -171,7 +174,11 @@ def generate_standard_names_dirs(simulation_dictionary, root_dir=None):
         remesh_period = sd['remesh_period']
     else:
         remesh_period = 1
-    numerical_parameters = 'height0_%i_vm_%.1f_g_eps_%.5f_dt_%.4f_remesh_period_%i_diag_freq_%i'%(sd['initial_height'], sd['vmax'], sd['greens_epsilon'], sd['dt'], remesh_period,sd['diag_period'])
+    if 'quadrature' in sd:
+        quad_str = Quadrature(sd['quadrature']).name
+    else:
+        quad_str = 'trap'
+    numerical_parameters = '%s_quadrature_height0_%i_vm_%.1f_g_eps_%.5f_dt_%.4f_remesh_period_%i_diag_freq_%i'%(quad_str,sd['initial_height'], sd['vmax'], sd['greens_epsilon'], sd['dt'], remesh_period,sd['diag_period'])
     amr_treecode_paramters = amr_string + tc_string
 #         sim_name = f'height0_{self.initial_height}_vm_{self.vmax:.1f}_g_eps_{self.greens_epsilon:.3f}_dt_{self.dt:.3f}_tf_{self.tf:.1f}_diag_freq_{self.diag_freq}' + tc_string
     sim_dir = simulations_dir + sd['project_name'] + '/' + physical_parameters + '/'
@@ -247,6 +254,7 @@ def update_dictionary(deck_dir = None, deck_name = None,
         'initial_height' : 5,\
         'max_height' : 5,\
         'greens_epsilon' : 0.2,\
+        'quadrature' : 1,\
         'use_treecode' : 0,\
         'beta' : -1.0,\
         'mac' : 0.8,\

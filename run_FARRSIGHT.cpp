@@ -127,7 +127,14 @@ int main(int argc, char** argv) {
             break;
     }
     
-    Quadrature quad = trap;
+    Quadrature quad;
+    int which_quad = deck.get<int>("quadrature",1);
+    if (which_quad == 1) {
+        quad = trap;
+    } else {
+        quad = simpsons;
+    }
+
     int initial_height = deck.get<int>("initial_height",6);//atoi(argv[11]);//6; 
     int max_height = deck.get<int>("max_height", initial_height);
     double greens_epsilon = deck.get<double>("greens_epsilon",0.2);//atof(argv[12]);//0.2;
@@ -204,7 +211,7 @@ int main(int argc, char** argv) {
             cout << "Using periodic boundary conditions" << endl;
             break;
     }
-    cout << "k=" << kx << ", amp = " << amp << ", vth = " << vth << ", vstr = " << vstr <<  endl;
+    cout << "k = " << kx << ", amp = " << amp << ", vth = " << vth << ", vstr = " << vstr <<  endl;
     cout << "height " << initial_height << endl;
     cout << "green's epsilon = " << greens_epsilon << endl;
     cout << "Taking " << num_steps << " steps with dt = " << dt << endl;
@@ -345,11 +352,12 @@ std::copy(amr.fs.begin(), amr.fs.end(), std::ostream_iterator<double>(cout, " ")
 cout << endl;
 cout << "--------------------------------" << endl;
 #endif
-
-        start = high_resolution_clock::now();
-        amr.remesh();
-        stop = high_resolution_clock::now();
-        amr.add_time(remesh_time, duration_cast<duration<double>>(stop - start) );
+        if ((ii) % n_steps_remesh == 0) {
+            start = high_resolution_clock::now();
+            amr.remesh();
+            stop = high_resolution_clock::now();
+            amr.add_time(remesh_time, duration_cast<duration<double>>(stop - start) );
+        }
 
         
 #ifdef DEBUG
