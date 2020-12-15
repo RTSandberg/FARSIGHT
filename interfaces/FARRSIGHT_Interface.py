@@ -46,7 +46,7 @@ except:
 import matplotlib
 from matplotlib.collections import PatchCollection
 from matplotlib.patches import Rectangle, Polygon
-plt.rcParams.update({'font.size': 14})
+plt.rcParams.update({'font.size': 18})
 
 from enum import IntEnum
 class BoundaryConditions(IntEnum):
@@ -432,15 +432,15 @@ def plot_phase_space(sim_dir, simulation_dictionary, step_ii,flim, simulation_ha
     p.set_clim(flim)
     ax0.add_collection(p)
     cb = fig.colorbar(p, ax=ax0)
-    cb.set_label('f')
+    # cb.set_label('f')
 
     ax0.set_xlim(sd['xmin'], sd['xmax'])
     ax0.set_ylim(sd['vmin'],sd['vmax'])
     ax0.set_ylabel('v')
-    ax0.set_title(f'{num_panels} panels, t={simtime:.03f}')
+    # ax0.set_title(f't={simtime:.03f}')
     
-plt.close()
-plt.savefig(sim_dir_str + 'final_phase_space.png')
+    plt.close()
+    plt.savefig(sim_dir_str + 'phase_space_{step_ii}.png')
 # end plot_phase_space
 
 def plot_height(sim_dir, simulation_dictionary, iter_num, height_range = [7,11],simulation_has_run=True):
@@ -495,8 +495,8 @@ def plot_height(sim_dir, simulation_dictionary, iter_num, height_range = [7,11],
     p.set_clim(height_range[0] - 0.5, height_range[1] + 0.5)
     ax.add_collection(p)
     cb = fig.colorbar(p, ax=ax)
-    cb.set_label('panel height')
-    ax.set_title(f't={iter_num*sd["dt"]:.3f}')
+    # cb.set_label('panel height')
+    # ax.set_title(f't={iter_num*sd["dt"]:.3f}')
 
     plt.tight_layout()
     plt.savefig(sim_dir_str + f'panel_height_image_t_{iter_num*sd["dt"]}.png')
@@ -538,7 +538,7 @@ def plot_e(sim_dir, simulation_dictionary, step_ii,flim, simulation_has_run = Tr
     plt.tight_layout()
     if do_save:
         plt.savefig(sim_dir_str + f'e_field_time_{step_ii}.png')
-plt.close()
+    plt.close()
 # end plot_e
 
     # %%time
@@ -1502,6 +1502,7 @@ if __name__ == '__main__':
                     deck_dir += '/'
         # simulation_dictionary = deck_to_dict(deck_dir = deck_dir, deck_name=args.deck_name)
         simulation_dictionary = update_dictionary(deck_dir=deck_dir, deck_name = args.deck_name, **dict_args)
+        sd = simulation_dictionary
         dictionaries_found = True
         # end not-from-deck option
     if sim_dir is not None:
@@ -1537,7 +1538,9 @@ if __name__ == '__main__':
             phase_movie(sim_dir, simulation_dictionary, do_show_panels, flim=flim, can_do_movie=can_do_movie)
 
     if args.panels_movie:
-        panel_height_movie(sim_dir, simulation_dictionary, can_do_movie=can_do_movie)
+        panel_height_movie(sim_dir, simulation_dictionary,\
+            height_range=[simulation_dictionary['initial_height'],simulation_dictionary['max_height']],\
+            can_do_movie=can_do_movie)
 
     if args.logf_movie:
         logf_movie(sim_dir, simulation_dictionary, can_do_movie=can_do_movie)
