@@ -17,6 +17,7 @@ refine_panels_in_v :
 */
 
 // #define DEBUG
+// #define DEBUG_L2
 
 int AMRStructure::create_prerefined_mesh_v_refinement() {
     // printf("setting initial mesh of height %i.\n", initial_height);
@@ -77,8 +78,10 @@ int AMRStructure::create_prerefined_mesh_v_refinement() {
         panels[0].is_right_bdry = true;
         panels.push_back(Panel{1, 1, 0, 0, 1, 2, 1, -2});
         panels[1].is_left_bdry = true;
+        panels[1].is_right_bdry = true;
         panels.push_back(Panel{2, 1, 0, 1, 2, -2, 2, 1});
         panels[2].is_left_bdry = true;
+        panels[2].is_right_bdry = true;
     } else if (bcs == open_bcs) {
         panels.push_back(Panel{0, 0, -1, -1, -2, -2, -2, -2});
         panels[0].set_point_inds(0,1,2,3,4,5,6,7,8);
@@ -852,6 +855,11 @@ void AMRStructure::generate_mesh(std::function<double (double,double)> f,
         #ifdef DEBUG
         cout << "interpolating to grid " << endl;
         #endif
+        #ifdef DEBUG_L2
+        cout << "xs size " << xs.size() << endl;
+        cout << "vs size " << vs.size() << endl;
+        #endif
+
         interpolate_to_initial_xvs(fs,xs,vs, nx_points, nv_points,verbose);
         #ifdef DEBUG
         cout << "done interpolating to grid" << endl;
@@ -1156,8 +1164,9 @@ void AMRStructure::remesh() {
     bool is_initial_step = false;
     #ifdef DEBUG
     cout << "Generating mesh" << endl;
+    #endif
     generate_mesh([&] (double x, double v) { return interpolate_from_mesh(x,v,false);} , do_adaptively_refine, is_initial_step);
-    #endif 
+    
 
     if (sqrt_f) {
         // std::transform(fs.begin(), fs.end(), fs.begin(), mysqr);

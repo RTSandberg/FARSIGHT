@@ -2,6 +2,8 @@
 
 // #ifndef DEBUG
 // #define DEBUG
+// #define DEBUG_L2
+// #define DEBUG_L3
 
 /* Changes for refine_v
 find leav recursively : if a panel is only refined in v, then child2 = child0, child child3 = child1
@@ -18,7 +20,7 @@ int AMRStructure::find_leaf_containing_point_from_neighbor(double& tx, double& t
 // if (fabs(tx + 0.0314) < 0.0003 && fabs(tv - 0.0122) < 0.0003) {
 //     verbose = true;
 // }
-verbose=true;
+// verbose=true;
 #endif
     // verbose = true;
     // end trouble shooting verbosity change
@@ -161,8 +163,8 @@ verbose=true;
                         }
                         if (panel->left_nbr_ind == -1) {
 #ifdef DEBUG
-// cout << "panel left: " << panel->left_nbr_ind << endl;
-// cout <<"length of panels_list " << old_panels.size() << endl;
+cout << "panel left: " << panel->left_nbr_ind << endl;
+cout <<"length of panels_list " << old_panels.size() << endl;
 #endif
                             new_leaf_ind = old_panels[panel->parent_ind].left_nbr_ind;
                             if (verbose) {
@@ -377,9 +379,9 @@ int AMRStructure::find_leaf_containing_xv_recursively(double  &x, const double &
                 bool ineq_2_bottom = (x_br - x_bm) * (v - v_bm) >= (v_br - v_bm) * (x - x_bm);
                 Panel* child_2;
                 if (panel->is_refined_v) {
-                     &old_panels[child_inds_start];
+                     child_2 = &old_panels[child_inds_start];
                 } else { // panel is refined in x and v
-                     &old_panels[child_inds_start+2];
+                     child_2 = &old_panels[child_inds_start+2];
                 }
                 int child_2_bottom_nbr_ind = child_2->bottom_nbr_ind;
                 if (ineq_2_bottom || child_2_bottom_nbr_ind < 0) {
@@ -483,7 +485,7 @@ void AMRStructure::interpolate_to_initial_xvs(
 
     auto start = high_resolution_clock::now();
     #ifdef DEBUG
-    verbose = true;
+    // verbose = true;
     #endif
     std::vector<double> shifted_xs(xs.size() );
     if (bcs == periodic_bcs) {
@@ -541,13 +543,15 @@ cout << "Done sorting" << endl;
         sortxs[ii] = shifted_xs[sort_indices[ii]];
         sortvs[ii] = vs[sort_indices[ii]];
     }
-    if (verbose) {
-        cout << "sorted xs" << endl;
+    // if (verbose) {
+    #ifdef DEBUG_L3
+        cout << "sorted xs, size = " << sortxs.size() << endl;
         std::copy(sortxs.begin(), sortxs.end(), std::ostream_iterator<double>(cout, ", "));
-        cout << endl << "sorted vs: " << endl;
+        cout << endl << "sorted vs, size = "  << sortvs.size() << endl;
         std::copy(sortvs.begin(), sortvs.end(), std::ostream_iterator<double>(cout, ", "));
         cout << endl;
-    }
+    #endif /* DEBUG_L3 */
+    // }
 
     stop = high_resolution_clock::now();
     // duration = duration_cast<microseconds>(stop - start);
@@ -600,10 +604,10 @@ cout << "found first panel" << endl;
 #ifdef DEBUG 
 cout << "searching first column" << endl;
 // if (iter_num >= 4) { verbose = true;} 
-    if (verbose) {
+    // if (verbose) {
         std::cout << "nx x nv= " << nx << " x " << nv << endl;
         cout << "xs size: " << xs.size() << endl;
-    }
+    // }
 // cout << "First column points" << endl;
 // for (int ii = 0; ii < nv; ++ii) {
 //     int point_ind = ii * nv;
@@ -617,7 +621,7 @@ cout << "searching first column" << endl;
             int point_ind = ii * nx;
             std::set<int> history;
             history.emplace(leaf_ind);
-            #ifdef DEBUG
+            #ifdef DEBUG_L2
             cout << "testing point " << point_ind << ", x= " << sortxs[point_ind] << ", v= " << sortvs[point_ind] << endl;
             #endif
             leaf_ind = find_leaf_containing_point_from_neighbor(sortxs[point_ind], sortvs[point_ind], beyond_boundary, 
@@ -670,7 +674,7 @@ cout << "after first column" << endl;
     // }
 #endif
 // #pragma omp parallel
-{
+// {
     // int num_threads = omp_get_num_threads();
     // if (omp_get_thread_num() == 0) {
     //     cout << "Number of threads from calc_E: " << num_threads << endl;
@@ -684,10 +688,10 @@ cout << "after first column" << endl;
         for (int jj = jj0+1; jj < nx; ++jj) {
             beyond_boundary = false;
             point_ind++;
-            #ifdef DEBUG
-            if (verbose) {
+            #ifdef DEBUG_L2
+            // if (verbose) {
             cout << "Testing point " << point_ind << ", (x,v)= (" << sortxs[point_ind] << ", " << sortvs[point_ind] << ")" << endl;
-            }
+            // }
             #endif
             std::set<int> history;
             history.emplace(leaf_ind_c);
@@ -698,33 +702,39 @@ cout << "after first column" << endl;
             } else {
                 leaf_panel_of_points[point_ind] = leaf_ind_c;
             }
-
-            // cout << "sorted ind " << point_ind << ", ind " << sort_indices[point_ind] << " is in panel " << leaf_ind << endl;
+            #ifdef DEBUG_L3
+            cout << "sorted ind " << point_ind << ", ind " << sort_indices[point_ind] << " is in panel " << leaf_ind_c << endl;
+            #endif
         }
     }    
-} // end omp parallel
+// } // end omp parallel
+#ifdef DEBUG
+cout << "done with panel search" << endl;
+#endif
+#ifdef DEBUG_L3
+    cout << "leaf_panel_of_points " << endl;
+    for (int ii = 0; ii < xs.size(); ++ii) {
+        cout << "point (sorted ind) " << ii <<", unsorted ind " << sort_indices[ii] << ": (x,v)=(" << sortxs[ii] << ", " << sortvs[ii] << ") is in panel " << leaf_panel_of_points[ii] << endl;
+    }
+#endif
 
     for (int ii = 0; ii < leaf_panel_of_points.size(); ++ii) {
         point_in_leaf_panels_by_inds[leaf_panel_of_points[ii]].push_back(ii);
     }
 
-#ifdef DEBUG
-    // cout << "leaf_panel_of_points " << endl;
-    // for (int ii = 0; ii < xs.size(); ++ii) {
-    //     cout << "point (sorted ind) " << ii <<", unsorted ind " << sort_indices[ii] << ": (x,v)=(" << sortxs[ii] << ", " << sortvs[ii] << ") is in panel " << leaf_panel_of_points[ii] << endl;
-    // }
+#ifdef DEBUG_L3
 
-    // cout << "point in leaf panels by inds " << endl;
-    // for (auto ii = 0; ii < point_in_leaf_panels_by_inds.size(); ++ii) {
-    //     std::vector<int> p_leaf = point_in_leaf_panels_by_inds[ii];
-    //     if (p_leaf.size() > 0 ) {
-    //         cout << "points in panel " << ii << ": ";
-    //         for (auto jj = 0; jj < p_leaf.size(); ++jj) {
-    //             cout << p_leaf[jj] << ", ";
-    //         }
-    //         cout << endl;
-    //     }
-    // }
+    cout << "point in leaf panels by inds " << endl;
+    for (auto ii = 0; ii < point_in_leaf_panels_by_inds.size(); ++ii) {
+        std::vector<int> p_leaf = point_in_leaf_panels_by_inds[ii];
+        if (p_leaf.size() > 0 ) {
+            cout << "points in panel " << ii << ": ";
+            for (auto jj = 0; jj < p_leaf.size(); ++jj) {
+                cout << p_leaf[jj] << ", ";
+            }
+            cout << endl;
+        }
+    }
     // std::copy(leaf_panel_of_points.begin(), leaf_panel_of_points.end(), std::ostream_iterator<int>(cout, " "));
 // debug
     // cout << "sort_indices[498] = " << sort_indices[498] << endl;
@@ -763,6 +773,10 @@ cout << "eval interpolant" << endl;
     // end debug element
     stop = high_resolution_clock::now();
     add_time(eval_time, duration_cast<duration<double>>(stop - start) );
+
+    #ifdef DEBUG
+    cout << "Done evaluating interpolant and done interpolating onto grid" << endl;
+    #endif
 }
 
 void AMRStructure::interpolate_from_panel_to_points(
@@ -787,10 +801,12 @@ void AMRStructure::interpolate_from_panel_to_points(
         const int* panel_point_inds = panel->point_inds;
         double panel_xs[9], panel_vs[9], panel_fs[9];
 
-        if (verbose) {
+        // if (verbose) {
+        #ifdef DEBUG_L2
             cout << "From panel " << panel_ind << endl;
             cout << "Getting panel points" << endl;
-        }
+        #endif
+        // }
         for (int ii = 0; ii < 9; ++ii) {
             // Particle* part = &particles[vertex_inds[ii]];
             int pind = panel_point_inds[ii];
@@ -850,7 +866,8 @@ cout << "unshear xs[" << ii << "] " << xs[ii] << ", dt " << dt << ", vs[ii] " <<
 
 #endif
 
-        if (verbose) {
+        // if (verbose) {
+#ifdef DEBUG_L3
             std::cout << "Interpolating from " << std::endl;
             for (int ii = 0; ii < 9; ++ii) {
                 std::cout << "(x,v,f)=(" << panel_xs[ii] << ", " << panel_vs[ii] << ", " << panel_fs[ii] << ")" << std::endl;
@@ -861,7 +878,8 @@ cout << "unshear xs[" << ii << "] " << xs[ii] << ", dt " << dt << ", vs[ii] " <<
                 int pind = point_inds[ii];
                 std::cout << "point " << pind << ": (" << xs[pind] << ", " << vs[pind] << ")\n";
             }
-        }
+#endif
+        // }
 
         // double dx, dv, 
         double panel_dx[9], panel_dv[9];

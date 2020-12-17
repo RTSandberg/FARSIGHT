@@ -259,7 +259,7 @@ int main(int argc, char** argv) {
 #ifdef DEBUG
 cout << "================================" << endl;
 cout << "initial" << endl;
-cout << "xs: ";
+cout << "xs, size= " << amr.xs.size();
 std::copy(amr.xs.begin(), amr.xs.end(), std::ostream_iterator<double>(cout, " "));
 cout << endl;
 cout << "--------------------------------" << endl;
@@ -356,16 +356,16 @@ cout << "--------------------------------" << endl;
 #ifdef DEBUG
 cout << "================================" << endl;
 cout << "post step" << endl;
-cout << "xs: ";
+cout << "xs, size= " << amr.xs.size();
 std::copy(amr.xs.begin(), amr.xs.end(), std::ostream_iterator<double>(cout, " "));
 cout << endl;
 cout << "--------------------------------" << endl;
-cout << "vs: ";
+cout << "vs, size =  " << amr.vs.size();
 std::copy(amr.vs.begin(), amr.vs.end(), std::ostream_iterator<double>(cout, " "));
 cout << endl;
 cout << "--------------------------------" << endl;
 
-cout << "es: ";
+cout << "es, size= " << amr.es.size();
 std::copy(amr.es.begin(), amr.es.end(), std::ostream_iterator<double>(cout, " "));
 cout << endl;
 cout << "--------------------------------" << endl;
@@ -373,6 +373,8 @@ cout << "fs: ";
 std::copy(amr.fs.begin(), amr.fs.end(), std::ostream_iterator<double>(cout, " "));
 cout << endl;
 cout << "--------------------------------" << endl;
+
+cout << amr << endl;
 #endif
         if ((ii) % n_steps_remesh == 0) {
             start = high_resolution_clock::now();
