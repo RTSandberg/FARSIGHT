@@ -177,7 +177,7 @@ def generate_standard_names_dirs(simulation_dictionary, root_dir=None):
     if 'quadrature' in sd:
         quad_str = Quadrature(sd['quadrature']).name
     else:
-        quad_str = 'trap'
+        quad_str = 'TRAP'
     if 'v_height' in sd:
         v_height = sd['v_height']
     else:
@@ -1507,9 +1507,10 @@ if __name__ == '__main__':
                     deck_dir += '/'
         # simulation_dictionary = deck_to_dict(deck_dir = deck_dir, deck_name=args.deck_name)
         simulation_dictionary = update_dictionary(deck_dir=deck_dir, deck_name = args.deck_name, **dict_args)
-        sd = simulation_dictionary
+        
         dictionaries_found = True
         # end not-from-deck option
+    sd = simulation_dictionary
     if sim_dir is not None:
         print('sim directory', sim_dir_str)
 

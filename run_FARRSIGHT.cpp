@@ -136,11 +136,12 @@ int main(int argc, char** argv) {
     
     Quadrature quad;
     int which_quad = deck.get<int>("quadrature",1);
-    if (which_quad == 1) {
-        quad = trap;
-    } else {
-        quad = simpsons;
-    }
+    quad = static_cast<Quadrature>(which_quad);
+    // if (which_quad == 1) {
+    //     quad = trap;
+    // } else {
+    //     quad = simpsons;
+    // }
 
     int initial_height = deck.get<int>("initial_height",6);//atoi(argv[11]);//6;
     int v_height = deck.get<int>("v_height",0);
