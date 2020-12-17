@@ -66,6 +66,7 @@ struct AMRStructure {
 
     // mesh parameters
     int initial_height;
+    int v_height;
     int height;
     int max_height;
     int npanels_x, npanels_v;
@@ -114,7 +115,9 @@ struct AMRStructure {
 
     // private functions
     int create_prerefined_mesh();
+    int create_prerefined_mesh_v_refinement();
     void refine_panels(std::function<double (double,double)> f, bool do_adaptive_refine);
+    void refine_panels_refine_v(std::function<double (double,double)> f, bool do_adaptive_refine);
     void test_panel(int panel_ind, bool verbose);
 
     int write_particles_to_file();
@@ -134,7 +137,7 @@ struct AMRStructure {
                 bool do_adaptively_refine, std::vector<double>& amr_epsilons);
         AMRStructure(std::string sim_dir, distribution* f0, //std::function<double (double,double)>& f0, 
                 double q, double m, 
-                int initial_height, int max_height, 
+                int initial_height, int v_height, int max_height, 
                 double x_min, double x_max, double v_min, double v_max, 
                 BoundaryConditions bcs,
                 ElectricField* calculate_e, Quadrature quad, int num_steps, double dt, 

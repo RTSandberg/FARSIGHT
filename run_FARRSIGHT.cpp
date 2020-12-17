@@ -16,6 +16,13 @@ using std::endl;
 #include <stdexcept> // invalid_argument exception
 #include <thread> // std::thread::hardware_concurrency
 
+/*
+changes for refine_v
+---
+* additional option in input deck: 
+* num_v_levels
+*/
+
 extern "C" {
     #include <mpi.h>
 }
@@ -135,7 +142,8 @@ int main(int argc, char** argv) {
         quad = simpsons;
     }
 
-    int initial_height = deck.get<int>("initial_height",6);//atoi(argv[11]);//6; 
+    int initial_height = deck.get<int>("initial_height",6);//atoi(argv[11]);//6;
+    int v_height = deck.get<int>("v_height",0);
     int max_height = deck.get<int>("max_height", initial_height);
     double greens_epsilon = deck.get<double>("greens_epsilon",0.2);//atof(argv[12]);//0.2;
     int use_treecode = deck.get<int>("use_treecode", 0); //atoi(argv[13]);
@@ -212,7 +220,7 @@ int main(int argc, char** argv) {
             break;
     }
     cout << "k = " << kx << ", amp = " << amp << ", vth = " << vth << ", vstr = " << vstr <<  endl;
-    cout << "height " << initial_height << endl;
+    cout << "height " << initial_height << ", v height " << v_height << endl;
     cout << "green's epsilon = " << greens_epsilon << endl;
     cout << "Taking " << num_steps << " steps with dt = " << dt << endl;
     cout << "Remesh every " << n_steps_remesh << " step(s), diagnostic dump every " << n_steps_diag << " step(s)" << endl;
@@ -239,8 +247,10 @@ int main(int argc, char** argv) {
     auto sim_start = high_resolution_clock::now();
 
 
+    // int v_height = 2;
+    // initial_height = 0;
     AMRStructure amr{sim_dir, f0, q, m,
-                initial_height, max_height,
+                initial_height, v_height,max_height,
                 x_min, x_max, v_min, v_max, bcs,
                 calculate_e, quad, num_steps, dt,
                 do_adaptively_refine, amr_epsilons};
@@ -316,6 +326,18 @@ cout << "--------------------------------" << endl;
 */
 // ----- end treecode debug section
 
+// --- testing v refinement ---
+// amr.init_e();
+// amr.write_to_file();
+// cout << amr << endl;
+// Panel myPanel;
+
+// myPanel.is_refined_v = true;
+// myPanel.print_panel();
+
+
+
+// ------- end test -----------
 
 
     auto start = high_resolution_clock::now();
@@ -398,6 +420,7 @@ cout << "--------------------------------" << endl;
     // cout << "Sim time " << sim_duration.count() << " seconds" << endl;
 
     amr.print_times();
+
     
 
     delete f0;

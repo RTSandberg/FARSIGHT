@@ -114,7 +114,7 @@ std::ostream& operator<<(std::ostream& os, const AMRStructure& amr) {
     os << "Computational domain: (x,v) in [" << amr.x_min << ", " << amr.x_max << "]x[" << amr.v_min << ", " << amr.v_max << "]" << endl; 
     os << "Species charge: " << amr.q << ", species mass: " << amr.q/amr.qm << endl;
     os << "-----------------" << endl;
-    os << "Initial height: " << amr.initial_height << ", height: " << amr.height << ", max height: " << amr.max_height << endl;
+    os << "Initial height: " << amr.initial_height << ", v height: " << amr.v_height << ", height: " << amr.height << ", max height: " << amr.max_height << endl;
     if (amr.do_adaptively_refine) { os << "This structure is adaptively refined" << endl;}
     else { os << "This structure is NOT adaptively refined" << endl;}
 
@@ -136,15 +136,15 @@ std::ostream& operator<<(std::ostream& os, const AMRStructure& amr) {
     os <<  "==============" << endl;
 
     os << "Point data" << endl << "==============" << endl;
-    os << "xs: ";
+    os << "xs, size = " << amr.xs.size() << endl;
     std::copy(amr.xs.begin(), amr.xs.end(), std::ostream_iterator<double>(os, " "));
-    os << endl << "vs: ";
+    os << endl << "vs, size = " << amr.vs.size() << endl;
     std::copy(amr.vs.begin(), amr.vs.end(), std::ostream_iterator<double>(os, " "));
-    os << endl << "fs: ";
+    os << endl << "fs, size = " << amr.fs.size() << endl;
     std::copy(amr.fs.begin(), amr.fs.end(), std::ostream_iterator<double>(os, " "));
-    os << endl << "qw: ";
+    os << endl << "qw, size = " << amr.q_ws.size() << endl;
     std::copy(amr.q_ws.begin(), amr.q_ws.end(), std::ostream_iterator<double>(os, " "));
-    os << endl << "es: ";
+    os << endl << "es, size = " << amr. es.size() << endl;
     std::copy(amr.es.begin(), amr.es.end(), std::ostream_iterator<double>(os, " "));
 
     return os;

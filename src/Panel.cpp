@@ -16,7 +16,7 @@ Panel::Panel()
     : panel_ind(0), level(0), parent_ind(-1), which_child(-1),
       left_nbr_ind(0), right_nbr_ind(0), top_nbr_ind(-2), bottom_nbr_ind(-2),
       is_left_bdry(false), is_right_bdry(false),
-      needs_refinement(false), is_refined(false)
+      needs_refinement(false), is_refined_xv(false), is_refined_v(false)
 {
     for(int ii = 0; ii < 9; ii++) {
         point_inds[ii] = ii;
@@ -30,7 +30,7 @@ Panel::Panel(int panel_ind, int level, int parent_ind, int which_child,
         : panel_ind(panel_ind), level(level), parent_ind(parent_ind), which_child(which_child),
         left_nbr_ind(ln_ind), top_nbr_ind(tn_ind), right_nbr_ind(rn_ind), bottom_nbr_ind(bn_ind),
         is_left_bdry(false), is_right_bdry(false),
-        needs_refinement(false), is_refined(false)
+        needs_refinement(false), is_refined_xv(false), is_refined_v(false)
 {
     for(int ii = 0; ii < 9; ++ii) {
         this->point_inds[ii] = point_inds[ii];
@@ -47,7 +47,7 @@ Panel::Panel(int panel_ind, int level, int parent_ind, int which_child,
         : panel_ind(panel_ind), level(level), parent_ind(parent_ind), which_child(which_child),
         left_nbr_ind(ln_ind), top_nbr_ind(tn_ind), right_nbr_ind(rn_ind), bottom_nbr_ind(bn_ind),
         is_left_bdry(is_left_bdry), is_right_bdry(is_right_bdry),
-        needs_refinement(false), is_refined(false)
+        needs_refinement(false), is_refined_xv(false), is_refined_v(false)
 {
     point_inds[0] = p0;
     point_inds[1] = p1;
@@ -68,7 +68,7 @@ Panel::Panel(int panel_ind, int level, int parent_ind, int which_child,
         : panel_ind(panel_ind), level(level), parent_ind(parent_ind), which_child(which_child),
         left_nbr_ind(ln_ind), top_nbr_ind(tn_ind), right_nbr_ind(rn_ind), bottom_nbr_ind(bn_ind),
         is_left_bdry(false), is_right_bdry(false),
-        needs_refinement(false), is_refined(false)
+        needs_refinement(false), is_refined_xv(false), is_refined_v(false)
 {
     child_inds_start = -1;
 }
@@ -76,7 +76,7 @@ Panel::Panel(int panel_ind, int level, int parent_ind, int which_child,
 Panel::Panel(int panel_ind, int level, int parent_ind, int which_child)
         : panel_ind(panel_ind), level(level), parent_ind(parent_ind), which_child(which_child),
         is_left_bdry(false), is_right_bdry(false),
-        needs_refinement(false), is_refined(false)
+        needs_refinement(false), is_refined_xv(false), is_refined_v(false)
 {
     for(int ii = 0; ii < 8; ii++) {
         point_inds[ii] = -1;
@@ -102,7 +102,13 @@ void Panel::set_point_inds(int p0, int p1, int p2, int p3, int p4,
 }
 
 void Panel::set_child_inds_start(int c0) {
-    is_refined = true;
+    is_refined_xv = true;
+    needs_refinement = false;
+    child_inds_start = c0;
+}
+
+void Panel::set_child_inds_start(int c0, bool refined_v) {
+    is_refined_v = true;
     needs_refinement = false;
     child_inds_start = c0;
 }
@@ -113,7 +119,7 @@ void Panel::print_panel() const {
     cout << "--------\n";
     cout << "Panel " << panel_ind << " is at level " << level << endl;
     cout << "It has point indices " << point_inds[0] << " " << point_inds[1] << " ";
-    cout << point_inds[2] << " " << point_inds[3]  << point_inds[4] << endl;
+    cout << point_inds[2] << " " << point_inds[3]  << " " << point_inds[4] << endl;
     cout << point_inds[5] << " " << point_inds[6] << " " << point_inds[7] << " " << point_inds[8] << endl;
     cout << "It is child " << which_child << " of panel " << parent_ind << endl;
     cout << "Neighbors are: left " << left_nbr_ind << ", top " << top_nbr_ind;
@@ -124,12 +130,17 @@ void Panel::print_panel() const {
     else {
         cout << "Panel is not flagged for refinemenment\n";
     }
-    if (is_refined) {
-        cout << "Panel is refined\n";
-        cout << "Children are " << child_inds_start << " " << child_inds_start + 1 << " ";
-        cout << child_inds_start + 2 << " " << child_inds_start + 3 << endl;
+    if (is_refined_v) {
+        cout << "Panel is refined in v only\n";
+        cout << "Children are panels " << child_inds_start << " " << child_inds_start + 1 << endl;
     } else {
-        cout << "Panel is not refined\n";
+        if (is_refined_xv) {
+            cout << "Panel is refined\n";
+            cout << "Children are panels " << child_inds_start << " " << child_inds_start + 1 << " ";
+            cout << child_inds_start + 2 << " " << child_inds_start + 3 << endl;
+        } else {
+            cout << "Panel is not refined\n";
+        }
     }
 };
 
@@ -152,7 +163,10 @@ std::ostream& operator<<(std::ostream& os, const Panel& panel) {   cout << "----
     else {
         os << "Panel is not flagged for refinemenment\n";
     }
-    if (panel.is_refined) {
+    if (panel.is_refined_v) {
+        os << "Panel is refined in v only\n";
+        os << "Children are " << panel.child_inds_start << " " << panel.child_inds_start + 1 << endl;
+    } else if (panel.is_refined_xv) {
         os << "Panel is refined\n";
         os << "Children are " << panel.child_inds_start << " " << panel.child_inds_start + 1 << " ";
         os << panel.child_inds_start + 2 << " " << panel.child_inds_start + 3 << endl;

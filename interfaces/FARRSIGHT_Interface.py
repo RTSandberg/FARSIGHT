@@ -178,7 +178,11 @@ def generate_standard_names_dirs(simulation_dictionary, root_dir=None):
         quad_str = Quadrature(sd['quadrature']).name
     else:
         quad_str = 'trap'
-    numerical_parameters = '%s_quadrature_height0_%i_vm_%.1f_g_eps_%.5f_dt_%.4f_remesh_period_%i_diag_freq_%i'%(quad_str,sd['initial_height'], sd['vmax'], sd['greens_epsilon'], sd['dt'], remesh_period,sd['diag_period'])
+    if 'v_height' in sd:
+        v_height = sd['v_height']
+    else:
+        v_height = 0
+    numerical_parameters = '%s_quadrature_height0_%i_v_height_%i_vm_%.1f_g_eps_%.5f_dt_%.4f_remesh_period_%i_diag_freq_%i'%(quad_str,sd['initial_height'], v_height, sd['vmax'], sd['greens_epsilon'], sd['dt'], remesh_period,sd['diag_period'])
     amr_treecode_paramters = amr_string + tc_string
 #         sim_name = f'height0_{self.initial_height}_vm_{self.vmax:.1f}_g_eps_{self.greens_epsilon:.3f}_dt_{self.dt:.3f}_tf_{self.tf:.1f}_diag_freq_{self.diag_freq}' + tc_string
     sim_dir = simulations_dir + sd['project_name'] + '/' + physical_parameters + '/'
@@ -252,6 +256,7 @@ def update_dictionary(deck_dir = None, deck_name = None,
         'normalized_wavenumber':1.0,\
         'amp':0.5, 'vth' : 1.0, 'vstr':0.0,\
         'initial_height' : 5,\
+        'v_height' : 0,\
         'max_height' : 5,\
         'greens_epsilon' : 0.2,\
         'quadrature' : 1,\

@@ -3,6 +3,10 @@
 // #ifndef DEBUG
 // #define DEBUG
 
+/* Changes for refine_v
+find leav recursively : if a panel is only refined in v, then child2 = child0, child child3 = child1
+*/
+
 int AMRStructure::find_leaf_containing_point_from_neighbor(double& tx, double& tv, bool& beyond_boundary, int leaf_ind, std::set<int>& history, bool verbose) {
 
 
@@ -14,7 +18,7 @@ int AMRStructure::find_leaf_containing_point_from_neighbor(double& tx, double& t
 // if (fabs(tx + 0.0314) < 0.0003 && fabs(tv - 0.0122) < 0.0003) {
 //     verbose = true;
 // }
-// verbose=true;
+verbose=true;
 #endif
     // verbose = true;
     // end trouble shooting verbosity change
@@ -82,7 +86,7 @@ int AMRStructure::find_leaf_containing_point_from_neighbor(double& tx, double& t
                 }
             } else {
                 Panel* panel_right = &old_panels[panel->right_nbr_ind];
-                if (panel_right->is_refined) { 
+                if (panel_right->is_refined_xv) { 
                     new_leaf_ind = panel_right->child_inds_start; 
                     if (verbose) {
                         cout << "in panel right children" << endl;
@@ -107,7 +111,7 @@ int AMRStructure::find_leaf_containing_point_from_neighbor(double& tx, double& t
                     }
                 } else {
                     Panel* panel_top = &old_panels[panel->top_nbr_ind];
-                    if (panel_top->is_refined) {
+                    if (panel_top->is_refined_xv) {
                         new_leaf_ind = panel_top->child_inds_start;
                         if (verbose) {
                             cout << "in top children" << endl;
@@ -132,7 +136,7 @@ int AMRStructure::find_leaf_containing_point_from_neighbor(double& tx, double& t
                         }
                     } else {
                         Panel* panel_bottom = &old_panels[panel->bottom_nbr_ind];
-                        if (panel_bottom -> is_refined) {
+                        if (panel_bottom -> is_refined_xv) {
                             new_leaf_ind = panel_bottom->child_inds_start + 1;
                             if (verbose) {
                                 cout << "in parent bottom children" << endl;
@@ -167,7 +171,7 @@ int AMRStructure::find_leaf_containing_point_from_neighbor(double& tx, double& t
                             }
                         } else {
                             Panel* panel_left = &old_panels[panel->left_nbr_ind];
-                            if (panel_left->is_refined) {
+                            if (panel_left->is_refined_xv) {
                                 new_leaf_ind = panel_left->child_inds_start+2;
                                 if (verbose) {
                                     cout << "in left children" << endl;
@@ -241,7 +245,7 @@ int AMRStructure::find_leaf_containing_xv_recursively(double  &x, const double &
         cout << *panel << endl;
         cout << "testing (x,v)=(" << x << ", " << v << ")" << endl;
     }
-    if (! panel->is_refined ) {
+    if (! (panel->is_refined_xv || panel->is_refined_v ) ) {
         leaf_ind = panel_ind;
         if (verbose) {
             cout << "leaf panel!" << endl;
@@ -317,7 +321,12 @@ int AMRStructure::find_leaf_containing_xv_recursively(double  &x, const double &
         } else if (ineq_3_bottom && !ineq_1_right)
         {
             bool ineq_3_top = (x_tr - x_tm) * (v - v_tm) <= (v_tr - v_tm) * (x - x_tm);
-            Panel* child_3 = &old_panels[child_inds_start+3];
+            Panel* child_3;
+            if (panel->is_refined_v) {
+                child_3 = &old_panels[child_inds_start +1];
+            } else { // panel is refined in xv
+                child_3 = &old_panels[child_inds_start+3];
+            }
             int child_3_top_nbr_ind = child_3->top_nbr_ind;
             if (ineq_3_top || child_3_top_nbr_ind < 0) {
                 bool ineq_3_right = (x_tr - x_mr) * (v - v_mr) <= (v_tr - v_mr) * (x - x_mr);
@@ -366,7 +375,12 @@ int AMRStructure::find_leaf_containing_xv_recursively(double  &x, const double &
             } else
             {
                 bool ineq_2_bottom = (x_br - x_bm) * (v - v_bm) >= (v_br - v_bm) * (x - x_bm);
-                Panel* child_2 = &old_panels[child_inds_start+2];
+                Panel* child_2;
+                if (panel->is_refined_v) {
+                     &old_panels[child_inds_start];
+                } else { // panel is refined in x and v
+                     &old_panels[child_inds_start+2];
+                }
                 int child_2_bottom_nbr_ind = child_2->bottom_nbr_ind;
                 if (ineq_2_bottom || child_2_bottom_nbr_ind < 0) {
                     bool ineq_2_right = (x_mr - x_br) * (v - v_br) <= (v_mr - v_br) * (x - x_br);
@@ -468,7 +482,9 @@ void AMRStructure::interpolate_to_initial_xvs(
     // bool print_profile = false;
 
     auto start = high_resolution_clock::now();
-    // verbose = true;
+    #ifdef DEBUG
+    verbose = true;
+    #endif
     std::vector<double> shifted_xs(xs.size() );
     if (bcs == periodic_bcs) {
 #ifdef DEBUG
@@ -569,7 +585,7 @@ cout << "Done sorting" << endl;
 // for (int ii = 0; ii < size_v.size(); ++ii) {
 //     cout << "at v= " << unique_vs[ii] << " there are " << size_v[ii] << " points" << endl;
 // }
-verbose = false;
+// verbose = false;
 cout << "finding panel of first point" << endl;
 // verbose=true;
 #endif
@@ -598,10 +614,12 @@ cout << "searching first column" << endl;
     // if (bcs == periodic_bcs) {
         for (int ii =0; ii < nv; ++ii) {
             beyond_boundary = false;
-            int point_ind = ii * nv;
+            int point_ind = ii * nx;
             std::set<int> history;
             history.emplace(leaf_ind);
-            // cout << "testing point " << point_ind << ", x= " << sortxs[point_ind] << ", v= " << sortvs[point_ind] << endl;
+            #ifdef DEBUG
+            cout << "testing point " << point_ind << ", x= " << sortxs[point_ind] << ", v= " << sortvs[point_ind] << endl;
+            #endif
             leaf_ind = find_leaf_containing_point_from_neighbor(sortxs[point_ind], sortvs[point_ind], beyond_boundary, 
                                                                 leaf_ind, history, verbose);
             first_column_leaf_inds[ii] = leaf_ind;
@@ -661,12 +679,16 @@ cout << "after first column" << endl;
     for (int ii = 0; ii < nv; ++ii) {
         // int jj0 = first_column_ind_in_old_mesh[ii];
         int jj0 = 0;
-        int point_ind = ii * nv + jj0;
+        int point_ind = ii * nx + jj0;
         int leaf_ind_c = first_column_leaf_inds[ii];//leaf_panel_of_points[point_ind];
         for (int jj = jj0+1; jj < nx; ++jj) {
             beyond_boundary = false;
             point_ind++;
-            // cout << "Testing point " << point_ind << ", (x,v)= (" << sortxs[point_ind] << ", " << sortvs[point_ind] << ")" << endl;
+            #ifdef DEBUG
+            if (verbose) {
+            cout << "Testing point " << point_ind << ", (x,v)= (" << sortxs[point_ind] << ", " << sortvs[point_ind] << ")" << endl;
+            }
+            #endif
             std::set<int> history;
             history.emplace(leaf_ind_c);
             leaf_ind_c = find_leaf_containing_point_from_neighbor(sortxs[point_ind], sortvs[point_ind], beyond_boundary, leaf_ind_c, history, verbose);
