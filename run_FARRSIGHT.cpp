@@ -222,6 +222,12 @@ int main(int argc, char** argv) {
     }
     cout << "k = " << kx << ", amp = " << amp << ", vth = " << vth << ", vstr = " << vstr <<  endl;
     cout << "height " << initial_height << ", v height " << v_height << endl;
+    switch (quad) {
+        case (simpsons) : cout << "Using Simpson's rule" << endl;
+            break;
+        default : cout << "Using trap rule" << endl;
+            break;
+    }
     cout << "green's epsilon = " << greens_epsilon << endl;
     cout << "Taking " << num_steps << " steps with dt = " << dt << endl;
     cout << "Remesh every " << n_steps_remesh << " step(s), diagnostic dump every " << n_steps_diag << " step(s)" << endl;
@@ -250,6 +256,7 @@ int main(int argc, char** argv) {
 
     // int v_height = 2;
     // initial_height = 0;
+
     AMRStructure amr{sim_dir, f0, q, m,
                 initial_height, v_height,max_height,
                 x_min, x_max, v_min, v_max, bcs,

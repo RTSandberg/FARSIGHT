@@ -59,8 +59,8 @@ class SimType(IntEnum):
     COLDER_TWO_STREAM = 4
     FRIEDMAN_BEAM = 5
 class Quadrature(IntEnum):
-    TRAP = 1
-    SIMPSONS = 2
+    TRAP = 0
+    SIMPSONS = 1
 
 sim_type_to_flim = {SimType.WEAK_LD : (0, 0.44),
                 SimType.STRONG_LD : (0, 0.47),
@@ -259,7 +259,7 @@ def update_dictionary(deck_dir = None, deck_name = None,
         'v_height' : 0,\
         'max_height' : 5,\
         'greens_epsilon' : 0.2,\
-        'quadrature' : 1,\
+        'quadrature' : 0,\
         'use_treecode' : 0,\
         'beta' : -1.0,\
         'mac' : 0.8,\
@@ -441,11 +441,13 @@ def plot_phase_space(sim_dir, simulation_dictionary, step_ii,flim, simulation_ha
 
     ax0.set_xlim(sd['xmin'], sd['xmax'])
     ax0.set_ylim(sd['vmin'],sd['vmax'])
+    ax0.set_ylabel('x')
     ax0.set_ylabel('v')
     # ax0.set_title(f't={simtime:.03f}')
+    plt.tight_layout()
     
+    plt.savefig(sim_dir_str + f'phase_space_{simtime:.2f}.png')
     plt.close()
-    plt.savefig(sim_dir_str + 'phase_space_{step_ii}.png')
 # end plot_phase_space
 
 def plot_height(sim_dir, simulation_dictionary, iter_num, height_range = [7,11],simulation_has_run=True):
@@ -469,7 +471,8 @@ def plot_height(sim_dir, simulation_dictionary, iter_num, height_range = [7,11],
 
             
     ncolors = height_range[1] - height_range[0] + 1
-    mymap = cm.get_cmap('gist_rainbow_r',ncolors)
+    # mymap = cm.get_cmap('gist_rainbow_r',ncolors)
+    mymap = cm.get_cmap('brg',ncolors)
     
 
     ax.set_xlim([sd['xmin'], sd['xmax']])
@@ -499,7 +502,8 @@ def plot_height(sim_dir, simulation_dictionary, iter_num, height_range = [7,11],
     p.set_array(panels_fs)
     p.set_clim(height_range[0] - 0.5, height_range[1] + 0.5)
     ax.add_collection(p)
-    cb = fig.colorbar(p, ax=ax)
+    plt_ticks = np.arange(height_range[0],height_range[1]+1)
+    cb = fig.colorbar(p, ax=ax, ticks=plt_ticks)
     # cb.set_label('panel height')
     # ax.set_title(f't={iter_num*sd["dt"]:.3f}')
 
@@ -934,12 +938,15 @@ def panel_height_movie(sim_dir, simulation_dictionary, height_range = [7,11],sim
             patches.append(Polygon(rect_pts))
             
         ncolors = height_range[1] - height_range[0] + 1
-        mymap = cm.get_cmap('gist_rainbow_r',ncolors)
+        # mymap = cm.get_cmap('gist_rainbow_r',ncolors)
+        mymap = cm.get_cmap('brg',ncolors)
         p = PatchCollection(patches, mymap)
         p.set_array(panels_fs)
         p.set_clim(height_range[0] - 0.5, height_range[1] + 0.5)
         ax.add_collection(p)
-        cb = fig.colorbar(p, ax=ax)
+        # cb = fig.colorbar(p, ax=ax)
+        plt_ticks = np.arange(height_range[0],height_range[1]+1)
+        cb = fig.colorbar(p, ax=ax, ticks=plt_ticks)
         cb.set_label('panel height')
 
         ax.set_xlim([sd['xmin'], sd['xmax']])
@@ -981,6 +988,7 @@ def panel_height_movie(sim_dir, simulation_dictionary, height_range = [7,11],sim
             p.set_clim(height_range[0] - 0.5, height_range[1] + 0.5)
             ax.add_collection(p)
             cb = fig.colorbar(p, ax=ax)
+            cb = fig.colorbar(p, ax=ax, ticks=plt_ticks)
             cb.set_label('panel height')
             ax.set_title(f't={iter_num*sd["dt"]:.3f}')
 

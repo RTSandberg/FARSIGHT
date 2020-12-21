@@ -44,7 +44,7 @@ extern "C" {
 
 
 enum BoundaryConditions {periodic_bcs, open_bcs, last_bc};
-enum Quadrature {simpsons, trap, last_quad};
+enum Quadrature {trap, simpsons, last_quad};
 enum ProfileTypes {sim_time, step_time, field_time, 
                 remesh_time, tree_build_time, panel_test_time, interp_time, search_time, 
                 eval_time, file_time, last_time};
