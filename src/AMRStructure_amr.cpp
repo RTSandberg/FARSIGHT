@@ -212,6 +212,18 @@ int AMRStructure::create_prerefined_mesh() {
         refine_panels( [] (double x, double v) {return 1.0;} , false);
         minimum_unrefined_index = num_panels_pre_refine;
     }
+    for (int level = 0; level < v_height; ++level) {
+        int num_panels_pre_refine = panels.size();
+
+        for (auto panel_it = panels.begin() + minimum_unrefined_index; panel_it != panels.end(); ++panel_it) {
+            panel_it->needs_refinement = true;
+        }
+        bool do_adaptive_refine = false;
+        refine_panels_refine_v( [] (double x, double v) {return 1.0;} , do_adaptive_refine);
+        minimum_unrefined_index = num_panels_pre_refine;
+    }
+
+
     is_initial_mesh_set = true;
 
     return 0;
@@ -311,7 +323,6 @@ void AMRStructure::refine_panels_refine_v(std::function<double (double,double)> 
                 }
                 else {
                     if (panel_left->is_refined_xv) {
-                        cout << "shouldn't have xv refinement when doing v refinement!" << endl;
                         child_0_left_nbr_ind = panel_left->child_inds_start +2;
                         child_1_left_nbr_ind = panel_left->child_inds_start + 3;
                     } else { // panel_left is refined in v
@@ -833,11 +844,11 @@ void AMRStructure::generate_mesh(std::function<double (double,double)> f,
     bool verbose=false;
 
     auto start = high_resolution_clock::now();
-    if (v_height > 0){
-        create_prerefined_mesh_v_refinement();
-    } else {
-        create_prerefined_mesh();
-    }
+    // if (v_height > 0){
+        // create_prerefined_mesh_v_refinement();
+    // } else {
+    create_prerefined_mesh();
+    // }
     auto stop = high_resolution_clock::now();
     add_time(tree_build_time,  duration_cast<duration<double>>(stop - start) );
 
