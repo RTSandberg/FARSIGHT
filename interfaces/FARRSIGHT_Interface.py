@@ -472,7 +472,7 @@ def plot_height(sim_dir, simulation_dictionary, iter_num, height_range = [7,11],
             
     ncolors = height_range[1] - height_range[0] + 1
     # mymap = cm.get_cmap('gist_rainbow_r',ncolors)
-    mymap = cm.get_cmap('brg',ncolors)
+    mymap = cm.get_cmap('jet',ncolors)
     
 
     ax.set_xlim([sd['xmin'], sd['xmax']])
@@ -939,7 +939,7 @@ def panel_height_movie(sim_dir, simulation_dictionary, height_range = [7,11],sim
             
         ncolors = height_range[1] - height_range[0] + 1
         # mymap = cm.get_cmap('gist_rainbow_r',ncolors)
-        mymap = cm.get_cmap('brg',ncolors)
+        mymap = cm.get_cmap('jet',ncolors)
         p = PatchCollection(patches, mymap)
         p.set_array(panels_fs)
         p.set_clim(height_range[0] - 0.5, height_range[1] + 0.5)
