@@ -441,7 +441,7 @@ def plot_phase_space(sim_dir, simulation_dictionary, step_ii,flim, simulation_ha
 
     ax0.set_xlim(sd['xmin'], sd['xmax'])
     ax0.set_ylim(sd['vmin'],sd['vmax'])
-    ax0.set_ylabel('x')
+    ax0.set_xlabel('x')
     ax0.set_ylabel('v')
     # ax0.set_title(f't={simtime:.03f}')
     plt.tight_layout()
@@ -449,6 +449,83 @@ def plot_phase_space(sim_dir, simulation_dictionary, step_ii,flim, simulation_ha
     plt.savefig(sim_dir_str + f'phase_space_{simtime:.2f}.png')
     plt.close()
 # end plot_phase_space
+
+
+def plot_logf(sim_dir, simulation_dictionary, step_ii,flim=(-20,0), simulation_has_run = True, do_save = False):
+    sd = simulation_dictionary
+    output_dir = 'simulation_output/'
+    sim_dir_str = ''
+    if sim_dir is not None:
+        sim_dir_str = sim_dir
+        if sim_dir[-1] != '/':
+            sim_dir_str += '/'
+        output_dir = sim_dir_str + 'simulation_output/'
+
+    if not simulation_has_run:
+        print('unable to plot; simulation has not run or had errors')
+        return
+    
+    simtime = step_ii * sd["dt"]
+    
+    # output_dir = sim_dir + 'simulation_output/'
+    xs = np.fromfile(output_dir + f'xs/xs_{step_ii}')
+    vs = np.fromfile(output_dir + f'vs/vs_{step_ii}')
+    fs = np.fromfile(output_dir + f'fs/fs_{step_ii}')
+    es = np.fromfile(output_dir + f'es/es_{step_ii}')
+    panels = np.fromfile(output_dir + f'panels/leaf_point_inds_{step_ii}',dtype='int32')
+    num_panels = int(panels.size/9)
+    panels = np.reshape(panels, (num_panels,9))
+    panels_fs = np.zeros(4*num_panels)
+    
+    
+    fig,ax = plt.subplots(figsize=(8,6))
+    ax0 = ax
+
+    patches = []
+    for ii, panel in enumerate(panels):
+        panel_xs = xs[panel]
+        panel_vs = vs[panel]
+        panel_fs = fs[panel]
+#             weights = np.array([1,4,1,4,16,4,1,4,1])
+#             panels_fs[ii] = 1./36. * np.dot(panel_fs,weights)
+
+        p0 = [0,1,4,3]
+        panels_fs[4*ii] = .25*sum(panel_fs[p0])
+        rect_pts = np.vstack([panel_xs[p0],panel_vs[p0]]).T
+        patches.append(Polygon(rect_pts))
+
+        p1 = [1,2,5,4]
+        panels_fs[4*ii+1] = .25*sum(panel_fs[p1])
+        rect_pts = np.vstack([panel_xs[p1],panel_vs[p1]]).T
+        patches.append(Polygon(rect_pts))
+
+        p2 = [3,4,7,6]
+        panels_fs[4*ii+2] = .25*sum(panel_fs[p2])
+        rect_pts = np.vstack([panel_xs[p2],panel_vs[p2]]).T
+        patches.append(Polygon(rect_pts))
+
+        p3 = [4,5,8,7]
+        panels_fs[4*ii+3] = .25*sum(panel_fs[p3])
+        rect_pts = np.vstack([panel_xs[p3],panel_vs[p3]]).T
+        patches.append(Polygon(rect_pts))
+
+    p = PatchCollection(patches, cmap=matplotlib.cm.jet)
+    p.set_array(np.log10(panels_fs))
+    p.set_clim(flim)
+    ax0.add_collection(p)
+    cb = fig.colorbar(p, ax=ax0)
+    # cb.set_label('f')
+
+    ax0.set_xlim(sd['xmin'], sd['xmax'])
+    ax0.set_ylim(sd['vmin'],sd['vmax'])
+    ax0.set_xlabel('x')
+    ax0.set_ylabel('v')
+    # ax0.set_title(f't={simtime:.03f}')
+    plt.tight_layout()
+    
+    plt.savefig(sim_dir_str + f'logf_{simtime:.2f}.png')
+    plt.close()
+# end plot_logf
 
 def plot_height(sim_dir, simulation_dictionary, iter_num, height_range = [7,11],simulation_has_run=True):
 
@@ -726,7 +803,7 @@ def phase_movie_standard_tree(simulation_dictionary,root_dir=None,do_show_panels
     phase_movie(sim_dir, simulation_dictionary, do_show_panels=do_show_panels, flim=flim, simulation_has_run=simulation_has_run, can_do_movie=can_do_movie)
 # logf movie
 # %%time
-def logf_movie(sim_dir, simulation_dictionary, simulation_has_run = True, can_do_movie = True, flim=(-8,0)):
+def logf_movie(sim_dir, simulation_dictionary, simulation_has_run = True, can_do_movie = True, flim=(-12,0)):
     sd = simulation_dictionary
     output_dir = 'simulation_output/'
     sim_dir_str = ''
@@ -1181,7 +1258,11 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     if simtype == 1:
     # if FS.simtype is SimType.WEAK_LD:
     #     pass
-        plt.ylim([1e-8,1e-1])
+        tf = sd['num_steps'] * sd['dt']
+        if tf > 85:
+            plt.ylim([1e-16,1e-1])
+        else:
+            plt.ylim([1e-8,1e-1])
     #strong LD
     # if type_str == 'strong_LD' or type_str == 'strong_2str':
     if simtype in [2,3,4]:
@@ -1429,31 +1510,38 @@ if __name__ == '__main__':
     parser.add_argument('--deck_name', '-dn', help='Name of input_deck.  Default is "deck.json"', default='deck.json')
     parser.add_argument('--make_deck', '-make', help='')
     parser.add_argument('--run','-r',action='store_true', help='Run the simulation using deck in deck directory, store output in sim_dir')
-    parser.add_argument('--gpu',dest='use_gpu', action='store_true', help='boolean switch for using gpu')
-    parser.add_argument('--phase_movie','-pha',action='store_true', help='use this flag to make phase space movie from data in sim_dir')
-    parser.add_argument('--show_panels','-p',action='store_true', help='use this flag to show panels in phase space movie')
-    parser.add_argument('--logf_movie','-log',action='store_true', help='use this flag to make log f movie')
-    parser.add_argument('--panels_movie','-panel',action='store_true', help='use this flag to make panel height movie')
-    parser.add_argument('--plot_diagnostics','-pd',action='store_true',help='use this flag to plot diagnostics')
-    parser.add_argument('dict_args',help='optional edits to deck, of the form $ python FARRSIGHT_Interface.py ...args... name value type.' +\
-                        ' For example,  dt 0.5 float',nargs=argparse.REMAINDER)
+    parser.add_argument('--gpu',dest='use_gpu', action='store_true', help='use gpu')
+    parser.add_argument('--phase_movie','-pha',action='store_true', help='make phase space movie from data in sim_dir')
+    parser.add_argument('--show_panels','-p',action='store_true', help='show panels in phase space movie')
+    parser.add_argument('--logf_plot','-logp',action='store_true',help='generate log f plots at times in plot_times argument')
+    parser.add_argument('--logf_movie','-log',action='store_true', help='make log f movie')
+    parser.add_argument('--panels_movie','-panel',action='store_true', help='make panel height movie')
+    parser.add_argument('--plot_diagnostics','-pd',action='store_true',help='plot diagnostics')
+    parser.add_argument('--plot_times','-pt', type=float, nargs='*', help='times at which to generate phase space plots')
+    parser.add_argument('--dict_args','-args', help='optional edits to deck, of the form $ python FARRSIGHT_Interface.py ...args... name value type.' +\
+                        ' For example,  dt 0.5 float',nargs='*')
     args = parser.parse_args()
 
     # convert other arguments to a dictionary
-    num_dict_entries = len(args.dict_args)//3
-    wrong_num_entries = len(args.dict_args) % 3
 
     dict_args = {}
-    for ii in range(num_dict_entries):
-        if (ii != num_dict_entries or wrong_num_entries == 0):
-            if (args.dict_args[3*ii+2] == 'int'):
-                dict_args[args.dict_args[3*ii]] = int(args.dict_args[3*ii+1])
-            elif (args.dict_args[3*ii+2] == 'float'):
-                dict_args[args.dict_args[3*ii]] = float(args.dict_args[3*ii+1])
-            else:
-                dict_args[args.dict_args[3*ii]] = args.dict_args[3*ii+1]
-    if 'amr_epsilons' in dict_args:
-        dict_args['amr_epsilons'] = [dict_args['amr_epsilons']]
+    if args.dict_args is not None:
+        num_dict_entries = len(args.dict_args)//3
+        wrong_num_entries = len(args.dict_args) % 3
+        if 'amr_epsilons' in args.dict_args:
+            dict_args['amr_epsilons'] = []
+        for ii in range(num_dict_entries):
+            if args.dict_args[3*ii] == 'amr_epsilons':
+                dict_args['amr_epsilons'].append(float(args.dict_args[3*ii+1]))
+            elif (ii != num_dict_entries or wrong_num_entries == 0):
+                if (args.dict_args[3*ii+2] == 'int'):
+                    dict_args[args.dict_args[3*ii]] = int(args.dict_args[3*ii+1])
+                elif (args.dict_args[3*ii+2] == 'float'):
+                    dict_args[args.dict_args[3*ii]] = float(args.dict_args[3*ii+1])
+                else:
+                    dict_args[args.dict_args[3*ii]] = args.dict_args[3*ii+1]
+        # if 'amr_epsilons' in dict_args:
+        #     dict_args['amr_epsilons'] = [dict_args['amr_epsilons']]
     
 
     root_dir_str = ''
@@ -1534,6 +1622,20 @@ if __name__ == '__main__':
             plot_phase_space(sim_dir, simulation_dictionary, final_iter, sim_type_to_flim[SimType(simulation_dictionary['sim_type'])])
         if args.show_panels or args.panels_movie:
             plot_height(sim_dir, sd, final_iter)
+
+    if args.plot_times is not None:
+        iterations = np.arange(0,sd['num_steps']+1,sd['diag_period'])
+        diag_ts = iterations * sd['dt']
+        for t0 in args.plot_times:
+            print('generating time',t0,'phase space')
+            t0_ind = np.nonzero(diag_ts <= t0)[0][-1]
+            t0_sim = diag_ts[t0_ind]
+            plot_phase_space(sim_dir,sd,t0_ind,sim_type_to_flim[SimType(sd['sim_type'])])
+            if args.logf_movie or args.logf_plot:
+                plot_logf(sim_dir, sd, t0_ind)
+                
+            if sd['adaptively_refine'] or args.show_panels or args.panels_movie:
+                plot_height(sim_dir, sd, t0_ind, height_range=[sd['initial_height'],sd['max_height']])
 
     if args.phase_movie:
         simtype = simulation_dictionary['sim_type']
