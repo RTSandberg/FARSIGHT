@@ -1133,7 +1133,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     xmax = sd['xmax']
     vmin = sd['vmin']
     vmax = sd['vmax']
-    tf = dt * num_steps
+    # tf = dt * num_steps
 
     output_dir = sim_dir_str + 'simulation_output/'
     # file_list = os.listdir('simulation_output/fs')
@@ -1145,6 +1145,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
 
     diag_times = np.arange(0,num_steps+1,diag_freq) * dt
     diag_times.tofile(output_dir + 'diag_times')
+    tf = diag_times[-1]
     iterations = (diag_times / dt).astype('int')
     iterations.tofile(output_dir + 'iterations')
     total_charge = np.zeros_like(diag_times)

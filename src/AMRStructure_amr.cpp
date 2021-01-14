@@ -921,17 +921,20 @@ void AMRStructure::generate_mesh(std::function<double (double,double)> f,
             #ifdef DEBUG
             cout << "refining panels" << endl;
             #endif
+            auto amr_start = high_resolution_clock::now();
             refine_panels(f, do_adaptive_refine);
+            auto amr_stop = high_resolution_clock::now();
+            add_time(amr_refine_time, duration_cast<duration<double>>(amr_stop-amr_start) );
 
-            // start = high_resolution_clock::now();
+            amr_start = high_resolution_clock::now();
             // cout << "test initial grid for refinement" << endl;
             for (int ii = minimum_unrefined_index; ii < panels.size(); ++ii) {
                 if (!panels[ii].is_refined_xv) {
                     test_panel(ii, verbose);
                 }
             }
-            // stop = high_resolution_clock::now();
-            // add_time(panel_test_time,  duration_cast<duration<double>>(stop - start) );
+            amr_stop = high_resolution_clock::now();
+            add_time(amr_test_time,  duration_cast<duration<double>>(amr_stop - amr_start) );
         }
         stop = high_resolution_clock::now();
         add_time(tree_build_time,  duration_cast<duration<double>>(stop - start) );
