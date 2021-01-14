@@ -1,17 +1,26 @@
 #include "AMRStructure.hpp"
 
 int AMRStructure::write_particles_to_file() {
+    bool pre_remesh = false;
+    return write_particles_to_file(pre_remesh);
+}
+
+int AMRStructure::write_particles_to_file(bool pre_remesh) {
     std::ofstream x_file;
     std::ofstream v_file;
     std::ofstream f_file;
     std::ofstream qw_file;
     std::ofstream e_file;
 
-    x_file.open(sim_dir + "simulation_output/xs/xs_" + std::to_string(iter_num), std::ios::out | std::ios::binary); 
-    v_file.open(sim_dir + "simulation_output/vs/vs_" + std::to_string(iter_num), std::ios::out | std::ios::binary); 
-    f_file.open(sim_dir + "simulation_output/fs/fs_" + std::to_string(iter_num), std::ios::out | std::ios::binary); 
-    qw_file.open(sim_dir + "simulation_output/qws/qws_" + std::to_string(iter_num), std::ios::out | std::ios::binary); 
-    e_file.open(sim_dir + "simulation_output/es/es_" + std::to_string(iter_num), std::ios::out | std::ios::binary); 
+    std::string remesh_str = "";
+    if (pre_remesh) {
+        remesh_str = "preremesh_";
+    }
+    x_file.open(sim_dir + "simulation_output/xs/xs_" + remesh_str + std::to_string(iter_num), std::ios::out | std::ios::binary); 
+    v_file.open(sim_dir + "simulation_output/vs/vs_" + remesh_str  + std::to_string(iter_num), std::ios::out | std::ios::binary); 
+    f_file.open(sim_dir + "simulation_output/fs/fs_" + remesh_str  + std::to_string(iter_num), std::ios::out | std::ios::binary); 
+    qw_file.open(sim_dir + "simulation_output/qws/qws_" + remesh_str  + std::to_string(iter_num), std::ios::out | std::ios::binary); 
+    e_file.open(sim_dir + "simulation_output/es/es_" + remesh_str  + std::to_string(iter_num), std::ios::out | std::ios::binary); 
 
     // std::cout << "#xs " << xs.size() << std::endl;
     // std::cout << "#vs " << vs.size() << std::endl;
@@ -62,9 +71,17 @@ int AMRStructure::write_particles_to_file() {
 }
 
 int AMRStructure::write_panels_to_file() {
+    bool pre_remesh = false;
+    return write_panels_to_file(pre_remesh);
+}
+int AMRStructure::write_panels_to_file(bool pre_remesh) {
     std::ofstream panel_file;
+    std::string remesh_str = "";
+    if (pre_remesh) {
+        remesh_str = "preremesh_";
+    }
 
-    panel_file.open(sim_dir + "simulation_output/panels/leaf_point_inds_" + std::to_string(iter_num), std::ios::out | std::ios::binary);
+    panel_file.open(sim_dir + "simulation_output/panels/leaf_point_inds_" + remesh_str+ std::to_string(iter_num), std::ios::out | std::ios::binary);
     
     if (!panel_file) {
         cout << "Unable to open step " << iter_num << " panel data files" << endl;
@@ -87,9 +104,13 @@ int AMRStructure::write_panels_to_file() {
     return 0;
 }
 
-int AMRStructure::write_to_file() {
-    write_particles_to_file();
-    write_panels_to_file();
+int AMRStructure::write_to_file() { 
+    bool pre_remesh=false;
+    return write_to_file(pre_remesh);
+}
+int AMRStructure::write_to_file(bool pre_remesh) {
+    write_particles_to_file(pre_remesh);
+    write_panels_to_file(pre_remesh);
     return 0;
 }
 

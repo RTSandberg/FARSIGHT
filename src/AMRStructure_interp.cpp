@@ -233,6 +233,10 @@ int AMRStructure::find_leaf_containing_xv_recursively(double  &x, const double &
     int leaf_ind;
     int subpanel_ind;
     int child_inds_start;
+
+    #ifdef DEBUG
+    verbose = true;
+    #endif
     // double x_temp = x;
     // if ( fabs(x +1.57) < 0.5 && fabs(v +4.125) < 0.5) { verbose = true; }
     // else {verbose = false; }
@@ -334,7 +338,12 @@ int AMRStructure::find_leaf_containing_xv_recursively(double  &x, const double &
                 bool ineq_3_right = (x_tr - x_mr) * (v - v_mr) <= (v_tr - v_mr) * (x - x_mr);
                 int child_3_right_nbr_ind = child_3->right_nbr_ind;
                 if (!ineq_3_right || child_3_right_nbr_ind < 0) {
-                    subpanel_ind = child_inds_start + 3;
+                    if (panel->is_refined_v) {
+                        subpanel_ind = child_inds_start + 1;
+                    }
+                    else {
+                        subpanel_ind = child_inds_start + 3;
+                    }
                     if (verbose) {
                         cout << "in child 3, panel " << subpanel_ind << endl;
                     }
@@ -388,7 +397,11 @@ int AMRStructure::find_leaf_containing_xv_recursively(double  &x, const double &
                     bool ineq_2_right = (x_mr - x_br) * (v - v_br) <= (v_mr - v_br) * (x - x_br);
                     int child_2_right_nbr_ind = child_2->right_nbr_ind;
                     if (! ineq_2_right || child_2_right_nbr_ind < 0) {
-                        subpanel_ind = child_inds_start + 2;
+                        if (panel->is_refined_v) {
+                            subpanel_ind = child_inds_start;
+                        } else {
+                            subpanel_ind = child_inds_start + 2;
+                        }
                         if (verbose) {
                             cout << "in child 2, panel " << subpanel_ind << endl;
                         }
@@ -1074,6 +1087,10 @@ cout << "unshear x " << x << ", dt " << dt << ", v " << v << ", vmid " << panel_
 
 double AMRStructure::interpolate_from_mesh(double x, double v, bool verbose) {
 
+#ifdef DEBUG
+cout << "testing point (x,v)=(" << x <<", " << v << ")" << endl;
+#endif
+
     // probably need to shift xs
     std::vector<double> xs(1,x);
     std::vector<double> shifted_xs(1,x);
@@ -1089,6 +1106,8 @@ double AMRStructure::interpolate_from_mesh(double x, double v, bool verbose) {
         leaf_containing = 0;
     }
 #ifdef DEBUG
+cout << "in panel " << leaf_containing << endl;
+
 if (iter_num >= 240) {
     if (fabs(x - 0.0118) < initial_dx/5 && fabs(v - 0.0143) < initial_dv/5) {
         cout << "(x,v)=(" << x << ", " << v << ") is in panel " << leaf_containing << endl;
@@ -1111,6 +1130,9 @@ if (iter_num >= 240) {
     if (verbose) {
         cout << "(" << shifted_x << ", " << v << ") is in panel " << leaf_containing << ", f_interpolated(x,v) = " << val << endl;
     }
+    #ifdef DEBUG
+    cout << "f interpolated = " << val << endl;
+    #endif
     return val;
 }
 

@@ -36,6 +36,7 @@ namespace pt = boost::property_tree;
 #include "initial_distributions.hpp"
 
 // #define DEBUG // for debugging purposes
+// #define DEBUG2
 
 
 int main(int argc, char** argv) {
@@ -264,7 +265,7 @@ int main(int argc, char** argv) {
                 do_adaptively_refine, amr_epsilons};
                 
     // cout << amr << endl;
-#ifdef DEBUG
+#ifdef DEBUG2
 cout << "================================" << endl;
 cout << "initial" << endl;
 cout << "xs, size= " << amr.xs.size();
@@ -361,7 +362,7 @@ cout << "--------------------------------" << endl;
         stop = high_resolution_clock::now();
         amr.add_time(step_time, duration_cast<duration<double>>(stop - start) );
 
-#ifdef DEBUG
+#ifdef DEBUG2
 cout << "================================" << endl;
 cout << "post step" << endl;
 cout << "xs, size= " << amr.xs.size();
@@ -385,6 +386,12 @@ cout << "--------------------------------" << endl;
 cout << amr << endl;
 #endif
         if ((ii) % n_steps_remesh == 0) {
+
+#ifdef DEBUG
+bool pre_remesh = true;
+amr.write_to_file(pre_remesh);
+#endif
+
             start = high_resolution_clock::now();
             amr.remesh();
             stop = high_resolution_clock::now();
@@ -392,7 +399,7 @@ cout << amr << endl;
         }
 
         
-#ifdef DEBUG
+#ifdef DEBUG2
 cout << "================================" << endl;
 cout << "post remesh" << endl;
 cout << "xs: ";

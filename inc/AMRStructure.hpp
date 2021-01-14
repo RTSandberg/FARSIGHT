@@ -122,6 +122,8 @@ struct AMRStructure {
 
     int write_particles_to_file();
     int write_panels_to_file();
+    int write_particles_to_file(bool pre_remesh);
+    int write_panels_to_file(bool pre_remesh);
 
     public:
         AMRStructure();
@@ -189,6 +191,7 @@ struct AMRStructure {
         friend std::ostream& operator<<(std::ostream& os, const AMRStructure& amr);
         void print_amr();
         int write_to_file();
+        int write_to_file(bool pre_remesh);
         void print_panel_points();
 
         // profiling

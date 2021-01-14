@@ -918,6 +918,9 @@ void AMRStructure::generate_mesh(std::function<double (double,double)> f,
             cout << "highest current level is " << current_max_height << ", max allowed is " << max_height << endl;
             #endif /* DEBUG */
             need_further_refinement = false;
+            #ifdef DEBUG
+            cout << "refining panels" << endl;
+            #endif
             refine_panels(f, do_adaptive_refine);
 
             // start = high_resolution_clock::now();

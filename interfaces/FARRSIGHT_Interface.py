@@ -566,6 +566,7 @@ def plot_height(sim_dir, simulation_dictionary, iter_num, height_range = [7,11],
     vs = np.fromfile(output_dir + f'vs/vs_{iter_num}')
 
     patches = []
+    pvert = [0,2,8,6]
     for ii, panel in enumerate(panels):
         panel_xs = xs[panel]
         panel_vs = vs[panel]
@@ -1132,6 +1133,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     xmax = sd['xmax']
     vmin = sd['vmin']
     vmax = sd['vmax']
+    tf = dt * num_steps
 
     output_dir = sim_dir_str + 'simulation_output/'
     # file_list = os.listdir('simulation_output/fs')
@@ -1267,6 +1269,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     # if type_str == 'strong_LD' or type_str == 'strong_2str':
     if simtype in [2,3,4]:
         plt.ylim([1e-3, 1e1])
+    plt.xlim(0,tf)
     plt.xlabel('t')
     plt.ylabel(r'$||E||_2$')
     plt.tight_layout()
@@ -1281,6 +1284,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     plt.xlabel('t')
     plt.plot(diag_times, max_f )
     plt.grid()
+    plt.xlim(0,tf)
     plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
     plt.savefig(sim_dir_str + 'maxf_conservation.png')
     plt.close()
@@ -1291,6 +1295,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     plt.xlabel('t')
     plt.plot(diag_times, (max_f - max_f[0])/max_f[0])
     plt.grid()
+    plt.xlim(0,tf)
     plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
     plt.tight_layout()
     plt.savefig(sim_dir_str + 'relative_maxf_conservation.png')
@@ -1302,6 +1307,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     plt.xlabel('t')
     plt.plot(diag_times, min_f)
     plt.grid()
+    plt.xlim(0,tf)
     plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
     plt.tight_layout()
     plt.savefig(sim_dir_str + 'minf_conservation.png')
@@ -1313,6 +1319,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     plt.xlabel('t')
     plt.plot(diag_times, (min_f - min_f[0])/max_f[0])
     plt.grid()
+    plt.xlim(0,tf)
     plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
     plt.tight_layout()
     plt.savefig(sim_dir_str + 'relative_minf_conservation.png')
@@ -1322,6 +1329,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     # plt.figure()
     # plt.title(r'fraction of negative f values')
     plt.xlabel('t')
+    plt.xlim(0,tf)
     plt.plot(diag_times, frac_negative)
     plt.grid()
     plt.tight_layout()
@@ -1332,6 +1340,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     # plt.figure()
     # plt.title(r'fraction of negative mass')
     plt.xlabel('t')
+    plt.xlim(0,tf)
     plt.plot(diag_times, frac_negative_mass)
     plt.grid()
     plt.tight_layout()
@@ -1350,6 +1359,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
     plt.grid()
     plt.xlabel('t')
+    plt.xlim(0,tf)
     # plt.title('number of points in simulation')
     plt.legend()
 
@@ -1362,6 +1372,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     # plt.figure()
     # plt.title(r'relative variation in total charge')
     plt.xlabel('t')
+    plt.xlim(0,tf)
     plt.plot(diag_times, (total_charge - total_charge[0])/total_charge[0])
     plt.grid()
     plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
@@ -1373,6 +1384,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     # plt.figure()
     # plt.title(r'variation in total momentum')
     plt.xlabel('t')
+    plt.xlim(0,tf)
     plt.plot(diag_times, total_momentum - total_momentum[0])
     plt.grid()
     plt.tight_layout()
@@ -1383,6 +1395,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     # plt.figure()
     # plt.title(r'relative variation in $L_1(f^n)$')
     plt.xlabel('t')
+    plt.xlim(0,tf)
     plt.plot(diag_times, (l1f - l1f[0])/l1f[0])
     plt.grid()
     plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
@@ -1394,6 +1407,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     # plt.figure()
     # plt.title(r'relative variation in $L_2(f^n)$')
     plt.xlabel('t')
+    plt.xlim(0,tf)
     plt.plot(diag_times, (l2f - l2f[0])/l2f[0])
     plt.grid()
     plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
@@ -1405,6 +1419,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     # plt.figure()
     # plt.title('relative energy variation')
     plt.xlabel('t')
+    plt.xlim(0,tf)
     total_energy = total_potential + total_kinetic
     plt.plot(diag_times, (total_energy - total_energy[0])/total_energy[0])
     plt.grid()
@@ -1624,18 +1639,26 @@ if __name__ == '__main__':
             plot_height(sim_dir, sd, final_iter)
 
     if args.plot_times is not None:
+        t1 = time.time()
         iterations = np.arange(0,sd['num_steps']+1,sd['diag_period'])
         diag_ts = iterations * sd['dt']
         for t0 in args.plot_times:
             print('generating time',t0,'phase space')
             t0_ind = np.nonzero(diag_ts <= t0)[0][-1]
+            t0_iter = int(iterations[t0_ind])
             t0_sim = diag_ts[t0_ind]
-            plot_phase_space(sim_dir,sd,t0_ind,sim_type_to_flim[SimType(sd['sim_type'])])
+            if SimType(sd['sim_type']) is SimType.COLDER_TWO_STREAM:
+                flim = (0,0.8*1./np.sqrt(2*np.pi)/sd['vth'])
+            else:
+                flim = sim_type_to_flim[SimType(sd['sim_type'])]
+            plot_phase_space(sim_dir,sd,t0_iter,flim)
             if args.logf_movie or args.logf_plot:
-                plot_logf(sim_dir, sd, t0_ind)
+                plot_logf(sim_dir, sd, t0_iter)
                 
             if sd['adaptively_refine'] or args.show_panels or args.panels_movie:
-                plot_height(sim_dir, sd, t0_ind, height_range=[sd['initial_height'],sd['max_height']])
+                plot_height(sim_dir, sd, t0_iter, height_range=[sd['initial_height'],sd['max_height']])
+        t2 = time.time()
+        print(f'spent {t2-t1:.1f}s making phase space (and log or height) images')
 
     if args.phase_movie:
         simtype = simulation_dictionary['sim_type']
