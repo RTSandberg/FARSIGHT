@@ -1649,7 +1649,7 @@ if __name__ == '__main__':
             t0_iter = int(iterations[t0_ind])
             t0_sim = diag_ts[t0_ind]
             if SimType(sd['sim_type']) is SimType.COLDER_TWO_STREAM:
-                flim = (0,0.8*1./np.sqrt(2*np.pi)/sd['vth'])
+                flim = (0,0.5/np.sqrt(2*np.pi)/sd['vth'])
             else:
                 flim = sim_type_to_flim[SimType(sd['sim_type'])]
             plot_phase_space(sim_dir,sd,t0_iter,flim)
