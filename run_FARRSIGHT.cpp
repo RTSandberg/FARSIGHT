@@ -152,8 +152,8 @@ int main(int argc, char** argv) {
     double beta = deck.get<double>("beta", -1.0); //atof(argv[14]);
     double mac = deck.get<double>("mac", -1.0); //atof(argv[15]);
     int degree = deck.get<int>("degree", -1); //atoi(argv[16]);
-    int max_source = deck.get<int>("max_source", 200); //atoi(argv[17]);
-    int max_target = deck.get<int>("max_target", 200); //atoi(argv[18]);
+    int max_source = deck.get<int>("max_source", 2000); //atoi(argv[17]);
+    int max_target = deck.get<int>("max_target", 2000); //atoi(argv[18]);
 
     // int nxsqrt = pow(2, initial_height + 1) + 1;
     // int nx = nxsqrt * nxsqrt;
@@ -435,6 +435,8 @@ cout << "--------------------------------" << endl;
     auto sim_stop = high_resolution_clock::now();
     amr.add_time(sim_time,  duration_cast<duration<double>>(sim_stop - sim_start) );
     // cout << "Sim time " << sim_duration.count() << " seconds" << endl;
+
+    cout << "End with " << amr.panels.size() << " panels, " << amr.xs.size() << " points." << endl; 
 
     amr.print_times();
 
