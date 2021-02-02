@@ -1657,7 +1657,10 @@ if __name__ == '__main__':
                 plot_logf(sim_dir, sd, t0_iter)
                 
             if sd['adaptively_refine'] or args.show_panels or args.panels_movie:
-                plot_height(sim_dir, sd, t0_iter, height_range=[sd['initial_height'],sd['max_height']])
+                hlim2 = sd['max_height']
+                if 'v_height' in sd:
+                    hlim2 -= sd['v_height']
+                plot_height(sim_dir, sd, t0_iter, height_range=[sd['initial_height'],hlim2])
         t2 = time.time()
         print(f'spent {t2-t1:.1f}s making phase space (and log or height) images')
 
