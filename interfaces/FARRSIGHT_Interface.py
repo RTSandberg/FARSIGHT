@@ -446,7 +446,7 @@ def plot_phase_space(sim_dir, simulation_dictionary, step_ii,flim, simulation_ha
     # ax0.set_title(f't={simtime:.03f}')
     plt.tight_layout()
     
-    plt.savefig(sim_dir_str + f'phase_space_{simtime:.2f}.png')
+    plt.savefig(sim_dir_str + f'phase_space_{simtime:.2f}.pdf')
     plt.close()
 # end plot_phase_space
 
@@ -523,7 +523,7 @@ def plot_logf(sim_dir, simulation_dictionary, step_ii,flim=(-20,0), simulation_h
     # ax0.set_title(f't={simtime:.03f}')
     plt.tight_layout()
     
-    plt.savefig(sim_dir_str + f'logf_{simtime:.2f}.png')
+    plt.savefig(sim_dir_str + f'logf_{simtime:.2f}.pdf')
     plt.close()
 # end plot_logf
 
@@ -586,7 +586,7 @@ def plot_height(sim_dir, simulation_dictionary, iter_num, height_range = [7,11],
     # ax.set_title(f't={iter_num*sd["dt"]:.3f}')
 
     plt.tight_layout()
-    plt.savefig(sim_dir_str + f'panel_height_image_t_{iter_num*sd["dt"]}.png')
+    plt.savefig(sim_dir_str + f'panel_height_image_t_{iter_num*sd["dt"]}.pdf')
     print('panel height plot done!')
     t2 = time.time()
     print(f'panels plot took {t2-t1:.3f}s')
@@ -624,7 +624,7 @@ def plot_e(sim_dir, simulation_dictionary, step_ii,flim, simulation_has_run = Tr
     ax1.grid()
     plt.tight_layout()
     if do_save:
-        plt.savefig(sim_dir_str + f'e_field_time_{step_ii}.png')
+        plt.savefig(sim_dir_str + f'e_field_time_{step_ii}.pdf')
     plt.close()
 # end plot_e
 
@@ -788,10 +788,10 @@ def phase_movie(sim_dir, simulation_dictionary,do_show_panels,flim=(0,.3), simul
                 print(f'Movie is about {iter_num/(sd["num_steps"]+1)*100 :0.0f}% complete')
                 print_update_counter = 0
 #                 plt.savefig(mya.sim_dir + f'phase_space_image_t_{iter_num*dt}.svg')
-                plt.savefig(sim_dir_str + panel_string + f'phase_space_image_t_{iter_num*sd["dt"]}.png')
+                plt.savefig(sim_dir_str + panel_string + f'phase_space_image_t_{iter_num*sd["dt"]}.pdf')
             print_update_counter += 1
 
-    plt.savefig(sim_dir_str + panel_string + f'phase_space_image_t_{iter_num*sd["dt"]}.png')
+    plt.savefig(sim_dir_str + panel_string + f'phase_space_image_t_{iter_num*sd["dt"]}.pdf')
     print('phase space movie done!')
     t2 = time.time()
     print(f'phase space movie took {t2-t1:.3f}s')
@@ -952,10 +952,10 @@ def logf_movie(sim_dir, simulation_dictionary, simulation_has_run = True, can_do
                 print(f'Movie is about {iter_num/(sd["num_steps"]+1)*100 :0.0f}% complete')
                 print_update_counter = 0
     #             plt.savefig(mya.sim_dir + f'logf_phase_space_image_t_{iter_num*dt}.svg')
-                plt.savefig(sim_dir_str + f'logf_phase_space_image_t_{iter_num*sd["dt"]}.png')
+                plt.savefig(sim_dir_str + f'logf_phase_space_image_t_{iter_num*sd["dt"]}.pdf')
             print_update_counter += 1
 
-        plt.savefig(sim_dir_str + f'logf_phase_space_final_image_t_{iter_num*sd["dt"]}.png')
+        plt.savefig(sim_dir_str + f'logf_phase_space_final_image_t_{iter_num*sd["dt"]}.pdf')
     print('done with logf movie!')
     t2 = time.time()
     print(f'logf movie took {t2 - t1:.3f}s')
@@ -1079,10 +1079,10 @@ def panel_height_movie(sim_dir, simulation_dictionary, height_range = [7,11],sim
                 print(f'Movie is about {iter_num/(sd["num_steps"]+1)*100 :0.0f}% complete')
                 print_update_counter = 0
 #                 plt.savefig(mya.sim_dir + f'phase_space_image_t_{iter_num*dt}.svg')
-                plt.savefig(sim_dir_str + f'panel_height_image_t_{iter_num*sd["dt"]}.png')
+                plt.savefig(sim_dir_str + f'panel_height_image_t_{iter_num*sd["dt"]}.pdf')
             print_update_counter += 1
 
-    plt.savefig(sim_dir_str + f'panel_height_image_t_{iter_num*sd["dt"]}.png')
+    plt.savefig(sim_dir_str + f'panel_height_image_t_{iter_num*sd["dt"]}.pdf')
     print('panel height movie done!')
     t2 = time.time()
     print(f'panels movie took {t2-t1:.3f}s')
@@ -1274,7 +1274,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     plt.xlabel('t')
     plt.ylabel(r'$||E||_2$')
     plt.tight_layout()
-    plt.savefig(sim_dir_str + 'l2E.png')
+    plt.savefig(sim_dir_str + 'l2E.pdf')
     plt.close()
     # end l2e diagnostic
     #---------------------------------
@@ -1287,7 +1287,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     plt.grid()
     plt.xlim(0,tf)
     plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
-    plt.savefig(sim_dir_str + 'maxf_conservation.png')
+    plt.savefig(sim_dir_str + 'maxf_conservation.pdf')
     plt.close()
     #---------------------------------
     plt.figure(figsize=diag_fig_size)
@@ -1299,7 +1299,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     plt.xlim(0,tf)
     plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
     plt.tight_layout()
-    plt.savefig(sim_dir_str + 'relative_maxf_conservation.png')
+    plt.savefig(sim_dir_str + 'relative_maxf_conservation.pdf')
     plt.close()
     #---------------------------------
     plt.figure(figsize=diag_fig_size)
@@ -1311,7 +1311,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     plt.xlim(0,tf)
     plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
     plt.tight_layout()
-    plt.savefig(sim_dir_str + 'minf_conservation.png')
+    plt.savefig(sim_dir_str + 'minf_conservation.pdf')
     plt.close()
     #---------------------------------
     plt.figure(figsize=diag_fig_size)
@@ -1323,7 +1323,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     plt.xlim(0,tf)
     plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
     plt.tight_layout()
-    plt.savefig(sim_dir_str + 'relative_minf_conservation.png')
+    plt.savefig(sim_dir_str + 'relative_minf_conservation.pdf')
     plt.close()
     #---------------------------------
     plt.figure(figsize=diag_fig_size)
@@ -1334,7 +1334,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     plt.plot(diag_times, frac_negative)
     plt.grid()
     plt.tight_layout()
-    plt.savefig(sim_dir_str + 'frac_negatives.png')
+    plt.savefig(sim_dir_str + 'frac_negatives.pdf')
     plt.close()
     #---------------------------------
     plt.figure(figsize=diag_fig_size)
@@ -1345,7 +1345,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     plt.plot(diag_times, frac_negative_mass)
     plt.grid()
     plt.tight_layout()
-    plt.savefig(sim_dir_str + 'frac_negative_mass.png')
+    plt.savefig(sim_dir_str + 'frac_negative_mass.pdf')
     plt.close()
     #---------------------------------
 
@@ -1365,7 +1365,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     plt.legend()
 
     plt.tight_layout()
-    plt.savefig(sim_dir_str + 'num_points.png')
+    plt.savefig(sim_dir_str + 'num_points.pdf')
     plt.close()
     #---------------------------------
 
@@ -1378,7 +1378,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     plt.grid()
     plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
     plt.tight_layout()
-    plt.savefig(sim_dir_str + 'relative_charge_conservation.png')
+    plt.savefig(sim_dir_str + 'relative_charge_conservation.pdf')
     plt.close()
     #---------------------------------
     plt.figure(figsize=diag_fig_size)
@@ -1389,7 +1389,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     plt.plot(diag_times, total_momentum - total_momentum[0])
     plt.grid()
     plt.tight_layout()
-    plt.savefig(sim_dir_str + 'momentum_conservation.png')
+    plt.savefig(sim_dir_str + 'momentum_conservation.pdf')
     plt.close()
     #---------------------------------
     plt.figure(figsize=diag_fig_size)
@@ -1401,7 +1401,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     plt.grid()
     plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
     plt.tight_layout()
-    plt.savefig(sim_dir_str + 'relative_l1f_conservation.png')
+    plt.savefig(sim_dir_str + 'relative_l1f_conservation.pdf')
     plt.close()
     #---------------------------------
     plt.figure(figsize=diag_fig_size)
@@ -1413,7 +1413,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     plt.grid()
     plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
     plt.tight_layout()
-    plt.savefig(sim_dir_str + 'relative_l2f_conservation.png')
+    plt.savefig(sim_dir_str + 'relative_l2f_conservation.pdf')
     plt.close()
     #---------------------------------
     plt.figure(figsize=diag_fig_size)
@@ -1426,7 +1426,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     plt.grid()
     plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
     plt.tight_layout()
-    plt.savefig(sim_dir_str + 'relative_energy_conservation.png')
+    plt.savefig(sim_dir_str + 'relative_energy_conservation.pdf')
     plt.close()
     # done plotting
     t2 = time.time()
@@ -1459,7 +1459,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
                 plt.xlim(4.8,6.3)
                 plt.ylim(-2e-6,6e-6)
                 ax.ticklabel_format(axis='y',style='sci',scilimits=(0,1))
-                plt.savefig(sim_dir_str + f'fv_t_{simtime:.0f}.png')
+                plt.savefig(sim_dir_str + f'fv_t_{simtime:.0f}.pdf')
                 plt.close()
             except IndexError:
                 print(f'time {test_time:.1f} is less than all simulation times')
@@ -1488,7 +1488,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
                 plt.grid()
                 plt.ylim(-0.05,0.45)
                 plt.xlim(-6,6)
-                plt.savefig(sim_dir_str + f'fv_t_{simtime:.1f}.png')
+                plt.savefig(sim_dir_str + f'fv_t_{simtime:.1f}.pdf')
                 plt.close()
             except IndexError:
                 print(f'time {test_time:.1f} is less than all simulation times')
