@@ -1006,56 +1006,57 @@ void AMRStructure::test_panel(int panel_ind, bool verbose) {
         #endif
         refine_criteria_met = refine_criteria_met || (max_f - min_f > amr_epsilons[0]);
 
-
-        if (amr_epsilons.size() > 1) {
-            refine_criteria_met = refine_criteria_met || (max_f - min_f) / panel_fs[4] > amr_epsilons[1];
-        }
-
         if (amr_epsilons.size() > 2) {
-            refine_criteria_met = refine_criteria_met || max_f / min_f > amr_epsilons[2];
+            if (min_f > amr_epsilons[1]) {
+                refine_criteria_met = refine_criteria_met || max_f / min_f > amr_epsilons[2];
+            }
         }
 
     }
     if (amr_epsilons.size() > 3) {
-        int i0, i3;
-        i0 = panel_it->point_inds[0];
-        i3 = panel_it->point_inds[3];
-        double dx = xs[i3] - xs[i0];
-        double abs_dfdxs[6];
-        for (int ii = 0; ii < 6; ++ii) {
-            abs_dfdxs[ii] = fabs((panel_fs[3+ii] - panel_fs[ii]) / dx);
+        if (min_f > amr_epsilons[1]) {
+            int i0, i3;
+            i0 = panel_it->point_inds[0];
+            i3 = panel_it->point_inds[3];
+            double dx = xs[i3] - xs[i0];
+            double abs_dfdxs[6];
+            for (int ii = 0; ii < 6; ++ii) {
+                abs_dfdxs[ii] = fabs((panel_fs[3+ii] - panel_fs[ii]) / dx);
+            }
+            double max_dfdx = abs_dfdxs[0];
+            for (int ii = 1; ii < 6; ++ii) {
+                if (max_dfdx < abs_dfdxs[ii]) { max_dfdx = abs_dfdxs[ii];}
+            }
+    #ifdef DEBUG
+        cout << endl;
+        cout << "dx " << dx << endl;;
+        cout << "max_dfdx at panel " << panel_ind << " is " << max_dfdx << endl;
+    #endif
+            refine_criteria_met = refine_criteria_met || (max_dfdx > amr_epsilons[3]);
         }
-        double max_dfdx = abs_dfdxs[0];
-        for (int ii = 1; ii < 6; ++ii) {
-            if (max_dfdx < abs_dfdxs[ii]) { max_dfdx = abs_dfdxs[ii];}
-        }
-#ifdef DEBUG
-    cout << endl;
-    cout << "dx " << dx << endl;;
-    cout << "max_dfdx at panel " << panel_ind << " is " << max_dfdx << endl;
-#endif
-        refine_criteria_met = refine_criteria_met || (max_dfdx > amr_epsilons[3]);
     }
     if (amr_epsilons.size() > 4) {
-        int i0, i1;
-        i0 = panel_it->point_inds[0];
-        i1 = panel_it->point_inds[1];
-        double dv = vs[i1] - vs[i0];
-        double abs_dfdvs[6];
-        for (int jj = 0; jj < 3; ++jj) {
-            for (int ii = 0; ii < 2; ii++) {
-                abs_dfdvs[ii] = fabs((panel_fs[3*jj + ii + 1] - panel_fs[3*jj + ii]) / dv);
+        if (min_f > amr_epsilons[1]) {
+            int i0, i1;
+            i0 = panel_it->point_inds[0];
+            i1 = panel_it->point_inds[1];
+            double dv = vs[i1] - vs[i0];
+            double abs_dfdvs[6];
+            for (int jj = 0; jj < 3; ++jj) {
+                for (int ii = 0; ii < 2; ii++) {
+                    abs_dfdvs[ii] = fabs((panel_fs[3*jj + ii + 1] - panel_fs[3*jj + ii]) / dv);
+                }
             }
-        }
-        double max_dfdv = abs_dfdvs[0];
-        for (int ii = 1; ii < 6; ++ii) {
-            if (max_dfdv < abs_dfdvs[ii]) { max_dfdv = abs_dfdvs[ii];}
-        }
+            double max_dfdv = abs_dfdvs[0];
+            for (int ii = 1; ii < 6; ++ii) {
+                if (max_dfdv < abs_dfdvs[ii]) { max_dfdv = abs_dfdvs[ii];}
+            }
 #ifdef DEBUG
     cout << "dv " << dv << endl;
     cout << "max_dfdv at panel " << panel_ind << " is " << max_dfdv << endl;
 #endif
-        refine_criteria_met = refine_criteria_met || (max_dfdv > amr_epsilons[4]);
+            refine_criteria_met = refine_criteria_met || (max_dfdv > amr_epsilons[4]);
+        }
     }
     // criteria[0] = (max_f - min_f > 100);
     // criteria[1] = (max_dfdx > 100);
