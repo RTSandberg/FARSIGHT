@@ -48,7 +48,8 @@ from matplotlib.collections import PatchCollection
 from matplotlib.patches import Rectangle, Polygon
 plt.rcParams.update({'font.size': 18})
 
-FIG_DPI = 300
+FIG_DPI = 500
+LOW_DPI = 200
 
 from enum import IntEnum
 class BoundaryConditions(IntEnum):
@@ -1286,7 +1287,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     plt.xlabel('t')
     plt.ylabel(r'$||E||_2$')
     plt.tight_layout()
-    plt.savefig(sim_dir_str + 'l2E.png',dpi=FIG_DPI)
+    plt.savefig(sim_dir_str + 'l2E.png',dpi=LOW_DPI)
     plt.savefig(sim_dir_str + 'l2E.pdf')
     plt.close()
     # end l2e diagnostic
@@ -1300,7 +1301,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     plt.grid()
     plt.xlim(0,tf)
     plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
-    plt.savefig(sim_dir_str + 'maxf_conservation.png',dpi=FIG_DPI)
+    plt.savefig(sim_dir_str + 'maxf_conservation.png',dpi=LOW_DPI)
     plt.savefig(sim_dir_str + 'maxf_conservation.pdf')
     plt.close()
     #---------------------------------
@@ -1313,7 +1314,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     plt.xlim(0,tf)
     plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
     plt.tight_layout()
-    plt.savefig(sim_dir_str + 'relative_maxf_conservation.png',dpi=FIG_DPI)
+    plt.savefig(sim_dir_str + 'relative_maxf_conservation.png',dpi=LOW_DPI)
     plt.savefig(sim_dir_str + 'relative_maxf_conservation.pdf')
     plt.close()
     #---------------------------------
@@ -1326,7 +1327,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     plt.xlim(0,tf)
     plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
     plt.tight_layout()
-    plt.savefig(sim_dir_str + 'minf_conservation.png',dpi=FIG_DPI)
+    plt.savefig(sim_dir_str + 'minf_conservation.png',dpi=LOW_DPI)
     plt.savefig(sim_dir_str + 'minf_conservation.pdf')
     plt.close()
     #---------------------------------
@@ -1339,7 +1340,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     plt.xlim(0,tf)
     plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
     plt.tight_layout()
-    plt.savefig(sim_dir_str + 'relative_minf_conservation.png',dpi=FIG_DPI)
+    plt.savefig(sim_dir_str + 'relative_minf_conservation.png',dpi=LOW_DPI)
     plt.savefig(sim_dir_str + 'relative_minf_conservation.pdf')
     plt.close()
     #---------------------------------
@@ -1351,7 +1352,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     plt.plot(diag_times, frac_negative)
     plt.grid()
     plt.tight_layout()
-    plt.savefig(sim_dir_str + 'frac_negatives.png',dpi=FIG_DPI)
+    plt.savefig(sim_dir_str + 'frac_negatives.png',dpi=LOW_DPI)
     plt.savefig(sim_dir_str + 'frac_negatives.pdf')
     plt.close()
     #---------------------------------
@@ -1363,7 +1364,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     plt.plot(diag_times, frac_negative_mass)
     plt.grid()
     plt.tight_layout()
-    plt.savefig(sim_dir_str + 'frac_negative_mass.png',dpi=FIG_DPI)
+    plt.savefig(sim_dir_str + 'frac_negative_mass.png',dpi=LOW_DPI)
     plt.savefig(sim_dir_str + 'frac_negative_mass.pdf')
     plt.close()
     #---------------------------------
@@ -1384,7 +1385,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     plt.legend()
 
     plt.tight_layout()
-    plt.savefig(sim_dir_str + 'num_points.png',dpi=FIG_DPI)
+    plt.savefig(sim_dir_str + 'num_points.png',dpi=LOW_DPI)
     plt.savefig(sim_dir_str + 'num_points.pdf')
     plt.close()
     #---------------------------------
@@ -1398,7 +1399,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     plt.grid()
     plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
     plt.tight_layout()
-    plt.savefig(sim_dir_str + 'relative_charge_conservation.png',dpi=FIG_DPI)
+    plt.savefig(sim_dir_str + 'relative_charge_conservation.png',dpi=LOW_DPI)
     plt.savefig(sim_dir_str + 'relative_charge_conservation.pdf')
     plt.close()
     #---------------------------------
@@ -1410,7 +1411,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     plt.plot(diag_times, total_momentum - total_momentum[0])
     plt.grid()
     plt.tight_layout()
-    plt.savefig(sim_dir_str + 'momentum_conservation.png',dpi=FIG_DPI)
+    plt.savefig(sim_dir_str + 'momentum_conservation.png',dpi=LOW_DPI)
     plt.savefig(sim_dir_str + 'momentum_conservation.pdf')
     plt.close()
     #---------------------------------
@@ -1423,7 +1424,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     plt.grid()
     plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
     plt.tight_layout()
-    plt.savefig(sim_dir_str + 'relative_l1f_conservation.png',dpi=FIG_DPI)
+    plt.savefig(sim_dir_str + 'relative_l1f_conservation.png',dpi=LOW_DPI)
     plt.savefig(sim_dir_str + 'relative_l1f_conservation.pdf')
     plt.close()
     #---------------------------------
@@ -1436,7 +1437,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     plt.grid()
     plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
     plt.tight_layout()
-    plt.savefig(sim_dir_str + 'relative_l2f_conservation.png',dpi=FIG_DPI)
+    plt.savefig(sim_dir_str + 'relative_l2f_conservation.png',dpi=LOW_DPI)
     plt.savefig(sim_dir_str + 'relative_l2f_conservation.pdf')
     plt.close()
     #---------------------------------
@@ -1450,7 +1451,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     plt.grid()
     plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
     plt.tight_layout()
-    plt.savefig(sim_dir_str + 'relative_energy_conservation.png',dpi=FIG_DPI)
+    plt.savefig(sim_dir_str + 'relative_energy_conservation.png',dpi=LOW_DPI)
     plt.savefig(sim_dir_str + 'relative_energy_conservation.pdf')
     plt.close()
     # done plotting
@@ -1484,7 +1485,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
                 plt.xlim(4.8,6.3)
                 plt.ylim(-2e-6,6e-6)
                 ax.ticklabel_format(axis='y',style='sci',scilimits=(0,1))
-                plt.savefig(sim_dir_str + f'fv_t_{simtime:.0f}.png',dpi=FIG_DPI)
+                plt.savefig(sim_dir_str + f'fv_t_{simtime:.0f}.png',dpi=LOW_DPI)
                 plt.savefig(sim_dir_str + f'fv_t_{simtime:.0f}.pdf')
                 plt.close()
             except IndexError:
@@ -1514,7 +1515,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
                 plt.grid()
                 plt.ylim(-0.05,0.45)
                 plt.xlim(-6,6)
-                plt.savefig(sim_dir_str + f'fv_t_{simtime:.1f}.png',dpi=FIG_DPI)
+                plt.savefig(sim_dir_str + f'fv_t_{simtime:.1f}.png',dpi=LOW_DPI)
                 plt.savefig(sim_dir_str + f'fv_t_{simtime:.1f}.pdf')
                 plt.close()
             except IndexError:
