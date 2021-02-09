@@ -61,16 +61,14 @@ endif()
 
 
 add_subdirectory(src)
-#include_directories(inc)
-#include_directories(inc_eigen/eigen-3.3.7)
-#link_directories(src)
 
 # add the executable
-add_executable(farrsight_cpu run_FARRSIGHT.cpp)
+add_executable(farrsight_cpu run_FARRSIGHT2.cpp)
 target_link_libraries     (farrsight_cpu PUBLIC   OpenMP::OpenMP_CXX
                                                 MPI::MPI_CXX 
                                                 ${BARYTREE_LIB}
-                                                FieldObj
+                                                SimObj
+                                                # FieldObj
                                                 PanelObj
                                                 icsObj
                                                 AMRObj_cpu)
@@ -82,7 +80,7 @@ install(TARGETS farrsight_cpu  RUNTIME DESTINATION bin
                             ARCHIVE DESTINATION lib)
 
 if (ENABLE_GPU_BUILD)
-    add_executable(farrsight_gpu run_FARRSIGHT.cpp) 
+    add_executable(farrsight_gpu run_FARRSIGHT2.cpp) 
     find_library(BARYTREE_LIB_GPU BaryTree_gpu REQUIRED)
     target_link_libraries(farrsight_gpu PUBLIC   OpenMP::OpenMP_CXX
                                                 MPI::MPI_CXX 
@@ -98,23 +96,6 @@ if (ENABLE_GPU_BUILD)
                                 LIBRARY DESTINATION lib
                                 ARCHIVE DESTINATION lib)
 endif()
-    
-#else()
-#    set(EXE farrsight_cpu)
-#    add_executable(${EXE} run_FARRSIGHT.cpp)
-#    target_link_libraries(${EXE} PUBLIC AMRObj_cpu)
-#endif()
-
-#target_link_libraries(${EXE}    PanelObj 
-#                                FieldObj
-#                                icsObj)
-#target_link_libraries(${EXE}    PUBLIC  OpenMP::OpenMP_CXX
-#                                        MPI::MPI_CXX
-#                                        PanelObj 
-#                                        FieldObj
-#                                        icsObj)
-
-#install(TARGETS ${EXE} DESTINATION bin)
 
 
 #enable_testing()

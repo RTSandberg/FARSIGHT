@@ -40,7 +40,7 @@ extern "C" {
 // amr in-project dependencies
 #include "initial_distributions.hpp"
 #include "Panel.hpp"
-#include "FieldStructure.hpp"
+// #include "FieldStructure.hpp"
 
 
 enum BoundaryConditions {periodic_bcs, open_bcs, last_bc};
@@ -48,6 +48,7 @@ enum Quadrature {trap, simpsons, last_quad};
 enum ProfileTypes {sim_time, step_time, field_time, 
                 remesh_time, tree_build_time, panel_test_time, interp_time, search_time, 
                 eval_time, file_time, amr_test_time, amr_refine_time, last_time};
+
 
 struct AMRStructure {
     std::string sim_dir;
@@ -106,7 +107,7 @@ struct AMRStructure {
 //     double greens_epsilon;
     Quadrature quad;
 //     bool use_treecode;
-    ElectricField* calculate_e;
+    // ElectricField* calculate_e;
 
     //profile parameters
     bool do_profile;
@@ -129,27 +130,24 @@ struct AMRStructure {
         AMRStructure();
         AMRStructure(std::string sim_dir, distribution* f0, //std::function<double (double,double)>& f0, 
                 int initial_height, 
-                double x_min, double x_max, double v_min, double v_max, 
-                ElectricField* calculate_e, int num_steps, double dt);
+                double x_min, double x_max, double v_min, double v_max);
         AMRStructure(std::string sim_dir, distribution* f0, //std::function<double (double,double)>& f0, 
                 int initial_height, int max_height,
                 double x_min, double x_max, double v_min, double v_max, 
                 BoundaryConditions bcs,
-                ElectricField* calculate_e, int num_steps, double dt,
                 bool do_adaptively_refine, std::vector<double>& amr_epsilons);
         AMRStructure(std::string sim_dir, distribution* f0, //std::function<double (double,double)>& f0, 
                 double q, double m, 
                 int initial_height, int v_height, int max_height, 
                 double x_min, double x_max, double v_min, double v_max, 
                 BoundaryConditions bcs,
-                ElectricField* calculate_e, Quadrature quad, int num_steps, double dt, 
+                Quadrature quad,
                 bool do_adaptively_refine, std::vector<double>& amr_epsilons);
 
         // end constructors
         // destructor
         ~AMRStructure();
         // getters
-        std::vector<double> get_e();
         std::string get_sim_dir() const;
         // end getters
 
@@ -182,10 +180,10 @@ struct AMRStructure {
         // field functions
         // void calculate_e();
         // void vector_calc_e_wrapper();
-        void init_e();
+        // void init_e();
 
         // step functions
-        void step(bool get_4th_e);
+        // void step(bool get_4th_e);
 
         // io
         friend std::ostream& operator<<(std::ostream& os, const AMRStructure& amr);

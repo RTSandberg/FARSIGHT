@@ -1191,5 +1191,5 @@ void AMRStructure::remesh() {
             fs[ii] = 0.5 * fs[ii];// * fs[ii];
         }
     }
-    init_e();
+    // init_e();
 }

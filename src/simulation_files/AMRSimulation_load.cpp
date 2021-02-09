@@ -1,63 +1,83 @@
 #include "AMRSimulation.hpp"
 
-int AMRSimulation::load_deck() {
+int AMRSimulation::load_deck(std::string &deck_address, pt::ptree &deck) {
 
-    pt::ptree deck;
     try {
-        pt::read_json(input_deck, deck);
+        pt::read_json(deck_address, deck);
     } catch(std::exception& err) {
         cout << "unable to open input deck" << endl;
         return 1;
     }
+    return 0;
+}
+
+int AMRSimulation::get_box_t_params(pt::ptree &deck) {
 
     std::string project_name = deck.get<std::string>("project_name", "no_name_found");
-    double x_min = deck.get<double>("xmin", 0.0), x_max = deck.get<double>("xmax", 0.0);
-    double v_min = deck.get<double>("vmin", -1.0), v_max = deck.get<double>("vmax",1.0);
+    x_min = deck.get<double>("xmin", 0.0), x_max = deck.get<double>("xmax", 0.0);
+    v_min = deck.get<double>("vmin", -1.0), v_max = deck.get<double>("vmax",1.0);
     int bcs_int = deck.get<int>("bcs",0);
+    
     if (bcs_int < 0 || bcs_int >= last_bc) {
         cout << "Invalid boundary condition provided in input deck. Valid BCs are: " << endl;
         cout << "0: periodic, 1: open" << endl;
         return 1;
     }
+    
     BoundaryConditions bcs = static_cast<BoundaryConditions> (bcs_int);
 
-    double Lx = x_max - x_min;
-    double kx = 2.0 * M_PI / Lx * deck.get<double>("normalized_wavenumber",1.0);
-    double amp = deck.get<double>("amp", 0.0);//0.5;
-    double vth = deck.get<double>("vth", 1.0);//atof(argv[9]);//1.0;
-    double vstr = deck.get<double>("vstr", 0.0); //atof(argv[10]);
-    int sim_type = deck.get<int>("sim_type", 1);//atoi(argv[6]);
+    Lx = x_max - x_min;
 
-    distribution* f0;
-    double q = -1.0, m = 1.0;
+    int which_quad = deck.get<int>("quadrature",1);
+    quad = static_cast<Quadrature>(which_quad);
 
-    switch (sim_type)
-    {
-        case 1: // weak Landau Damping
-            f0 = new F0_LD(vth, kx, amp);
-            break;
-        case 2: // strong Landau Damping
-            f0 = new F0_LD(vth, kx, amp);
-            break;
-        case 3: // 'strong' two-stream
-            f0 = new F0_strong_two_stream(vth, kx, amp);
-            break;
-        case 4: // 'colder' two-stream
-            f0 = new F0_colder_two_stream(vth, vstr, kx, amp);
-            break;
-        case 5: // Friedman beam problem 
-        {
-            double Tstar = vth * vth;
-            f0 = new F0_Friedman_beam(amp, Tstar, x_max);
-            q = 1.0;
-        }
-            break;
-        default:
-            f0 = new F0_LD(vth, kx, amp);
-            break;
-    }
-    
-    Quadrature quad;
+
+    num_steps = deck.get<int>("num_steps", 10);//atoi(argv[19]);//120;
+    n_steps_remesh = deck.get<int>("remesh_period", 1); //atoi(argv[20]);
+    n_steps_diag = deck.get<int>("diag_period", 1); //atoi(argv[21]);
+    dt = deck.get<double> ("dt", 0.5); //atof(argv[22]);//0.5;
+
+    return 0;
+}
+
+int AMRSimulation::load_species(pt::ptree &species_deck_portion) {
+
+}
+    // double kx = 2.0 * M_PI / Lx * deck.get<double>("normalized_wavenumber",1.0);
+    // double amp = deck.get<double>("amp", 0.0);//0.5;
+    // double vth = deck.get<double>("vth", 1.0);//atof(argv[9]);//1.0;
+    // double vstr = deck.get<double>("vstr", 0.0); //atof(argv[10]);
+    // int sim_type = deck.get<int>("sim_type", 1);//atoi(argv[6]);
+
+    // distribution* f0;
+    // double q = -1.0, m = 1.0;
+
+    // switch (sim_type)
+    // {
+    //     case 1: // weak Landau Damping
+    //         f0 = new F0_LD(vth, kx, amp);
+    //         break;
+    //     case 2: // strong Landau Damping
+    //         f0 = new F0_LD(vth, kx, amp);
+    //         break;
+    //     case 3: // 'strong' two-stream
+    //         f0 = new F0_strong_two_stream(vth, kx, amp);
+    //         break;
+    //     case 4: // 'colder' two-stream
+    //         f0 = new F0_colder_two_stream(vth, vstr, kx, amp);
+    //         break;
+    //     case 5: // Friedman beam problem 
+    //     {
+    //         double Tstar = vth * vth;
+    //         f0 = new F0_Friedman_beam(amp, Tstar, x_max);
+    //         q = 1.0;
+    //     }
+    //         break;
+    //     default:
+    //         f0 = new F0_LD(vth, kx, amp);
+    //         break;
+    // }
+    /*
     int which_quad = deck.get<int>("quadrature",1);
     quad = static_cast<Quadrature>(which_quad);
     // if (which_quad == 1) {
@@ -66,16 +86,16 @@ int AMRSimulation::load_deck() {
     //     quad = simpsons;
     // }
 
-    int initial_height = deck.get<int>("initial_height",6);//atoi(argv[11]);//6;
-    int v_height = deck.get<int>("v_height",0);
-    int max_height = deck.get<int>("max_height", initial_height);
-    double greens_epsilon = deck.get<double>("greens_epsilon",0.2);//atof(argv[12]);//0.2;
-    int use_treecode = deck.get<int>("use_treecode", 0); //atoi(argv[13]);
-    double beta = deck.get<double>("beta", -1.0); //atof(argv[14]);
-    double mac = deck.get<double>("mac", -1.0); //atof(argv[15]);
-    int degree = deck.get<int>("degree", -1); //atoi(argv[16]);
-    int max_source = deck.get<int>("max_source", 2000); //atoi(argv[17]);
-    int max_target = deck.get<int>("max_target", 2000); //atoi(argv[18]);
+    // int initial_height = deck.get<int>("initial_height",6);//atoi(argv[11]);//6;
+    // int v_height = deck.get<int>("v_height",0);
+    // int max_height = deck.get<int>("max_height", initial_height);
+    greens_epsilon = deck.get<double>("greens_epsilon",0.2);//atof(argv[12]);//0.2;
+    use_treecode = deck.get<int>("use_treecode", 0); //atoi(argv[13]);
+    beta = deck.get<double>("beta", -1.0); //atof(argv[14]);
+    mac = deck.get<double>("mac", -1.0); //atof(argv[15]);
+    degree = deck.get<int>("degree", -1); //atoi(argv[16]);
+    max_source = deck.get<int>("max_source", 2000); //atoi(argv[17]);
+    max_target = deck.get<int>("max_target", 2000); //atoi(argv[18]);
 
     // int nxsqrt = pow(2, initial_height + 1) + 1;
     // int nx = nxsqrt * nxsqrt;
@@ -175,17 +195,19 @@ int AMRSimulation::load_deck() {
     cout << "============================" << endl;
 
     auto sim_start = high_resolution_clock::now();
+    
 
 
     // int v_height = 2;
     // initial_height = 0;
 
-    AMRStructure amr{sim_dir, f0, q, m,
-                initial_height, v_height,max_height,
-                x_min, x_max, v_min, v_max, bcs,
-                calculate_e, quad, num_steps, dt,
-                do_adaptively_refine, amr_epsilons};
+    // AMRStructure amr{sim_dir, f0, q, m,
+    //             initial_height, v_height,max_height,
+    //             x_min, x_max, v_min, v_max, bcs,
+    //             calculate_e, quad, num_steps, dt,
+    //             do_adaptively_refine, amr_epsilons};
 
 
     return 0;
 }
+*/
