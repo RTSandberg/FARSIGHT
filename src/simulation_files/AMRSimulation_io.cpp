@@ -26,8 +26,9 @@ void AMRSimulation::print_sim_setup() {
     cout << "Remesh every " << n_steps_remesh << " step(s), diagnostic dump every " << n_steps_diag << " step(s)" << endl;
 
 // print field data
-    cout << "green's epsilon = " << greens_epsilon << endl;
-    cout << "use treecode flag " << use_treecode << endl;
+    field_object->print_field_obj();
+    // cout << "green's epsilon = " << greens_epsilon << endl;
+    // cout << "use treecode flag " << use_treecode << endl;
     // if (use_treecode > 0) { 
     //     if (0 <= beta && beta <= 1.0) {
     //         cout << "Using treecode with beta " << beta << endl;
@@ -39,6 +40,9 @@ void AMRSimulation::print_sim_setup() {
     // }
     // print species data
     // }
+    for (int ii = 0; ii < species_list.size(); ++ii) {
+        cout << *(species_list[ii]) << endl;
+    }
     cout << "============================" << endl;
 
 }

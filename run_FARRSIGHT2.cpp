@@ -57,9 +57,23 @@ int main(int argc, char** argv) {
         }
     }
 
-    cout << "Hello world!" << endl;
     AMRSimulation sim(sim_dir, input_deck);
+    // initial gather
+    // evaluate e
+    // write to diagnostic
+
     // sim.run();
+    // step:
+    // gather points
+    // evaulate e, push 4 times
+    // if remeshing:
+    //     remesh
+    //     initial gather and evaluate e
+    // if not remeshing:
+    //     evaluate e
+    // if dumping to file:
+    //     send field to points
+    //     dump
 
     
     MPI_Finalize();

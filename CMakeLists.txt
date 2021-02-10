@@ -68,7 +68,7 @@ target_link_libraries     (farrsight_cpu PUBLIC   OpenMP::OpenMP_CXX
                                                 MPI::MPI_CXX 
                                                 ${BARYTREE_LIB}
                                                 SimObj
-                                                # FieldObj
+                                                FieldObj
                                                 PanelObj
                                                 icsObj
                                                 AMRObj_cpu)

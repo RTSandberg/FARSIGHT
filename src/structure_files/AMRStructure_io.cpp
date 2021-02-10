@@ -130,7 +130,7 @@ void AMRStructure::print_amr() {
 // AMRStructure_io.cpp
 std::ostream& operator<<(std::ostream& os, const AMRStructure& amr) {
     os << "=================" << endl;
-    os << "This is an AMR structure" << endl;
+    os << "AMR structure for species " << amr.species_name << endl;
     os << "=================" << endl;
     os << "Computational domain: (x,v) in [" << amr.x_min << ", " << amr.x_max << "]x[" << amr.v_min << ", " << amr.v_max << "]" << endl; 
     os << "Species charge: " << amr.q << ", species mass: " << amr.q/amr.qm << endl;
@@ -144,29 +144,22 @@ std::ostream& operator<<(std::ostream& os, const AMRStructure& amr) {
 
 
     os << "---------" << endl;
-    // os << "time stepping parameters" << endl << "--------" << endl;
-    os << "num steps: " <<  amr.iter_num << ", dt: " << amr.dt << endl;
-    os << "---------" << endl;
 
-    // os << "Field parameters " << endl << "---------" << endl;
-    // os << "Field softening parameter (aka Green's function epsilon): " << amr.greens_epsilon << endl;
-    // os << "---------" << endl;
+    // os << "Panels: " << endl << "==============" << endl;
+    // std::copy(amr.panels.begin(), amr.panels.end(), std::ostream_iterator<Panel>(os));
+    // os <<  "==============" << endl;
 
-    os << "Panels: " << endl << "==============" << endl;
-    std::copy(amr.panels.begin(), amr.panels.end(), std::ostream_iterator<Panel>(os));
-    os <<  "==============" << endl;
-
-    os << "Point data" << endl << "==============" << endl;
-    os << "xs, size = " << amr.xs.size() << endl;
-    std::copy(amr.xs.begin(), amr.xs.end(), std::ostream_iterator<double>(os, " "));
-    os << endl << "vs, size = " << amr.vs.size() << endl;
-    std::copy(amr.vs.begin(), amr.vs.end(), std::ostream_iterator<double>(os, " "));
-    os << endl << "fs, size = " << amr.fs.size() << endl;
-    std::copy(amr.fs.begin(), amr.fs.end(), std::ostream_iterator<double>(os, " "));
-    os << endl << "qw, size = " << amr.q_ws.size() << endl;
-    std::copy(amr.q_ws.begin(), amr.q_ws.end(), std::ostream_iterator<double>(os, " "));
-    os << endl << "es, size = " << amr. es.size() << endl;
-    std::copy(amr.es.begin(), amr.es.end(), std::ostream_iterator<double>(os, " "));
+    // os << "Point data" << endl << "==============" << endl;
+    // os << "xs, size = " << amr.xs.size() << endl;
+    // std::copy(amr.xs.begin(), amr.xs.end(), std::ostream_iterator<double>(os, " "));
+    // os << endl << "vs, size = " << amr.vs.size() << endl;
+    // std::copy(amr.vs.begin(), amr.vs.end(), std::ostream_iterator<double>(os, " "));
+    // os << endl << "fs, size = " << amr.fs.size() << endl;
+    // std::copy(amr.fs.begin(), amr.fs.end(), std::ostream_iterator<double>(os, " "));
+    // os << endl << "qw, size = " << amr.q_ws.size() << endl;
+    // std::copy(amr.q_ws.begin(), amr.q_ws.end(), std::ostream_iterator<double>(os, " "));
+    // os << endl << "es, size = " << amr. es.size() << endl;
+    // std::copy(amr.es.begin(), amr.es.end(), std::ostream_iterator<double>(os, " "));
 
     return os;
 }

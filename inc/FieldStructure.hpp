@@ -7,6 +7,8 @@
 #include <math.h>
 #include <omp.h>
 #include <iostream>
+using std::cout;
+using std::endl;
 #include <vector>
 
 extern "C" {
@@ -18,6 +20,7 @@ class ElectricField {
     public: 
         virtual void operator()     (double* es, double* targets, int nt, 
                                     double* sources, double* q_ws, int ns) = 0;
+        virtual void print_field_obj() = 0;
         virtual ~ElectricField();
 };
 
@@ -29,6 +32,7 @@ class E_MQ_DirectSum : public ElectricField {
         double L;
         void operator() (double* es, double* targets, int nt, 
                         double* sources, double* q_ws, int ns);
+        void print_field_obj();
         ~E_MQ_DirectSum();
 };
 
@@ -39,6 +43,7 @@ class E_MQ_DirectSum_openbcs : public ElectricField {
         double epsilon;
         void operator() (double* es, double* targets, int nt, 
                         double* sources, double* q_ws, int ns);
+        void print_field_obj();
         ~E_MQ_DirectSum_openbcs();
 };
 
@@ -60,6 +65,7 @@ class E_MQ_Treecode : public ElectricField {
             int verbosity);
         void operator() (double* es, double* targets, int nt, 
                         double* sources, double* q_ws, int ns);
+        void print_field_obj();
         ~E_MQ_Treecode();
 };
 
@@ -81,6 +87,7 @@ class E_MQ_Treecode_openbcs : public ElectricField {
             int verbosity);
         void operator() (double* es, double* targets, int nt, 
                         double* sources, double* q_ws, int ns);
+        void print_field_obj();
         ~E_MQ_Treecode_openbcs();
 };
 

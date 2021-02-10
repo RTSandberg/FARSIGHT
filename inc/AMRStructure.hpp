@@ -52,6 +52,7 @@ enum ProfileTypes {sim_time, step_time, field_time,
 
 struct AMRStructure {
     std::string sim_dir;
+    std::string species_name;
     // domain parameters
     double Lx, Lv;
     double x_min, x_max;
@@ -128,15 +129,18 @@ struct AMRStructure {
 
     public:
         AMRStructure();
-        AMRStructure(std::string sim_dir, distribution* f0, //std::function<double (double,double)>& f0, 
+        AMRStructure(std::string sim_dir, std::string species_name,
+                distribution* f0, //std::function<double (double,double)>& f0, 
                 int initial_height, 
                 double x_min, double x_max, double v_min, double v_max);
-        AMRStructure(std::string sim_dir, distribution* f0, //std::function<double (double,double)>& f0, 
+        AMRStructure(std::string sim_dir, std::string species_name,
+                distribution* f0, //std::function<double (double,double)>& f0, 
                 int initial_height, int max_height,
                 double x_min, double x_max, double v_min, double v_max, 
                 BoundaryConditions bcs,
                 bool do_adaptively_refine, std::vector<double>& amr_epsilons);
-        AMRStructure(std::string sim_dir, distribution* f0, //std::function<double (double,double)>& f0, 
+        AMRStructure(std::string sim_dir, std::string species_name,
+                distribution* f0, //std::function<double (double,double)>& f0, 
                 double q, double m, 
                 int initial_height, int v_height, int max_height, 
                 double x_min, double x_max, double v_min, double v_max, 

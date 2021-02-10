@@ -40,43 +40,129 @@ int AMRSimulation::get_box_t_params(pt::ptree &deck) {
     return 0;
 }
 
-int AMRSimulation::load_species(pt::ptree &species_deck_portion) {
+ElectricField* AMRSimulation::make_field_return_ptr(pt::ptree &deck) {
+    
+    ElectricField* calculate_e;
 
+    double greens_epsilon = deck.get<double>("greens_epsilon",0.2);//atof(argv[12]);//0.2;
+    int use_treecode = deck.get<int>("use_treecode", 0); //atoi(argv[13]);
+    double beta = deck.get<double>("beta", -1.0); //atof(argv[14]);
+    double mac = deck.get<double>("mac", -1.0); //atof(argv[15]);
+    int degree = deck.get<int>("degree", -1); //atoi(argv[16]);
+    int max_source = deck.get<int>("max_source", 2000); //atoi(argv[17]);
+    int max_target = deck.get<int>("max_target", 2000); //atoi(argv[18]);
+    
+    if (use_treecode > 0) {
+        if (bcs!=periodic_bcs) { // open_bcs
+            if (0 <= beta && beta <= 1.0) {
+                calculate_e = new E_MQ_Treecode_openbcs(greens_epsilon, beta);
+            } else {
+                int verbosity = 0;
+                calculate_e = new E_MQ_Treecode_openbcs(greens_epsilon, 
+                                                mac, degree, 
+                                                max_source, max_target, 
+                                                verbosity);
+            }
+        } else {
+            if (0 <= beta && beta <= 1.0) {
+                calculate_e = new E_MQ_Treecode(Lx, greens_epsilon, beta);
+            } else {
+                int verbosity = 0;
+                calculate_e = new E_MQ_Treecode(Lx, greens_epsilon, 
+                                                mac, degree, 
+                                                max_source, max_target, 
+                                                verbosity);
+            }
+        }
+    } else {
+        if (bcs==periodic_bcs) {
+            calculate_e = new E_MQ_DirectSum(Lx, greens_epsilon);
+        } else { //open bcs
+            calculate_e = new E_MQ_DirectSum_openbcs(greens_epsilon);
+        }
+    }
+
+    return calculate_e;
 }
-    // double kx = 2.0 * M_PI / Lx * deck.get<double>("normalized_wavenumber",1.0);
-    // double amp = deck.get<double>("amp", 0.0);//0.5;
-    // double vth = deck.get<double>("vth", 1.0);//atof(argv[9]);//1.0;
-    // double vstr = deck.get<double>("vstr", 0.0); //atof(argv[10]);
-    // int sim_type = deck.get<int>("sim_type", 1);//atoi(argv[6]);
+
+distribution* AMRSimulation::make_f0_return_ptr(pt::ptree &species_deck_portion) {
+    pt::ptree deck = species_deck_portion;
+
+    double kx = 2.0 * M_PI / Lx * deck.get<double>("normalized_wavenumber",1.0);
+    double amp = deck.get<double>("amp", 0.0);//0.5;
+    double vth = deck.get<double>("vth", 1.0);//atof(argv[9]);//1.0;
+    double vstr = deck.get<double>("vstr", 0.0); //atof(argv[10]);
+    int sim_type = deck.get<int>("sim_type", 1);//atoi(argv[6]);
+    distribution* f0;
+    switch (sim_type)
+    {
+        case 1: // weak Landau Damping
+            f0 = new F0_LD(vth, kx, amp);
+            break;
+        case 2: // strong Landau Damping
+            f0 = new F0_LD(vth, kx, amp);
+            break;
+        case 3: // 'strong' two-stream
+            f0 = new F0_strong_two_stream(vth, kx, amp);
+            break;
+        case 4: // 'colder' two-stream
+            f0 = new F0_colder_two_stream(vth, vstr, kx, amp);
+            break;
+        case 5: // Friedman beam problem 
+        {
+            double Tstar = vth * vth;
+            f0 = new F0_Friedman_beam(amp, Tstar, x_max);
+        }
+            break;
+        default:
+            f0 = new F0_LD(vth, kx, amp);
+            break;
+    }
+    return f0;
+}
+
+AMRStructure* AMRSimulation::make_species_return_ptr(pt::ptree &species_deck_portion, distribution* f0) {
+
+    pt::ptree deck = species_deck_portion;
+    // get parameters
+    std::string sp_name = deck.get_child("name").get_value<std::string>();
+    double kx = 2.0 * M_PI / Lx * deck.get<double>("normalized_wavenumber",1.0);
+    double amp = deck.get<double>("amp", 0.0);//0.5;
+    double vth = deck.get<double>("vth", 1.0);//atof(argv[9]);//1.0;
+    double vstr = deck.get<double>("vstr", 0.0); //atof(argv[10]);
+    int sim_type = deck.get<int>("sim_type", 1);//atoi(argv[6]);
+    double q = -1.0, m = 1.0;
+    if (sim_type==5) { q = 1.0; }
+    int initial_height = deck.get<int>("initial_height",6);//atoi(argv[11]);//6;
+    int v_height = deck.get<int>("v_height",0);
+    int max_height = deck.get<int>("max_height", initial_height);
+    bool do_adaptively_refine = deck.get<bool> ("adaptively_refine", false);//false;
+    std::vector<double> amr_epsilons; 
+    try {
+        for (pt::ptree::value_type &eps : deck.get_child("amr_epsilons")) {
+            amr_epsilons.push_back(eps.second.get_value<double>() );
+        }
+    } catch(std::exception& err) {
+        cout << "Unable to find amr refinement values.  Disabling amr." << endl;
+        amr_epsilons = std::vector<double>();
+
+        do_adaptively_refine = false;
+    }
+
+
+    AMRStructure *species = new AMRStructure{sim_dir, sp_name,
+                f0, q, m,
+                initial_height, v_height,max_height,
+                x_min, x_max, v_min, v_max, bcs,
+                quad, 
+                do_adaptively_refine, amr_epsilons};
+    // 
+    return species;
+}
 
     // distribution* f0;
     // double q = -1.0, m = 1.0;
 
-    // switch (sim_type)
-    // {
-    //     case 1: // weak Landau Damping
-    //         f0 = new F0_LD(vth, kx, amp);
-    //         break;
-    //     case 2: // strong Landau Damping
-    //         f0 = new F0_LD(vth, kx, amp);
-    //         break;
-    //     case 3: // 'strong' two-stream
-    //         f0 = new F0_strong_two_stream(vth, kx, amp);
-    //         break;
-    //     case 4: // 'colder' two-stream
-    //         f0 = new F0_colder_two_stream(vth, vstr, kx, amp);
-    //         break;
-    //     case 5: // Friedman beam problem 
-    //     {
-    //         double Tstar = vth * vth;
-    //         f0 = new F0_Friedman_beam(amp, Tstar, x_max);
-    //         q = 1.0;
-    //     }
-    //         break;
-    //     default:
-    //         f0 = new F0_LD(vth, kx, amp);
-    //         break;
-    // }
     /*
     int which_quad = deck.get<int>("quadrature",1);
     quad = static_cast<Quadrature>(which_quad);

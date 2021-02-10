@@ -46,7 +46,7 @@ namespace pt = boost::property_tree;
 // amr in-project dependencies
 // #include "initial_distributions.hpp"
 // #include "Panel.hpp"
-// #include "FieldStructure.hpp"
+#include "FieldStructure.hpp"
 #include "AMRStructure.hpp"
 
 
@@ -71,19 +71,27 @@ struct AMRSimulation {
     double dt;
 
     //field parameters
-    double greens_epsilon;
+    // double greens_epsilon;
     BoundaryConditions bcs;
     Quadrature quad;
     bool use_treecode;
-    // ElectricField* calculate_e;
+    ElectricField* field_object;
 
-    // std::vector<AMRStructure*> species_list;
+    std::vector<distribution*> ic_list;
+    std::vector<AMRStructure*> species_list;
     // ---- functions ---------
+    // constructor
     AMRSimulation();
+    // destructor
+    ~AMRSimulation();
+    // ------------------
     AMRSimulation(std::string sim_dir, std::string deck_address);
     int load_deck(std::string &deck_address, pt::ptree &deck);
     int get_box_t_params(pt::ptree &deck);
-    int load_species(pt::ptree &species_deck_portion);
+    distribution* make_f0_return_ptr(pt::ptree &species_deck_portion);
+    ElectricField* make_field_return_ptr(pt::ptree &deck);
+    AMRStructure* make_species_return_ptr(pt::ptree &species_deck_portion, distribution* f0);
+    int evaluate_field_uniform_grid();
     int evaluate_field();
     int step();
     int run();

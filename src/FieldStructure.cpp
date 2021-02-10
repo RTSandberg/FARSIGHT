@@ -34,6 +34,14 @@ void E_MQ_DirectSum::operator() (double* es, double* targets, int nt,
         es[ii] = ei;
     }
 }
+void E_MQ_DirectSum::print_field_obj() {
+    cout << "-------------" << endl;
+    cout << "Field object: " << endl;
+    cout << "MQ kernel, direct sum" << endl;
+    cout << "epsilon = " << epsilon << endl;
+    cout << "Periodic boundary conditions, domain size = " << L << endl;
+    cout << "-------------" << endl;
+}
 
 E_MQ_DirectSum_openbcs::E_MQ_DirectSum_openbcs() {}
 E_MQ_DirectSum_openbcs::E_MQ_DirectSum_openbcs(double epsilon) : epsilon(epsilon) {}
@@ -61,6 +69,14 @@ void E_MQ_DirectSum_openbcs::operator() (double* es, double* targets, int nt,
         }
         es[ii] = ei - xi;
     }
+}
+void E_MQ_DirectSum_openbcs::print_field_obj() {
+    cout << "-------------" << endl;
+    cout << "Field object: " << endl;
+    cout << "MQ kernel, direct sum" << endl;
+    cout << "epsilon = " << epsilon << endl;
+    cout << "Open boundary conditions "<< endl;
+    cout << "-------------" << endl;
 }
 
 E_MQ_Treecode::E_MQ_Treecode() {}
@@ -96,76 +112,6 @@ void E_MQ_Treecode::operator() (double* es, double* targets, int nt,
     std::vector <double> yT(nt);
     std::vector <double> qT(nt, 1.0);
 
-    // if (targets == sources) {
-    //     std::vector<double> new_sources(ns);
-    //     for (int ii = 0; ii < ns; ii++) {
-    //         new_sources[ii] = sources[ii];
-    //     }
-    //     sources = new_sources.data();
-    // }
-//
-/*
-    std::cout << "beta " << beta << std::endl;
-    std::cout << "mac " << theta << std::endl;
-    std::cout << "degree " << interpDegree << std::endl;
-    std::cout << "max source " << maxPerSourceLeaf << std::endl;
-    std::cout << "max target " << maxPerTargetLeaf << std::endl;
-    std::cout << "ns " << ns << std::endl;
-    std::cout << "nt " << nt << std::endl;
-    std::cout << "kernel " << kernel << std::endl;
-    std::cout << "singularity " << singularity << std::endl;
-    std::cout << "approximation " << approximation << std::endl;
-    std::cout << "compute type " << compute_type << std::endl;
-
-    std::cout << "xT ";
-    std::copy(xT.begin(), xT.end(), std::ostream_iterator<double>(std::cout, " "));
-    std::cout << std::endl;
-
-    std::cout << "xS ";
-    std::copy(xS.begin(), xS.end(), std::ostream_iterator<double>(std::cout, " "));
-    std::cout << std::endl;
-
-    std::cout << "yT ";
-    std::copy(yT.begin(), yT.end(), std::ostream_iterator<double>(std::cout, " "));
-    std::cout << std::endl;
-
-    std::cout << "yS ";
-    std::copy(yS.begin(), yS.end(), std::ostream_iterator<double>(std::cout, " "));
-    std::cout << std::endl;
-
-    std::cout << "qT ";
-    std::copy(qT.begin(), qT.end(), std::ostream_iterator<double>(std::cout, " "));
-    std::cout << std::endl;
-
-    std::cout << "wS ";
-    std::copy(wS.begin(), wS.end(), std::ostream_iterator<double>(std::cout, " "));
-    std::cout << std::endl;
-
-    std::cout << "es ";
-    for (int ii = 0; ii < nt; ii++) {
-        std::cout << es[ii] << " ";
-    }
-    std::cout << std::endl;
-    
-    std::cout << "xs ";
-    for (int ii = 0; ii < ns; ii++) {
-        std::cout << sources[ii] << " ";
-    }
-    std::cout << std::endl;
-    
-    std::cout << "xt ";
-    for (int ii = 0; ii < nt; ii++) {
-        std::cout << targets[ii] << " ";
-    }
-    std::cout << std::endl;
-    
-    std::cout << "qws ";
-    for (int ii = 0; ii < ns; ii++) {
-        std::cout << q_ws[ii] << " ";
-    }
-    std::cout << std::endl;   
-    */
-
     BaryTreeInterface(nt, ns, xT.data(), yT.data(), 
                     targets, qT.data(),
                     xS.data(), yS.data(), 
@@ -175,6 +121,20 @@ void E_MQ_Treecode::operator() (double* es, double* targets, int nt,
                     singularity, approximation, compute_type,
                     theta, interpDegree, maxPerSourceLeaf, maxPerTargetLeaf,
                     1.0, beta, verbosity);
+}
+void E_MQ_Treecode::print_field_obj() {
+    cout << "-------------" << endl;
+    cout << "Field object: " << endl;
+    cout << "MQ kernel, treecode" << endl;
+    cout << "epsilon = " << kernelParams[1] << endl;
+    cout << "Periodic boundary conditions, domain size = " << kernelParams[0] << endl;
+    if (beta >= 0) {
+        cout << "treecode parameters set with beta = " << beta << endl;
+    } else {
+        cout << "mac = " << theta << ", n = " << interpDegree << endl;
+        cout << " max source = " << maxPerSourceLeaf << " , max target = " << maxPerTargetLeaf << endl;
+    }
+    cout << "-------------" << endl;
 }
     
 E_MQ_Treecode::~E_MQ_Treecode() = default;
@@ -225,6 +185,20 @@ void E_MQ_Treecode_openbcs::operator() (double* es, double* targets, int nt,
     for (int ii = 0; ii < nt; ++ii) {
         es[ii] -= targets[ii];
     }
+}
+void E_MQ_Treecode_openbcs::print_field_obj() {
+    cout << "-------------" << endl;
+    cout << "Field object: " << endl;
+    cout << "MQ kernel, treecode" << endl;
+    cout << "epsilon = " << kernelParams[0] << endl;
+    cout << "Open boundary conditions" << endl;
+    if (beta >= 0) {
+        cout << "treecode parameters set with beta = " << beta << endl;
+    } else {
+        cout << "mac = " << theta << ", n = " << interpDegree << endl;
+        cout << " max source = " << maxPerSourceLeaf << " , max target = " << maxPerTargetLeaf << endl;
+    }
+    cout << "-------------" << endl;
 }
     
 E_MQ_Treecode_openbcs::~E_MQ_Treecode_openbcs() = default;

@@ -18,7 +18,8 @@ allow for v_levels, int, >= 0
 #include "AMRStructure.hpp"
 
 AMRStructure::AMRStructure() {}
-AMRStructure::AMRStructure(std::string sim_dir, distribution* f0, //std::function<double (double,double)> f0, 
+AMRStructure::AMRStructure(std::string sim_dir,std::string species_name,
+                            distribution* f0, //std::function<double (double,double)> f0, 
                             int initial_height, 
                             double x_min, double x_max, double v_min, double v_max)
                            : f0(f0), q(-1.0), qm(-1.0), 
@@ -34,6 +35,7 @@ AMRStructure::AMRStructure(std::string sim_dir, distribution* f0, //std::functio
     num_operations = std::vector<int> (last_time);
 
     this->sim_dir = sim_dir;
+    this->species_name = species_name;
     Lx = x_max - x_min;
     Lv = v_max - v_min;
     npanels_x = int(pow(2, initial_height));
@@ -49,7 +51,8 @@ AMRStructure::AMRStructure(std::string sim_dir, distribution* f0, //std::functio
         //         double x_min, double x_max, double v_min, double v_max, 
         //         ElectricField* calculate_e, int num_steps, double dt,
         //         bool do_adaptively_refine, std::vector<double>& amr_epsilons);
-AMRStructure::AMRStructure(std::string sim_dir, distribution* f0, //std::function<double (double,double)> f0,
+AMRStructure::AMRStructure(std::string sim_dir, std::string species_name,
+                            distribution* f0, //std::function<double (double,double)> f0,
                             int initial_height, int max_height, 
                             double x_min, double x_max, double v_min, double v_max, 
                             BoundaryConditions bcs,
@@ -66,6 +69,7 @@ AMRStructure::AMRStructure(std::string sim_dir, distribution* f0, //std::functio
     num_operations = std::vector<int> (last_time);
 
     this->sim_dir = sim_dir;
+    this->species_name = species_name;
     Lx = x_max - x_min;
     Lv = v_max - v_min;
     npanels_x = int(pow(2, initial_height));
@@ -80,7 +84,8 @@ AMRStructure::AMRStructure(std::string sim_dir, distribution* f0, //std::functio
     // calculate_e = new E_MQ_DirectSum(Lx, greens_epsilon);
 }
 
-AMRStructure::AMRStructure(std::string sim_dir, distribution* f0, //std::function<double (double,double)> f0, 
+AMRStructure::AMRStructure(std::string sim_dir, std::string species_name,
+                            distribution* f0, //std::function<double (double,double)> f0, 
                             double q, double m, 
                             int initial_height, int v_height, int max_height, 
                             double x_min, double x_max, double v_min, double v_max, 
@@ -99,6 +104,7 @@ AMRStructure::AMRStructure(std::string sim_dir, distribution* f0, //std::functio
     num_operations = std::vector<int> (last_time);
 
     this->sim_dir = sim_dir;
+    this->species_name = species_name;
     Lx = x_max - x_min;
     Lv = v_max - v_min;
     npanels_x = int(pow(2, initial_height));
