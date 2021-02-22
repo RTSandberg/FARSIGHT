@@ -4,12 +4,16 @@
 
 #include <math.h> // exp, sqrt, cos
 #include <vector> // vector
+#include <iostream> // std::cout, std::endl;
+using std::cout;
+using std::endl;
 
 #define FRIEDMAN_BEAM_MIN_N 1e-150
 
 class distribution {
     public:
         virtual double operator() (double x, double v)=0;
+        virtual void print()=0;
 };
 
 class F0_M : public distribution {
@@ -20,6 +24,7 @@ class F0_M : public distribution {
 
         double operator() (double x, double v);
         double get_vth();
+        void print();
 };
 
 class F0_LD : public distribution {
@@ -32,6 +37,7 @@ class F0_LD : public distribution {
         double get_vth();
         double get_k();
         double get_amp();
+        void print();
 };
 
 class F0_strong_two_stream : public distribution {
@@ -45,6 +51,7 @@ class F0_strong_two_stream : public distribution {
         double get_vth();
         double get_k();
         double get_amp();
+        void print();
 };
 
 class F0_colder_two_stream : public distribution {
@@ -58,6 +65,7 @@ class F0_colder_two_stream : public distribution {
         double get_vth();
         double get_k();
         double get_amp();
+        void print();
 };
 
 class F0_Friedman_beam : public distribution {
@@ -72,6 +80,7 @@ class F0_Friedman_beam : public distribution {
         double operator() (double x, double v);
         void generate_Ns(double xmax);
         double interpolate_N(double x);
+        void print();
 };
 
 #endif  /*  INITITIAL_DISTRIBUTIONS_HPP */

@@ -59,6 +59,7 @@ int main(int argc, char** argv) {
 
     AMRSimulation sim(sim_dir, input_deck);
     // initial gather
+    sim.step();
     // evaluate e
     // write to diagnostic
 

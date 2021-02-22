@@ -2,6 +2,14 @@
 
 int AMRSimulation::run() {
 
+    step();
+    
+    return 0;
+}
+
+/*
+int AMRSimulation::run() {
+
     auto start = high_resolution_clock::now();
     amr.init_e();
     auto stop = high_resolution_clock::now();
@@ -49,3 +57,4 @@ amr.write_to_file(pre_remesh);
 
     return 0;
     }
+    */

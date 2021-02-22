@@ -49,6 +49,9 @@ enum ProfileTypes {sim_time, step_time, field_time,
                 remesh_time, tree_build_time, panel_test_time, interp_time, search_time, 
                 eval_time, file_time, amr_test_time, amr_refine_time, last_time};
 
+struct TwoVector {
+    std::vector<double> v1, v2;
+};
 
 struct AMRStructure {
     std::string sim_dir;
@@ -122,10 +125,10 @@ struct AMRStructure {
     void refine_panels_refine_v(std::function<double (double,double)> f, bool do_adaptive_refine);
     void test_panel(int panel_ind, bool verbose);
 
-    int write_particles_to_file();
-    int write_panels_to_file();
-    int write_particles_to_file(bool pre_remesh);
-    int write_panels_to_file(bool pre_remesh);
+    int write_particles_to_file(int iter_num);
+    int write_panels_to_file(int iter_num);
+    int write_particles_to_file(bool pre_remesh, int iter_num);
+    int write_panels_to_file(bool pre_remesh, int iter_num);
 
     public:
         AMRStructure();
@@ -181,6 +184,11 @@ struct AMRStructure {
         void interpolate_from_panel_to_points(std::vector<double>& values, std::vector<double>& xs, std::vector<double>& vs,
                                                 std::vector<int>& point_inds, int panel_ind, bool use_limiter, double limit_val);
 
+        // field utility
+        std::vector<size_t> inv_inds_reduced_xs;
+        std::vector<double> reduced_xs, reduced_ws;
+        void get_reduced_xs_ws();
+        void get_reduced_es(double* reduced_es);
         // field functions
         // void calculate_e();
         // void vector_calc_e_wrapper();
@@ -192,8 +200,8 @@ struct AMRStructure {
         // io
         friend std::ostream& operator<<(std::ostream& os, const AMRStructure& amr);
         void print_amr();
-        int write_to_file();
-        int write_to_file(bool pre_remesh);
+        int write_to_file(int iter_num);
+        int write_to_file(bool pre_remesh, int iter_num);
         void print_panel_points();
 
         // profiling

@@ -160,6 +160,14 @@ AMRStructure* AMRSimulation::make_species_return_ptr(pt::ptree &species_deck_por
     return species;
 }
 
+void AMRSimulation::get_qms() {
+    for(auto &species : species_list) {
+        species_qs.push_back(species->q);
+        species_qms.push_back(species->qm);
+        species_ms.push_back(species->q / species->qm);
+    }
+}
+
     // distribution* f0;
     // double q = -1.0, m = 1.0;
 

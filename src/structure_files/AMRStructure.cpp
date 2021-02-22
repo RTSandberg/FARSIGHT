@@ -136,3 +136,49 @@ void AMRStructure::add_time(ProfileTypes prof_type, duration<double> op_time) {
     num_operations[prof_type] ++;
     time_operations[prof_type] += op_time;
 }
+
+
+void AMRStructure::get_reduced_xs_ws() {
+    std::vector<size_t> inds (xs.size());
+
+    std::iota(inds.begin(), inds.end(), 0);
+    std::sort(inds.begin(), inds.end(), [&](size_t a, size_t b) { return xs[a] < xs[b]; });
+
+    // unique pat
+    int s_ind = inds[0];
+    double val = xs[s_ind];
+    reduced_xs = std::vector<double> (1,val);
+    inv_inds_reduced_xs = std::vector<size_t> (xs.size());
+    int unique_ind = 0;
+    for (int ii = 1; ii < xs.size(); ++ii) {
+        s_ind = inds[ii];
+        double xsi = xs[s_ind];
+        // std::cout << "ii " << ii << ", x[sort_ind[ii]] " << xsi << ", cf " << val << std::endl;
+        // if (xsi > val) { std::cout << "xsi > val";}
+        // else {std::cout << "xsi <= val" << std::endl;}
+        if (xsi > val) {
+            val = xsi;
+            unique_ind++;
+            reduced_xs.push_back(xsi);
+        } 
+        // std::cout << "inv_inds[" << s_ind << "] set to " << unique_ind << std::endl;
+        inv_inds_reduced_xs[s_ind] = unique_ind;
+    }
+
+    // std::vector<double> sort_ws (species_reduced_xs.size());
+    reduced_ws = std::vector<double> (reduced_xs.size());
+    for (int ii = 0; ii < inv_inds_reduced_xs.size(); ++ii) {
+        reduced_ws[inv_inds_reduced_xs[ii]] += q_ws[ii];
+    }
+}
+
+void AMRStructure::get_reduced_es(double* reduced_es) {
+    es = std::vector<double>(xs.size());
+    for (int ii = 0; ii < inv_inds_reduced_xs.size(); ++ii) {
+        // es.push_back(sort_es[inv_inds[ii]]);
+        es[ii] = reduced_es[inv_inds_reduced_xs[ii]];
+    }
+
+}
+
+

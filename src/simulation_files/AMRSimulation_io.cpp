@@ -1,5 +1,16 @@
 #include "AMRSimulation.hpp"
 
+int AMRSimulation::write_to_file() {
+
+    if (! need_scatter) {
+        // scatter data to species
+    }
+    for (auto& species : species_list) {
+        species->write_to_file(iter_num);
+    }
+    return 0;
+}
+
 void AMRSimulation::print_sim_setup() {
 
     cout << "============================" << endl;
@@ -26,7 +37,7 @@ void AMRSimulation::print_sim_setup() {
     cout << "Remesh every " << n_steps_remesh << " step(s), diagnostic dump every " << n_steps_diag << " step(s)" << endl;
 
 // print field data
-    field_object->print_field_obj();
+    calculate_e->print_field_obj();
     // cout << "green's epsilon = " << greens_epsilon << endl;
     // cout << "use treecode flag " << use_treecode << endl;
     // if (use_treecode > 0) { 

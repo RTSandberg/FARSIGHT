@@ -1,11 +1,11 @@
 #include "AMRStructure.hpp"
 
-int AMRStructure::write_particles_to_file() {
+int AMRStructure::write_particles_to_file(int iter_num) {
     bool pre_remesh = false;
-    return write_particles_to_file(pre_remesh);
+    return write_particles_to_file(pre_remesh, iter_num);
 }
 
-int AMRStructure::write_particles_to_file(bool pre_remesh) {
+int AMRStructure::write_particles_to_file(bool pre_remesh, int iter_num) {
     std::ofstream x_file;
     std::ofstream v_file;
     std::ofstream f_file;
@@ -16,11 +16,12 @@ int AMRStructure::write_particles_to_file(bool pre_remesh) {
     if (pre_remesh) {
         remesh_str = "preremesh_";
     }
-    x_file.open(sim_dir + "simulation_output/xs/xs_" + remesh_str + std::to_string(iter_num), std::ios::out | std::ios::binary); 
-    v_file.open(sim_dir + "simulation_output/vs/vs_" + remesh_str  + std::to_string(iter_num), std::ios::out | std::ios::binary); 
-    f_file.open(sim_dir + "simulation_output/fs/fs_" + remesh_str  + std::to_string(iter_num), std::ios::out | std::ios::binary); 
-    qw_file.open(sim_dir + "simulation_output/qws/qws_" + remesh_str  + std::to_string(iter_num), std::ios::out | std::ios::binary); 
-    e_file.open(sim_dir + "simulation_output/es/es_" + remesh_str  + std::to_string(iter_num), std::ios::out | std::ios::binary); 
+
+    x_file.open(sim_dir + "simulation_output/" + species_name + "/xs/xs_" + remesh_str + std::to_string(iter_num), std::ios::out | std::ios::binary); 
+    v_file.open(sim_dir + "simulation_output/" + species_name + "/vs/vs_" + remesh_str  + std::to_string(iter_num), std::ios::out | std::ios::binary); 
+    f_file.open(sim_dir + "simulation_output/" + species_name + "/fs/fs_" + remesh_str  + std::to_string(iter_num), std::ios::out | std::ios::binary); 
+    qw_file.open(sim_dir + "simulation_output/" + species_name + "/qws/qws_" + remesh_str  + std::to_string(iter_num), std::ios::out | std::ios::binary); 
+    e_file.open(sim_dir + "simulation_output/" + species_name + "/es/es_" + remesh_str  + std::to_string(iter_num), std::ios::out | std::ios::binary); 
 
     // std::cout << "#xs " << xs.size() << std::endl;
     // std::cout << "#vs " << vs.size() << std::endl;
@@ -70,18 +71,18 @@ int AMRStructure::write_particles_to_file(bool pre_remesh) {
     return 0;
 }
 
-int AMRStructure::write_panels_to_file() {
+int AMRStructure::write_panels_to_file(int iter_num) {
     bool pre_remesh = false;
-    return write_panels_to_file(pre_remesh);
+    return write_panels_to_file(pre_remesh, iter_num);
 }
-int AMRStructure::write_panels_to_file(bool pre_remesh) {
+int AMRStructure::write_panels_to_file(bool pre_remesh, int iter_num) {
     std::ofstream panel_file;
     std::string remesh_str = "";
     if (pre_remesh) {
         remesh_str = "preremesh_";
     }
 
-    panel_file.open(sim_dir + "simulation_output/panels/leaf_point_inds_" + remesh_str+ std::to_string(iter_num), std::ios::out | std::ios::binary);
+    panel_file.open(sim_dir + "simulation_output/" + species_name + "/panels/leaf_point_inds_" + remesh_str+ std::to_string(iter_num), std::ios::out | std::ios::binary);
     
     if (!panel_file) {
         cout << "Unable to open step " << iter_num << " panel data files" << endl;
@@ -104,13 +105,13 @@ int AMRStructure::write_panels_to_file(bool pre_remesh) {
     return 0;
 }
 
-int AMRStructure::write_to_file() { 
+int AMRStructure::write_to_file(int iter_num) { 
     bool pre_remesh=false;
-    return write_to_file(pre_remesh);
+    return write_to_file(pre_remesh, iter_num);
 }
-int AMRStructure::write_to_file(bool pre_remesh) {
-    write_particles_to_file(pre_remesh);
-    write_panels_to_file(pre_remesh);
+int AMRStructure::write_to_file(bool pre_remesh, int iter_num) {
+    write_particles_to_file(pre_remesh, iter_num);
+    write_panels_to_file(pre_remesh, iter_num);
     return 0;
 }
 
@@ -134,6 +135,9 @@ std::ostream& operator<<(std::ostream& os, const AMRStructure& amr) {
     os << "=================" << endl;
     os << "Computational domain: (x,v) in [" << amr.x_min << ", " << amr.x_max << "]x[" << amr.v_min << ", " << amr.v_max << "]" << endl; 
     os << "Species charge: " << amr.q << ", species mass: " << amr.q/amr.qm << endl;
+    os << "Initial conditions: " << endl;
+    // os << *(os.f0) << endl;/
+    (amr.f0)->print();
     os << "-----------------" << endl;
     os << "Initial height: " << amr.initial_height << ", v height: " << amr.v_height << ", height: " << amr.height << ", max height: " << amr.max_height << endl;
     if (amr.do_adaptively_refine) { os << "This structure is adaptively refined" << endl;}

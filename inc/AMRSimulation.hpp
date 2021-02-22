@@ -69,32 +69,45 @@ struct AMRSimulation {
     int n_steps_remesh;
     int n_steps_diag;
     double dt;
+    bool need_scatter;
+    bool need_gather;
 
     //field parameters
     // double greens_epsilon;
     BoundaryConditions bcs;
     Quadrature quad;
     bool use_treecode;
-    ElectricField* field_object;
+    ElectricField* calculate_e;
 
     std::vector<distribution*> ic_list;
     std::vector<AMRStructure*> species_list;
+    int N_sp;
+    std::vector<size_t> species_start, species_end;
+
+    std::vector<double> xs, vs, q_ws, es;
+    std::vector<double> species_qs, species_ms, species_qms;
     // ---- functions ---------
     // constructor
     AMRSimulation();
+    AMRSimulation(std::string sim_dir, std::string deck_address);
     // destructor
     ~AMRSimulation();
     // ------------------
-    AMRSimulation(std::string sim_dir, std::string deck_address);
     int load_deck(std::string &deck_address, pt::ptree &deck);
     int get_box_t_params(pt::ptree &deck);
     distribution* make_f0_return_ptr(pt::ptree &species_deck_portion);
     ElectricField* make_field_return_ptr(pt::ptree &deck);
     AMRStructure* make_species_return_ptr(pt::ptree &species_deck_portion, distribution* f0);
+    void get_qms();
+    int gather();
+    int scatter(bool send_e);
     int evaluate_field_uniform_grid();
     int evaluate_field();
     int step();
+    int rk4_step(bool get_4th_e);
+    int remesh();
     int run();
+    int write_to_file();
     void print_sim_setup();
 };
 #endif /* AMRSIMULATION_HPP */

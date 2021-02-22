@@ -16,6 +16,10 @@ double F0_M::operator() (double x, double v) {
     return 1.0 / sqrt(2.0 * M_PI) / vth * exp(-v*v / 2 / vth /vth);
 }
 double F0_M::get_vth() { return vth; }
+void F0_M::print() {
+    cout << "Maxwellian ics" << endl;
+    cout << "vth = " << vth << endl;
+}
 // end F0_M functions
 
 // F0_LD functions
@@ -30,6 +34,10 @@ double F0_LD::operator() (double x, double v) {
 double F0_LD::get_vth() { return vth; }
 double F0_LD::get_k() { return k; }
 double F0_LD::get_amp() { return amp; }
+void F0_LD::print() {
+    cout << "Landau damping (sinusoidal perturbation on Maxwellian) ics" << endl;
+    cout << "vth = " << vth << ", amp = " << amp << ", k = " << k << endl;
+}
 // end F0_LD functions
 
 
@@ -50,6 +58,11 @@ double F0_strong_two_stream::operator() (double x, double v) {
 double F0_strong_two_stream::get_vth() { return vth; }
 double F0_strong_two_stream::get_k() { return k; }
 double F0_strong_two_stream::get_amp() { return amp; }
+void F0_strong_two_stream::print() {
+    cout << "Strong Two stream instability ics" << endl;
+    cout << "v^2 * exp (-v^2/2/vth^2) * (1 + amp * cos(k*x))" << endl;
+    cout << "vth = " << vth << ", amp = " << amp << ", k = " << k << endl;
+}
 // end F0_strong_two_stream functions
 
 // F0_colder_two_stream   functions
@@ -71,6 +84,11 @@ double F0_colder_two_stream::operator() (double x, double v) {
 double F0_colder_two_stream::get_vth() { return vth; }
 double F0_colder_two_stream::get_k() { return k; }
 double F0_colder_two_stream::get_amp() { return amp; }
+void F0_colder_two_stream::print() {
+    cout << "'Colder' Two stream instability ics" << endl;
+    cout << "1/2 (fM(v+vstr) + fM(v-vstr)) * (1 + amp * cos(k*x))" << endl;
+    cout << "vth = " << vth << ", vstr = " << v_str << ", amp = " << amp << ", k = " << k << endl;
+}
 // end F0_colder_two_stream:: functions
 
 //Friedman beam problem functions
@@ -102,6 +120,12 @@ F0_Friedman_beam::F0_Friedman_beam(double Delta, double Tstar, double xmax) :
     // mu=1.0;
     maxwellian = F0_M(vth);
     generate_Ns(xmax);
+}
+void F0_Friedman_beam::print() {
+    cout << "Halo formation ics" << endl;
+    cout << "Delta = " << Delta << ", Tstar = " << Tstar << endl;
+    cout << "nhat = " << nhat << ", k_beta_0 = " << k_beta_0 << ", lambda_D = " << lambda_D << endl;
+    cout << "gamma_b = " << gamma_b << ", mu = " << mu << endl;
 }
 double F0_Friedman_beam::operator() (double x, double v) {
     // return maxwellian(x,v) * nhat * exp(-x*x/2/Lx/Lx);
