@@ -23,8 +23,10 @@ int AMRSimulation::evaluate_field_uniform_grid() {
         species->get_reduced_es(reduced_es.data() + start_ind);
         start_ind += species->reduced_xs.size();
     }
+    need_gather = true;
     return 0;
 }
+
 int AMRSimulation::evaluate_field() {
 
 

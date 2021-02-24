@@ -7,7 +7,7 @@ add_library(SimObj AMRSimulation.cpp
                    AMRSimulation_gather_scatter.cpp
                    AMRSimulation_field.cpp
                    AMRSimulation_step.cpp
-#                   AMRSimulation_remesh.cpp
+                   AMRSimulation_remesh.cpp
                    AMRSimulation_run.cpp
                    AMRSimulation_io.cpp)
 target_link_libraries(SimObj       PUBLIC  AMRObj_cpu

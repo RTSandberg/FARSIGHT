@@ -1,5 +1,7 @@
 #include "AMRSimulation.hpp"
 
+// #define DEBUG
+
 int AMRSimulation::step() {
     iter_num += 1;
     std::cout << "step " << iter_num << std::endl;
@@ -9,24 +11,32 @@ int AMRSimulation::step() {
     if (need_gather) {
         // gather from species (need at first and after every remesh)
         gather();
-        need_gather = false;
     }
 
     // rk4 step
     rk4_step(false);
 
-    need_scatter = true;
-
     // if remesh: remesh_and_calculate_e, scatter if needed, set need_gather to true
+    if (iter_num % n_steps_remesh == 0) {
+        remesh();
+    }
     // if not remesh: evaluate e (remeshing ends by calculating e on uniform grid)
-    // if dump : scatter if needed, write to file
+    else {
+        std::vector<double> xtemp_cpy (xs);
+        std::vector<double> xtemp_cpy2 (xs);
+        (*calculate_e)(es.data(), xtemp_cpy.data(), es.size(),
+                        xtemp_cpy2.data(), q_ws.data(), xtemp_cpy.size());
+    }
+
+    // if dump : write to file
+    if (iter_num % n_steps_diag == 0) {
+        write_to_file();
+    }
 
     return 0;
 }
 
 int AMRSimulation::rk4_step(bool get_4th_e) {
-
-
 
 // initialize rk4 vectors
     std::vector<double> xtemp = xs;
@@ -43,7 +53,7 @@ int AMRSimulation::rk4_step(bool get_4th_e) {
   // v1 = vs = vn
     // calculate_E_mq(a1, xs, xs, q_ws, L, epsilon);
     // v1 = vs;
-    for (size_t sp_i; sp_i < N_sp; ++sp_i) {
+    for (size_t sp_i = 0; sp_i < N_sp; ++sp_i) {
         for (size_t xi = species_start[sp_i]; xi < species_end[sp_i]; ++xi) {
             a1[xi] *= species_qms[sp_i];
         }
@@ -58,17 +68,21 @@ int AMRSimulation::rk4_step(bool get_4th_e) {
 
     // auto start = high_resolution_clock::now();
     
+    
     std::vector<double> xtemp_cpy (xtemp);
     std::vector<double> xtemp_cpy2 (xtemp);
     (*calculate_e)(a2.data(), xtemp_cpy.data(), a2.size(),
                     xtemp_cpy2.data(), q_ws.data(), xtemp.size());
     // auto stop = high_resolution_clock::now();
     // add_time(field_time, duration_cast<duration<double>>(stop - start) );
-    for (size_t sp_i; sp_i < N_sp; species_list) {
+
+
+    for (size_t sp_i= 0; sp_i < N_sp; ++sp_i) {
         for (size_t xi = species_start[sp_i]; xi < species_end[sp_i]; ++xi) {
             a2[xi] *= species_qms[sp_i];
         }
     }
+
 
     // k3 = (v3,a3) = F(un + h/2 k2) = F(xn + delt/2 v2, vn + delt/2 a2)
     //              = ( vn + delt a2 / 2, q/m E(xn + delt v2 /2) )
@@ -76,6 +90,7 @@ int AMRSimulation::rk4_step(bool get_4th_e) {
         v3.push_back(vs[ii] + 0.5 * dt * a2[ii]);
         xtemp[ii] = xs[ii] + 0.5 * dt * v2[ii];
     }
+
     // start = high_resolution_clock::now();
     xtemp_cpy = xtemp;
     xtemp_cpy2 = xtemp;
@@ -86,7 +101,7 @@ int AMRSimulation::rk4_step(bool get_4th_e) {
     // for (int ii = 0; ii < N; ++ii) {
     //     a3[ii] *= qm;
     // }
-    for (size_t sp_i; sp_i < N_sp; species_list) {
+    for (size_t sp_i = 0; sp_i < N_sp; ++ sp_i) {
         for (size_t xi = species_start[sp_i]; xi < species_end[sp_i]; ++xi) {
             a3[xi] *= species_qms[sp_i];
         }
@@ -109,7 +124,7 @@ int AMRSimulation::rk4_step(bool get_4th_e) {
     // for (int ii = 0; ii < N; ++ii) {
     //     a4[ii] *= qm;
     // }
-    for (size_t sp_i; sp_i < N_sp; species_list) {
+    for (size_t sp_i = 0; sp_i < N_sp; ++sp_i) {
         for (size_t xi = species_start[sp_i]; xi < species_end[sp_i]; ++xi) {
             a4[xi] *= species_qms[sp_i];
         }
@@ -132,6 +147,8 @@ int AMRSimulation::rk4_step(bool get_4th_e) {
         // add_time(field_time, duration_cast<duration<double>>(stop - start) );
     }
     
+
+    need_scatter = true;
 
     return 0;
 }

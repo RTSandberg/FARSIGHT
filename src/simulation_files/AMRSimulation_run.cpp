@@ -2,7 +2,9 @@
 
 int AMRSimulation::run() {
 
-    step();
+    while (iter_num < num_steps) {
+        step();
+    }
     
     return 0;
 }

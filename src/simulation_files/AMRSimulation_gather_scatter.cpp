@@ -27,6 +27,7 @@ int AMRSimulation::gather() {
         es.insert( es.end(), species->es.begin(), species->es.end());
     }
 
+    need_gather = false;
     return 0;
 }
 
@@ -45,5 +46,6 @@ int AMRSimulation::scatter(bool send_e) {
         start_ind += species->xs.size();
     }
 
+    need_scatter = false;
     return 0;
 }

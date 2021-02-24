@@ -24,7 +24,7 @@ int AMRSimulation::get_box_t_params(pt::ptree &deck) {
         return 1;
     }
     
-    BoundaryConditions bcs = static_cast<BoundaryConditions> (bcs_int);
+    bcs = static_cast<BoundaryConditions> (bcs_int);
 
     Lx = x_max - x_min;
 

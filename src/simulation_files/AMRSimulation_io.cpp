@@ -2,8 +2,9 @@
 
 int AMRSimulation::write_to_file() {
 
-    if (! need_scatter) {
-        // scatter data to species
+    if (need_scatter) {
+        bool send_e = true;
+        scatter(send_e);
     }
     for (auto& species : species_list) {
         species->write_to_file(iter_num);

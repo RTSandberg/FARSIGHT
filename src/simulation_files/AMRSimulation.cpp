@@ -2,7 +2,9 @@
 
 AMRSimulation::AMRSimulation() {}
 
-AMRSimulation::AMRSimulation(std::string sim_dir, std::string deck_address) {
+AMRSimulation::AMRSimulation(std::string sim_dir, std::string deck_address) 
+    : need_scatter (false)
+{
 
     this->sim_dir = sim_dir;
     this->deck_address = deck_address;
@@ -36,6 +38,7 @@ AMRSimulation::AMRSimulation(std::string sim_dir, std::string deck_address) {
 
     // initialize e
     evaluate_field_uniform_grid();
+    iter_num = 0;
 
     //write to file
     write_to_file();
@@ -43,9 +46,6 @@ AMRSimulation::AMRSimulation(std::string sim_dir, std::string deck_address) {
     // print AMR description
     print_sim_setup();
 
-    iter_num = 0;
-    need_scatter = true;
-    need_gather = true;
 }
 
 //destructor
