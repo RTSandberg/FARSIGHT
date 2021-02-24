@@ -666,7 +666,7 @@ def phase_movie(sim_dir, simulation_dictionary,do_show_panels,flim=(0,.3), simul
 
     fig, ax = plt.subplots(figsize=(8,6))
 
-    with writer.saving(fig, sim_dir_str + panel_string + 'phase_space'+ ".mp4", dpi=100):
+    with writer.saving(fig, sim_dir_str + panel_string + 'phase_space'+ ".mp4", dpi=FIG_DPI):
 
 
 #     xs = np.fromfile(output_dir + f'xs/xs_{step_ii}')
@@ -838,7 +838,7 @@ def logf_movie(sim_dir, simulation_dictionary, simulation_has_run = True, can_do
 
     fig, ax = plt.subplots(figsize=(8,6))
 
-    with writer.saving(fig, sim_dir_str+ 'logf_movie.mp4', dpi=100):
+    with writer.saving(fig, sim_dir_str+ 'logf_movie.mp4', dpi=FIG_DPI):
 
 
 
@@ -1002,9 +1002,9 @@ def panel_height_movie(sim_dir, simulation_dictionary, height_range = [7,11],sim
                     comment='')
     writer = FFMpegWriter(fps=5, metadata=metadata)
 
-    fig, ax = plt.subplots(figsize=(12,10))
+    fig, ax = plt.subplots(figsize=(8,6))
 
-    with writer.saving(fig, sim_dir_str + 'panel_heights'+ ".mp4", dpi=100):
+    with writer.saving(fig, sim_dir_str + 'panel_heights'+ ".mp4", dpi=FIG_DPI):
 
 
 
