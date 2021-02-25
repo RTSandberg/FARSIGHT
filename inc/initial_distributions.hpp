@@ -17,10 +17,11 @@ class distribution {
 };
 
 class F0_M : public distribution {
-    double vth;
+    double vth, vstr;
     public:
         F0_M();
         F0_M(double vth);
+        F0_M(double vth, double vstr);
 
         double operator() (double x, double v);
         double get_vth();
@@ -28,10 +29,11 @@ class F0_M : public distribution {
 };
 
 class F0_LD : public distribution {
-    double vth, k, amp;
+    double vth, vstr, k, amp;
     public:
         F0_LD();
         F0_LD(double vth, double k, double amp);
+        F0_LD(double vth, double vstr, double k, double amp);
 
         double operator() (double x, double v);
         double get_vth();

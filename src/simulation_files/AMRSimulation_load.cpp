@@ -97,10 +97,10 @@ distribution* AMRSimulation::make_f0_return_ptr(pt::ptree &species_deck_portion)
     switch (sim_type)
     {
         case 1: // weak Landau Damping
-            f0 = new F0_LD(vth, kx, amp);
+            f0 = new F0_LD(vth, vstr, kx, amp);
             break;
         case 2: // strong Landau Damping
-            f0 = new F0_LD(vth, kx, amp);
+            f0 = new F0_LD(vth, vstr, kx, amp);
             break;
         case 3: // 'strong' two-stream
             f0 = new F0_strong_two_stream(vth, kx, amp);
@@ -115,7 +115,7 @@ distribution* AMRSimulation::make_f0_return_ptr(pt::ptree &species_deck_portion)
         }
             break;
         default:
-            f0 = new F0_LD(vth, kx, amp);
+            f0 = new F0_LD(vth, vstr, kx, amp);
             break;
     }
     return f0;
