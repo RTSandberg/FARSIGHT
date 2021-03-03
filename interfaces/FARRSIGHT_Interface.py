@@ -50,6 +50,7 @@ plt.rcParams.update({'font.size': 18})
 
 FIG_DPI = 500
 LOW_DPI = 200
+panels_cmap = 'Greys'
 
 from enum import IntEnum
 class BoundaryConditions(IntEnum):
@@ -554,7 +555,7 @@ def plot_height(sim_dir, simulation_dictionary, iter_num, height_range = [7,11],
             
     ncolors = height_range[1] - height_range[0] + 1
     # mymap = cm.get_cmap('gist_rainbow_r',ncolors)
-    mymap = cm.get_cmap('jet',ncolors)
+    mymap = cm.get_cmap(panels_cmap,ncolors)
     
 
     ax.set_xlim([sd['xmin'], sd['xmax']])
@@ -884,7 +885,7 @@ def logf_movie(sim_dir, simulation_dictionary, simulation_has_run = True, can_do
         p.set_clim(flim)
         ax.add_collection(p)
         cb = fig.colorbar(p, ax=ax)
-        cb.set_label('f')
+        cb.set_label('log f')
 
         ax.set_xlim(sd["xmin"], sd["xmax"])
         ax.set_ylim(sd["vmin"], sd["vmax"])
@@ -949,7 +950,7 @@ def logf_movie(sim_dir, simulation_dictionary, simulation_has_run = True, can_do
             p.set_clim(flim)
             ax.add_collection(p)
             cb = fig.colorbar(p, ax=ax)
-            cb.set_label('f')
+            cb.set_label('log f')
             ax.set_title(f't={iter_num*sd["dt"]:.3f}')
 
 
@@ -1028,7 +1029,7 @@ def panel_height_movie(sim_dir, simulation_dictionary, height_range = [7,11],sim
             
         ncolors = height_range[1] - height_range[0] + 1
         # mymap = cm.get_cmap('gist_rainbow_r',ncolors)
-        mymap = cm.get_cmap('jet',ncolors)
+        mymap = cm.get_cmap(panels_cmap,ncolors)
         p = PatchCollection(patches, mymap)
         p.set_array(panels_fs)
         p.set_clim(height_range[0] - 0.5, height_range[1] + 0.5)
@@ -1036,7 +1037,7 @@ def panel_height_movie(sim_dir, simulation_dictionary, height_range = [7,11],sim
         # cb = fig.colorbar(p, ax=ax)
         plt_ticks = np.arange(height_range[0],height_range[1]+1)
         cb = fig.colorbar(p, ax=ax, ticks=plt_ticks)
-        cb.set_label('panel height')
+        cb.set_label('panel x-level')
 
         ax.set_xlim([sd['xmin'], sd['xmax']])
         ax.set_ylim([sd['vmin'],sd['vmax']])
@@ -1076,9 +1077,8 @@ def panel_height_movie(sim_dir, simulation_dictionary, height_range = [7,11],sim
             p.set_array(panels_fs)
             p.set_clim(height_range[0] - 0.5, height_range[1] + 0.5)
             ax.add_collection(p)
-            cb = fig.colorbar(p, ax=ax)
             cb = fig.colorbar(p, ax=ax, ticks=plt_ticks)
-            cb.set_label('panel height')
+            cb.set_label('panel x-level')
             ax.set_title(f't={iter_num*sd["dt"]:.3f}')
 
 
@@ -1708,9 +1708,12 @@ if __name__ == '__main__':
             do_show_panels = True
             phase_movie(sim_dir, simulation_dictionary, do_show_panels, flim=flim, can_do_movie=can_do_movie)
 
-    if args.panels_movie:
+    if args.panels_movie and sd['adaptively_refine'==1]:
+       hlim2 = sd['max_height']
+        if 'v_height' in sd:
+            hlim2 -= sd['v_height']
         panel_height_movie(sim_dir, simulation_dictionary,\
-            height_range=[simulation_dictionary['initial_height'],simulation_dictionary['max_height']],\
+            height_range=[simulation_dictionary['initial_height'],hlim2],\
             can_do_movie=can_do_movie)
 
     if args.logf_movie:
