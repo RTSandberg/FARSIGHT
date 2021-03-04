@@ -22,7 +22,7 @@ AMRSimulation::AMRSimulation(std::string sim_dir, std::string deck_address)
 
     // load species
     try {
-        pt::ptree &species_list_deck = deck.get_child("Species");
+        pt::ptree &species_list_deck = deck.get_child("species_list");
         for (pt::ptree::value_type &sp : species_list_deck) {
             pt::ptree &sp_deck = sp.second;
             distribution* f0 = make_f0_return_ptr(sp_deck);
@@ -30,7 +30,7 @@ AMRSimulation::AMRSimulation(std::string sim_dir, std::string deck_address)
             species_list.push_back(make_species_return_ptr(sp_deck, f0));
         }
     } catch(std::exception& e) {
-        cout << "Invalid deck format.  Must have at least one species in a Species list" << endl;
+        cout << "Invalid deck format.  Must have at least one species in a species list" << endl;
         return;
     }
     N_sp = species_list.size();

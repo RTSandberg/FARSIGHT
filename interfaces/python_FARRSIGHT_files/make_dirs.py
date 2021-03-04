@@ -1,4 +1,6 @@
 
+import os
+
 import FARRSIGHT_types as FST
 
 def make_dirs(project_name, sim_group, sim_name, 
@@ -78,32 +80,24 @@ def generate_standard_names_dirs(simulation_dictionary, root_dir=None):
         simulations_dir = 'simulations/'
 
     sd = simulation_dictionary
-    bcs_string = BoundaryConditions(0).name
+    bcs_string = FST.BoundaryConditions(0).name
     if 'bcs' in sd:
-        bcs_string = BoundaryConditions(sd['bcs']).name
+        bcs_string = FST.BoundaryConditions(sd['bcs']).name
     bcs_string += '_bcs'
         
     tc_string = ''
     # if 'use_treecode' not in sd
     if 'use_treecode' in sd and sd['use_treecode']:
         if 0 <= sd['beta'] <= 1:
-            tc_string = '_beta_%.2f'%sd['beta']# f'_beta_{sim_dict['beta']:.2f}'
+            tc_string = 'tc_beta_%.2f'%sd['beta']# f'_beta_{sim_dict['beta']:.2f}'
         else:
-            tc_string = '_mac_%.2f_degree_%d_msource_%d_maxtarget_%d'%(sd['mac'],sd['degree'], sd['max_source'], sd['max_target'])
+            tc_string = 'tc_mac_%.2f_degree_%d_msource_%d_maxtarget_%d'%(sd['mac'],sd['degree'], sd['max_source'], sd['max_target'])
     else:
-        tc_string = '_dsum'
+        tc_string = 'dsum'
 
-    if 'adaptively_refine' in sd and sd['adaptively_refine']:
-        amr_string = 'amr_max_height_%i'%sd['max_height']
-        amr_string += '_epsilons'
-        for eps in sd['amr_epsilons']:
-            amr_string += '_%.04f'%(eps)
-    else:
-        amr_string = 'no_amr'
-#         sim_group = ''
-#         sim_name = ''
+
     tf = sd['dt'] * sd['num_steps']
-    physical_parameters = FST.SimType(sd['sim_type']).name + '_' + bcs_string + '_vth_%.3f_vstr_%.3f_amp_%.3f_normal_k_%.3f_tf_%.1f'%(sd['vth'], sd['vstr'], sd['amp'], sd['normalized_wavenumber'], tf)
+    physical_parameters =  bcs_string + '_nspecies_%i_tf_%.3f'%(len(sd['species_list']),tf)
     if 'remesh_period' in sd:
         remesh_period = sd['remesh_period']
     else:
@@ -112,15 +106,10 @@ def generate_standard_names_dirs(simulation_dictionary, root_dir=None):
         quad_str = FST.Quadrature(sd['quadrature']).name
     else:
         quad_str = 'TRAP'
-    if 'v_height' in sd:
-        v_height = sd['v_height']
-    else:
-        v_height = 0
-    numerical_parameters = '%s_quadrature_height0_%i_v_height_%i_vm_%.1f_g_eps_%.5f_dt_%.4f_remesh_period_%i_diag_freq_%i'%(quad_str,sd['initial_height'], v_height, sd['vmax'], sd['greens_epsilon'], sd['dt'], remesh_period,sd['diag_period'])
-    amr_treecode_paramters = amr_string + tc_string
+    numerical_parameters = '%s_quadrature_vm_%.1f_g_eps_%.5f_dt_%.4f_remesh_period_%i_diag_freq_%i'%(quad_str,sd['vmax'], sd['greens_epsilon'], sd['dt'], remesh_period,sd['diag_period'])
 #         sim_name = f'height0_{self.initial_height}_vm_{self.vmax:.1f}_g_eps_{self.greens_epsilon:.3f}_dt_{self.dt:.3f}_tf_{self.tf:.1f}_diag_freq_{self.diag_freq}' + tc_string
-    sim_dir = simulations_dir + sd['project_name'] + '/' + physical_parameters + '/'
-    sim_dir += numerical_parameters + '/' + amr_treecode_paramters + '/'
+    sim_dir = simulations_dir + sd['sim_name'] + '/' + physical_parameters + '/'
+    sim_dir += numerical_parameters + '/' + tc_string + '/'
     if not os.path.exists(sim_dir):
         os.makedirs(sim_dir)
     # sim_dir, directories_found = make_dirs(sd['project_name'], sim_group, sim_name,root_dir=root_dir)

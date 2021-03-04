@@ -13,7 +13,7 @@ int AMRSimulation::load_deck(std::string &deck_address, pt::ptree &deck) {
 
 int AMRSimulation::get_box_t_params(pt::ptree &deck) {
 
-    std::string project_name = deck.get<std::string>("project_name", "no_name_found");
+    std::string project_name = deck.get<std::string>("sim_name", "no_name_found");
     x_min = deck.get<double>("xmin", 0.0), x_max = deck.get<double>("xmax", 0.0);
     v_min = deck.get<double>("vmin", -1.0), v_max = deck.get<double>("vmax",1.0);
     int bcs_int = deck.get<int>("bcs",0);

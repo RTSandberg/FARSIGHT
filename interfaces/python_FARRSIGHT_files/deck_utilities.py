@@ -55,7 +55,7 @@ def update_dictionary(deck_dir = None, deck_name = None,
             from_existing = False
     if not from_existing:
         simulation_dictionary = \
-        {'project_name':'template',\
+        {'sim_name':'template',\
         'xmin' : 0.0, 'xmax' : 4*np.pi,\
         'vmin' : -6.0, 'vmax' : 6.0,\
         'bcs' : BoundaryConditions.PERIODIC.value,\

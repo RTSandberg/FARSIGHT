@@ -44,9 +44,14 @@ except:
 # from matplotlib.collections import PatchCollection
 # from matplotlib.patches import Rectangle, Polygon
 # plt.rcParams.update({'font.size': 18})
+import sys
+sys.path.append('/Users/ryansand/Documents/plasma_codes/FARRSIGHT/biquadratic_rk4_source/interfaces/python_FARRSIGHT_files')
+# sys.path.append('/Users/ryansand/Documents/PlasmaProjects/Lagrangian_particle_method/heat_lamps_projects/amr/08_biquadratic_work/05_biquadratic_cpp/biquadratic_rk4_source')
 
 #------ custom imports ---
-from python_FARRSIGHT_files import FARRSIGHT_types as FST
+# import python_FARRSIGHT_files
+import FARRSIGHT_types as FST
+# from python_FARRSIGHT_files import FARRSIGHT_types as FST
 from python_FARRSIGHT_files import diagnostic_plot as dp
 from python_FARRSIGHT_files import deck_utilities as deck
 from python_FARRSIGHT_files import logf
