@@ -7,7 +7,7 @@ int AMRStructure::write_particles_to_file(int iter_num) {
 
 int AMRStructure::write_particles_to_file(bool pre_remesh, int iter_num) {
     std::ofstream x_file;
-    std::ofstream v_file;
+    std::ofstream p_file;
     std::ofstream f_file;
     std::ofstream qw_file;
     std::ofstream e_file;
@@ -18,18 +18,18 @@ int AMRStructure::write_particles_to_file(bool pre_remesh, int iter_num) {
     }
 
     x_file.open(sim_dir + "simulation_output/" + species_name + "/xs/xs_" + remesh_str + std::to_string(iter_num), std::ios::out | std::ios::binary); 
-    v_file.open(sim_dir + "simulation_output/" + species_name + "/vs/vs_" + remesh_str  + std::to_string(iter_num), std::ios::out | std::ios::binary); 
+    p_file.open(sim_dir + "simulation_output/" + species_name + "/ps/ps_" + remesh_str  + std::to_string(iter_num), std::ios::out | std::ios::binary); 
     f_file.open(sim_dir + "simulation_output/" + species_name + "/fs/fs_" + remesh_str  + std::to_string(iter_num), std::ios::out | std::ios::binary); 
     qw_file.open(sim_dir + "simulation_output/" + species_name + "/qws/qws_" + remesh_str  + std::to_string(iter_num), std::ios::out | std::ios::binary); 
     e_file.open(sim_dir + "simulation_output/" + species_name + "/es/es_" + remesh_str  + std::to_string(iter_num), std::ios::out | std::ios::binary); 
 
     // std::cout << "#xs " << xs.size() << std::endl;
-    // std::cout << "#vs " << vs.size() << std::endl;
+    // std::cout << "#ps " << ps.size() << std::endl;
     // std::cout << "#fs " << fs.size() << std::endl;
     // std::cout << "#qw " << q_ws.size() << std::endl;
     // std::cout << "#es " << es.size() << std::endl;
 
-    if (!x_file | !v_file | !f_file | !qw_file | !e_file ) {
+    if (!x_file | !p_file | !f_file | !qw_file | !e_file ) {
         cout << "Unable to open step " << iter_num << " particle data files" << endl;
         return 1;
     }
@@ -38,31 +38,31 @@ int AMRStructure::write_particles_to_file(bool pre_remesh, int iter_num) {
     // copy(particles.begin(), particles.end(), std::ostreambuf_iterator<char>(out_file));
 
     // for (int ii = 0; ii < particles.size(); ++ii){
-    assert(xs.size() == vs.size() && vs.size() == fs.size() && fs.size() == q_ws.size() && q_ws.size() == es.size());
+    assert(xs.size() == ps.size() && ps.size() == fs.size() && fs.size() == q_ws.size() && q_ws.size() == es.size());
     for (int ii = 0; ii < xs.size(); ++ii) {
         // double x = particles[ii].get_x();
-        // double v = particles[ii].get_v();
+        // double p = particles[ii].get_p();
         // double f = particles[ii].get_f();
         // double qw = particles[ii].get_qw();
         // double e = particles[ii].get_e();
         double x = xs[ii];
-        double v = vs[ii];
+        double p = ps[ii];
         double f = fs[ii];
         double qw = q_ws[ii];
         double e = es[ii];
         x_file.write((char *) &x, sizeof(double));
-        v_file.write((char *) &v, sizeof(double));
+        p_file.write((char *) &p, sizeof(double));
         f_file.write((char *) &f, sizeof(double));
         qw_file.write((char *) &qw, sizeof(double));
         e_file.write((char *) &e, sizeof(double));
     }
 
-    if (!x_file.good() | !v_file.good() | !f_file.good() | !qw_file.good() | !e_file.good()) {
+    if (!x_file.good() | !p_file.good() | !f_file.good() | !qw_file.good() | !e_file.good()) {
         cout << "Error occurred writing step " << iter_num << " particle data files." << endl;
         return 1;
     }
     x_file.close();
-    v_file.close();
+    p_file.close();
     f_file.close();
     qw_file.close();
     e_file.close();
@@ -133,13 +133,13 @@ std::ostream& operator<<(std::ostream& os, const AMRStructure& amr) {
     os << "=================" << endl;
     os << "AMR structure for species " << amr.species_name << endl;
     os << "=================" << endl;
-    os << "Computational domain: (x,v) in [" << amr.x_min << ", " << amr.x_max << "]x[" << amr.v_min << ", " << amr.v_max << "]" << endl; 
+    os << "Computational domain: (x,p) in [" << amr.x_min << ", " << amr.x_max << "]x[" << amr.p_min << ", " << amr.p_max << "]" << endl; 
     os << "Species charge: " << amr.q << ", species mass: " << amr.q/amr.qm << endl;
     os << "Initial conditions: " << endl;
     // os << *(os.f0) << endl;/
     (amr.f0)->print();
     os << "-----------------" << endl;
-    os << "Initial height: " << amr.initial_height << ", v height: " << amr.v_height << ", height: " << amr.height << ", max height: " << amr.max_height << endl;
+    os << "Initial height: " << amr.initial_height << ", p height: " << amr.p_height << ", height: " << amr.height << ", max height: " << amr.max_height << endl;
     if (amr.do_adaptively_refine) { os << "This structure is adaptively refined" << endl;}
     else { os << "This structure is NOT adaptively refined" << endl;}
 
@@ -156,8 +156,8 @@ std::ostream& operator<<(std::ostream& os, const AMRStructure& amr) {
     // os << "Point data" << endl << "==============" << endl;
     // os << "xs, size = " << amr.xs.size() << endl;
     // std::copy(amr.xs.begin(), amr.xs.end(), std::ostream_iterator<double>(os, " "));
-    // os << endl << "vs, size = " << amr.vs.size() << endl;
-    // std::copy(amr.vs.begin(), amr.vs.end(), std::ostream_iterator<double>(os, " "));
+    // os << endl << "ps, size = " << amr.ps.size() << endl;
+    // std::copy(amr.ps.begin(), amr.ps.end(), std::ostream_iterator<double>(os, " "));
     // os << endl << "fs, size = " << amr.fs.size() << endl;
     // std::copy(amr.fs.begin(), amr.fs.end(), std::ostream_iterator<double>(os, " "));
     // os << endl << "qw, size = " << amr.q_ws.size() << endl;
@@ -178,9 +178,9 @@ void AMRStructure::print_panel_points() {
         for (int jj = 0; jj < 9; jj++) {
             cout << xs[panel_it->point_inds[jj]] << ", ";
         }
-        cout << endl << "vs: ";
+        cout << endl << "ps: ";
         for (int jj = 0; jj < 9; jj++) {
-            cout << vs[panel_it->point_inds[jj]] << ", ";
+            cout << ps[panel_it->point_inds[jj]] << ", ";
         }
         cout << endl << "fs: ";
         for (int jj = 0; jj < 9; jj++) {
@@ -210,7 +210,7 @@ void AMRStructure::print_times() {
     cout << ".. Initial tree building  + refinement time " << time_operations[tree_build_time].count() << " seconds (this includes the interpolations for mesh refinement)" << endl;
     cout << "- " << num_operations[tree_build_time] << " not sure what these ops all are, at ";
     cout << time_operations[tree_build_time].count() / num_operations[tree_build_time] << " seconds per op" << endl;
-    if (do_adaptively_refine && v_height + initial_height < max_height) {
+    if (do_adaptively_refine && p_height + initial_height < max_height) {
         cout <<"... Total panel-testing-in-amr time " << time_operations[amr_test_time].count() << " seconds" << endl;
         cout << "- " << num_operations[amr_test_time] << " test sessions made at ";
         cout << time_operations[amr_test_time].count() / num_operations[amr_test_time] << " seconds per test session" << endl;

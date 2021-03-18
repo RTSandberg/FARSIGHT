@@ -60,10 +60,11 @@ struct AMRSimulation {
     std::string sim_dir;
     std::string deck_address;
     // domain parameters
-    double Lx, Lv;
-    double x_min, x_max, v_min, v_max;
+    double Lx, Lp;
+    double x_min, x_max, p_min, p_max;
 
     // time stepping parameters
+    bool relativistic;
     int iter_num;
     int num_steps;
     int n_steps_remesh;
@@ -84,7 +85,7 @@ struct AMRSimulation {
     int N_sp;
     std::vector<size_t> species_start, species_end;
 
-    std::vector<double> xs, vs, q_ws, es;
+    std::vector<double> xs, ps, q_ws, es;
     std::vector<double> species_qs, species_ms, species_qms;
     // ---- functions ---------
     // constructor
@@ -101,10 +102,16 @@ struct AMRSimulation {
     void get_qms();
     int gather();
     int scatter(bool send_e);
+
     int evaluate_field_uniform_grid();
     int evaluate_field();
+
+
+    void relativistic_momentum_push(double* xtemp, double* vtemp, double* ptemp);
+    void nonrelativistic_momentum_push(double* xtemp, double* vtemp, double* ptemp);
     int step();
     int rk4_step(bool get_4th_e);
+
     int remesh();
     int run();
     int write_to_file();

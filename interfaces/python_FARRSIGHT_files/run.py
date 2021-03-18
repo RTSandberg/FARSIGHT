@@ -63,8 +63,8 @@ def run_sim(sim_dir=None, deck_dir = None, deck_name = None, force_deck_cwd = Fa
             os.makedirs(species_dir + 'panels/')
         if not os.path.exists(species_dir + 'xs/'):
             os.makedirs(species_dir + 'xs/')
-        if not os.path.exists(species_dir + 'vs/'):
-            os.makedirs(species_dir + 'vs/')
+        if not os.path.exists(species_dir + 'ps/'):
+            os.makedirs(species_dir + 'ps/')
         if not os.path.exists(species_dir + 'es/'):
             os.makedirs(species_dir + 'es/')
         if not os.path.exists(species_dir + 'fs/'):

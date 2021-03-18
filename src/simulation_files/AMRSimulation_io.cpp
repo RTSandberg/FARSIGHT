@@ -19,7 +19,7 @@ void AMRSimulation::print_sim_setup() {
     cout << "sim dir: " << sim_dir << endl;
     cout << "deck found in: " << deck_address << endl;
     cout << x_min << " <= x <= " << x_max << endl;
-    cout << v_min << " <= v <= " << v_max << endl;
+    cout << p_min << " <= p <= " << p_max << endl;
     switch (bcs) {
         case (open_bcs) : cout << "Using open boundary conditions" << endl;
             break;

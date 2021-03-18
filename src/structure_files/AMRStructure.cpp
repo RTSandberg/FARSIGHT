@@ -12,7 +12,7 @@
 /*
 New features
 ---
-allow for v_levels, int, >= 0 
+allow for p_levels, int, >= 0 
 */
 
 #include "AMRStructure.hpp"
@@ -21,12 +21,12 @@ AMRStructure::AMRStructure() {}
 AMRStructure::AMRStructure(std::string sim_dir,std::string species_name,
                             distribution* f0, //std::function<double (double,double)> f0, 
                             int initial_height, 
-                            double x_min, double x_max, double v_min, double v_max)
+                            double x_min, double x_max, double p_min, double p_max)
                            : f0(f0), q(-1.0), qm(-1.0), 
-                           initial_height(initial_height) , v_height(0),
+                           initial_height(initial_height) , p_height(0),
                            height(initial_height), max_height(initial_height),
                            x_min(x_min), x_max(x_max),
-                           v_min(v_min), v_max(v_max), bcs(periodic_bcs), quad(trap),
+                           p_min(p_min), p_max(p_max), bcs(periodic_bcs), quad(trap),
                            is_initial_mesh_set(false), minimum_unrefined_index(0), need_further_refinement(false),
                            do_adaptively_refine(false),
                            use_limiter(false), limit_val(0.0)
@@ -37,30 +37,30 @@ AMRStructure::AMRStructure(std::string sim_dir,std::string species_name,
     this->sim_dir = sim_dir;
     this->species_name = species_name;
     Lx = x_max - x_min;
-    Lv = v_max - v_min;
+    Lp = p_max - p_min;
     npanels_x = int(pow(2, initial_height));
-    npanels_v = int(pow(2, initial_height + v_height));
+    npanels_p = int(pow(2, initial_height + p_height));
     // create_prerefined_mesh();
     bool is_initial_step = true;
     
-    generate_mesh([&](double x, double v) { return (*f0)(x,v); }, do_adaptively_refine, is_initial_step);
+    generate_mesh([&](double x, double p) { return (*f0)(x,p); }, do_adaptively_refine, is_initial_step);
 }
 
         // AMRStructure(std::string sim_dir, distribution* f0, //std::function<double (double,double)>& f0, 
         //         int initial_height, 
-        //         double x_min, double x_max, double v_min, double v_max, 
+        //         double x_min, double x_max, double p_min, double p_max, 
         //         ElectricField* calculate_e, int num_steps, double dt,
         //         bool do_adaptively_refine, std::vector<double>& amr_epsilons);
 AMRStructure::AMRStructure(std::string sim_dir, std::string species_name,
                             distribution* f0, //std::function<double (double,double)> f0,
                             int initial_height, int max_height, 
-                            double x_min, double x_max, double v_min, double v_max, 
+                            double x_min, double x_max, double p_min, double p_max, 
                             BoundaryConditions bcs,
                             bool do_adaptively_refine, std::vector<double>& amr_epsilons)
                            : f0(f0), q(-1.0), qm(-1.0), 
-                           initial_height(initial_height), v_height(0),
+                           initial_height(initial_height), p_height(0),
                            height(initial_height), max_height(max_height), 
-                           x_min(x_min), x_max(x_max), v_min(v_min), v_max(v_max), bcs(bcs),
+                           x_min(x_min), x_max(x_max), p_min(p_min), p_max(p_max), bcs(bcs),
                            is_initial_mesh_set(false), minimum_unrefined_index(0), need_further_refinement(false),
                            do_adaptively_refine(do_adaptively_refine),
                            use_limiter(false), limit_val(0.0)
@@ -71,30 +71,30 @@ AMRStructure::AMRStructure(std::string sim_dir, std::string species_name,
     this->sim_dir = sim_dir;
     this->species_name = species_name;
     Lx = x_max - x_min;
-    Lv = v_max - v_min;
+    Lp = p_max - p_min;
     npanels_x = int(pow(2, initial_height));
-    npanels_v = int(pow(2, initial_height + v_height));
+    npanels_p = int(pow(2, initial_height + p_height));
     initial_dx = Lx / npanels_x;
-    initial_dv = Lv / npanels_v;
+    initial_dp = Lp / npanels_p;
     this->amr_epsilons = amr_epsilons;
 
     // create_prerefined_mesh();
     bool is_initial_step = true;
-    generate_mesh([&](double x, double v) { return (*f0)(x,v); }, do_adaptively_refine, is_initial_step);
+    generate_mesh([&](double x, double p) { return (*f0)(x,p); }, do_adaptively_refine, is_initial_step);
     // calculate_e = new E_MQ_DirectSum(Lx, greens_epsilon);
 }
 
 AMRStructure::AMRStructure(std::string sim_dir, std::string species_name,
                             distribution* f0, //std::function<double (double,double)> f0, 
                             double q, double m, 
-                            int initial_height, int v_height, int max_height, 
-                            double x_min, double x_max, double v_min, double v_max, 
+                            int initial_height, int p_height, int max_height, 
+                            double x_min, double x_max, double p_min, double p_max, 
                             BoundaryConditions bcs, Quadrature quad,
                             bool do_adaptively_refine, std::vector<double>& amr_epsilons)
                            : f0(f0), q(q), qm(q/m), 
-                           initial_height(initial_height), v_height(v_height),
+                           initial_height(initial_height), p_height(p_height),
                            height(initial_height), max_height(max_height), 
-                           x_min(x_min), x_max(x_max), v_min(v_min), v_max(v_max), bcs(bcs),
+                           x_min(x_min), x_max(x_max), p_min(p_min), p_max(p_max), bcs(bcs),
                            quad(quad),
                            is_initial_mesh_set(false), minimum_unrefined_index(0), need_further_refinement(false),
                            do_adaptively_refine(do_adaptively_refine),
@@ -106,16 +106,16 @@ AMRStructure::AMRStructure(std::string sim_dir, std::string species_name,
     this->sim_dir = sim_dir;
     this->species_name = species_name;
     Lx = x_max - x_min;
-    Lv = v_max - v_min;
+    Lp = p_max - p_min;
     npanels_x = int(pow(2, initial_height));
-    npanels_v = int(pow(2, initial_height + v_height));
+    npanels_p = int(pow(2, initial_height + p_height));
     initial_dx = Lx / npanels_x;
-    initial_dv = Lv / npanels_v;
+    initial_dp = Lp / npanels_p;
     this->amr_epsilons = amr_epsilons;
 
     // create_prerefined_mesh();
     bool is_initial_step = true;
-    generate_mesh([&](double x, double v) { return (*f0)(x,v); }, do_adaptively_refine, is_initial_step);
+    generate_mesh([&](double x, double p) { return (*f0)(x,p); }, do_adaptively_refine, is_initial_step);
     // calculate_e = new E_MQ_DirectSum(Lx, greens_epsilon);
 }
 //end constructors

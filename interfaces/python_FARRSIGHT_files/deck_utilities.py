@@ -57,13 +57,13 @@ def update_dictionary(deck_dir = None, deck_name = None,
         simulation_dictionary = \
         {'sim_name':'template',\
         'xmin' : 0.0, 'xmax' : 4*np.pi,\
-        'vmin' : -6.0, 'vmax' : 6.0,\
+        'pmin' : -6.0, 'pmax' : 6.0,\
         'bcs' : BoundaryConditions.PERIODIC.value,\
         'sim_type' : 2,\
         'normalized_wavenumber':1.0,\
         'amp':0.5, 'vth' : 1.0, 'vstr':0.0,\
         'initial_height' : 5,\
-        'v_height' : 0,\
+        'p_height' : 0,\
         'max_height' : 5,\
         'greens_epsilon' : 0.2,\
         'quadrature' : 0,\

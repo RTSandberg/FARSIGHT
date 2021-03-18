@@ -10,8 +10,9 @@ from matplotlib.patches import Rectangle, Polygon
 plt.rcParams.update({'font.size': 18})
 
 import FARRSIGHT_types as FST
+import make_dirs
 
-def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45.0]):
+def sim_diagnostics_sample(simulation_dictionary, species, sim_dir = None, test_times=[45.0]):
     """Generate and plot diagnostics 
 
     This is a convenience function.  Diagnostics will need to be developed on a project-by-project basis.
@@ -23,19 +24,36 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
         where to find simulation output, by default None
     """
     t1 = time.time()
+    # sim_dir_str = ''
+    # if sim_dir is not None:
+    #     sim_dir_str = sim_dir
+    #     if sim_dir[-1] != '/':
+    #         sim_dir_str += '/'
+
+    output_dir = 'simulation_output/' + species + '/'
     sim_dir_str = ''
     if sim_dir is not None:
         sim_dir_str = sim_dir
         if sim_dir[-1] != '/':
             sim_dir_str += '/'
+        output_dir = sim_dir_str + output_dir
+
     sd = simulation_dictionary
     num_steps = sd['num_steps']
     diag_freq = sd['diag_period']
     dt = sd['dt']
+    sp_list = sd['species_list']
+    sp_names = [sp['name'] for sp in sp_list]
+    if species in sp_names:
+        sp_ind = sp_names.index(species)
+        sp_deck = sp_list[sp_ind]
+    else:
+        print(species + 'is invalid.\n')
+        print('valid species are:\n - ' + '\n - '.join(sp_names) + '\n')
     try:
-        q = sd['q']
-        m = sd['m']
-        qm = sd['qm']
+        q = sp_deck['q']
+        m = sp_deck['m']
+        qm = sp_deck['qm']
     except KeyError:
         print('q, m, qm not found in simulation dictionary')
         print ('using default values of -1, 1, -1, respectively')
@@ -43,15 +61,14 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
         m = 1
         qm = q / m
     Lx = sd['xmax'] - sd['xmin']
-    kx = 2*np.pi / Lx
-    simtype = sd['sim_type']
+    kx = 2*np.pi / Lx * sp_deck['normalized_wavenumber']
+    simtype = sp_deck['sim_type']
     xmin = sd['xmin']
     xmax = sd['xmax']
-    vmin = sd['vmin']
-    vmax = sd['vmax']
+    pmin = sd['pmin']
+    pmax = sd['pmax']
     # tf = dt * num_steps
 
-    output_dir = sim_dir_str + 'simulation_output/'
     # file_list = os.listdir('simulation_output/fs')
     # iterations = []
     # for file_name in file_list:
@@ -88,7 +105,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
         simtime = iter_num * dt
 
         xs = np.fromfile(output_dir + f'xs/xs_{iter_num}')
-        vs = np.fromfile(output_dir + f'vs/vs_{iter_num}')
+        ps = np.fromfile(output_dir + f'ps/ps_{iter_num}')
         fs = np.fromfile(output_dir + f'fs/fs_{iter_num}')
         qws = np.fromfile(output_dir + f'qws/qws_{iter_num}')
         es = np.fromfile(output_dir + f'es/es_{iter_num}')
@@ -98,8 +115,8 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
         num_points[ii] = xs.size
 
         total_charge[ii] = np.sum(qws)
-        total_momentum[ii] = 1/qm * np.dot(vs, qws)
-        total_kinetic[ii] = 1/qm * np.dot(vs **2, qws)
+        total_momentum[ii] = 1/q * np.dot(ps, qws)
+        total_kinetic[ii] = 1/2.0/qm * np.dot(ps **2, qws)
         
         # potential
         x_sort, sort_inds = np.unique(xs, return_index=True)
@@ -110,7 +127,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
         dxs = .5 * np.hstack([modx[1]+Lx-modx[-1], modx[2:] - modx[:-2], modx[0]+Lx - modx[-2]])
         if np.nonzero(dxs<=0)[0].size > 0:
             raise ValueError
-        total_potential[ii] = np.dot(dxs, modE**2)
+        total_potential[ii] = 0.5 * np.dot(dxs, modE**2)
         # entropy
         where_negative = np.nonzero(fs < 0)
         total_negative_area[ii] = 1/q * np.sum(qws[where_negative])
@@ -269,8 +286,8 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     # plt.figure()
     plt.plot(diag_times,num_points,'.',label='number of points')
     n_diags = sd['num_steps']+1
-    initial_nx = 2**(sd['initial_height']+1) + 1
-    max_nx = 2**(sd['max_height']+1) + 1
+    initial_nx = 2**(sp_deck['initial_height']+1) + 1
+    max_nx = 2**(sp_deck['max_height']+1) + 1
     plt.plot(diag_times, initial_nx**2 * np.ones_like(num_points),label=r'$%i^2$ points'%initial_nx)
     plt.plot(diag_times, max_nx**2 * np.ones_like(num_points),label=r'$%i^2$ points'%max_nx)
     plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
@@ -348,34 +365,34 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     t2 = time.time()
     print(f'Done plotting diagnostics')
     print(f'Diagnostic collection and plot time {t2-t1:.3f}s')
-    #--------------- f(v) plots --------
-    nx0 = 2**(sd["initial_height"]+1) + 1
+    #--------------- f(p) plots --------
+    nx0 = 2**(sp_deck["initial_height"]+1) + 1
     dx0 = (sd["xmax"] - sd["xmin"]) / nx0
     for test_time in test_times:
         if simtype in [FST.SimType.WEAK_LD, FST.SimType.STRONG_LD]:# create new diagnostic : f(x=a,t=b,v)
             try:
                 step_ii = iterations[np.nonzero(diag_times <= test_time)[0][-1]]
                 xs = np.fromfile(output_dir + f'xs/xs_{step_ii}')
-                vs = np.fromfile(output_dir + f'vs/vs_{step_ii}')
+                ps = np.fromfile(output_dir + f'ps/ps_{step_ii}')
                 fs = np.fromfile(output_dir + f'fs/fs_{step_ii}')
-                inds = np.lexsort([vs,xs])
+                inds = np.lexsort([ps,xs])
                 xtest = 4 * np.pi - 0.005
                 inds_xtest = np.nonzero(abs(xs - xtest) <= dx0/4.0)
-                vs_xtest = vs[inds_xtest]
+                ps_xtest = ps[inds_xtest]
                 fs_xtest = fs[inds_xtest]
-                sort_inds = np.argsort(vs_xtest)
+                sort_inds = np.argsort(ps_xtest)
                 # plt.figure()
                 plt.figure(figsize=diag_fig_size)
                 ax = plt.gca()
                 simtime = diag_times[step_ii]
                 # plt.title(f'f(t={simtime:.2f}, x={xtest:.2f}, v)')
-                plt.plot(vs_xtest[sort_inds],fs_xtest[sort_inds],'r')
-                plt.xlabel('v')
+                plt.plot(ps_xtest[sort_inds],fs_xtest[sort_inds],'r')
+                plt.xlabel('p')
                 plt.grid()
                 plt.xlim(4.8,6.3)
                 plt.ylim(-2e-6,6e-6)
                 ax.ticklabel_format(axis='y',style='sci',scilimits=(0,1))
-                plt.savefig(sim_dir_str + f'fv_t_{simtime:.0f}.png')
+                plt.savefig(sim_dir_str + f'fp_t_{simtime:.0f}.png')
                 plt.close()
             except IndexError:
                 print(f'time {test_time:.1f} is less than all simulation times')
@@ -385,26 +402,26 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
                 test_iter = iterations[np.nonzero(diag_times <= test_time)[0][-1]]
 
                 xs = np.fromfile(output_dir + f'xs/xs_{test_iter}')
-                vs = np.fromfile(output_dir + f'vs/vs_{test_iter}')
+                ps = np.fromfile(output_dir + f'ps/ps_{test_iter}')
                 fs = np.fromfile(output_dir + f'fs/fs_{test_iter}')
-                inds = np.lexsort([vs,xs])
+                inds = np.lexsort([ps,xs])
                 xtest = 2 * np.pi
                 inds_xtest = np.nonzero(abs(xs - xtest) <= dx0 / 4.0)
-                vs_xtest = vs[inds_xtest]
+                ps_xtest = ps[inds_xtest]
                 fs_xtest = fs[inds_xtest]
-                sort_inds = np.argsort(vs_xtest)
+                sort_inds = np.argsort(ps_xtest)
 
                 # plt.figure()
                 plt.figure(figsize=diag_fig_size)
                 simtime = diag_times[test_iter]
                 # plt.title(f'f(t={simtime:.2f}, x={xtest:.2f}, v)')
-                plt.plot(vs_xtest[sort_inds],fs_xtest[sort_inds],'r')
-                plt.xlabel('v')
+                plt.plot(ps_xtest[sort_inds],fs_xtest[sort_inds],'r')
+                plt.xlabel('p')
                 plt.ylabel('f')
                 plt.grid()
                 plt.ylim(-0.05,0.45)
                 plt.xlim(-6,6)
-                plt.savefig(sim_dir_str + f'fv_t_{simtime:.1f}.png')
+                plt.savefig(sim_dir_str + f'fp_t_{simtime:.1f}.png')
                 plt.close()
             except IndexError:
                 print(f'time {test_time:.1f} is less than all simulation times')
@@ -415,9 +432,9 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
 
 # end sim_diagnostics_sample
     
-def diagnostics_sample_standard_tree(simulation_dictionary,root_dir=None):
+def diagnostics_sample_standard_tree(simulation_dictionary,species, root_dir=None):
 
-    sim_dir, directories_found = generate_standard_names_dirs(simulation_dictionary,root_dir)
-    sim_diagnostics_sample(simulation_dictionary, sim_dir=sim_dir)
+    sim_dir, directories_found = make_dirs.generate_standard_names_dirs(simulation_dictionary,root_dir)
+    sim_diagnostics_sample(simulation_dictionary, species, sim_dir=sim_dir)
 
   

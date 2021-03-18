@@ -8,63 +8,67 @@
 using std::cout;
 using std::endl;
 
+#define BesselOrder 1
+
+#include <boost/math/special_functions/bessel.hpp>  // cyl_bessel_k for Maxwell-Jutner
+
 #define FRIEDMAN_BEAM_MIN_N 1e-150
 
 class distribution {
     public:
-        virtual double operator() (double x, double v)=0;
+        virtual double operator() (double x, double p)=0;
         virtual void print()=0;
 };
 
 class F0_M : public distribution {
-    double vth, vstr;
+    double pth, pstr;
     public:
         F0_M();
-        F0_M(double vth);
-        F0_M(double vth, double vstr);
+        F0_M(double pth);
+        F0_M(double pth, double pstr);
 
-        double operator() (double x, double v);
-        double get_vth();
+        double operator() (double x, double p);
+        double get_pth();
         void print();
 };
 
 class F0_LD : public distribution {
-    double vth, vstr, k, amp;
+    double pth, pstr, k, amp;
     public:
         F0_LD();
-        F0_LD(double vth, double k, double amp);
-        F0_LD(double vth, double vstr, double k, double amp);
+        F0_LD(double pth, double k, double amp);
+        F0_LD(double pth, double pstr, double k, double amp);
 
-        double operator() (double x, double v);
-        double get_vth();
+        double operator() (double x, double p);
+        double get_pth();
         double get_k();
         double get_amp();
         void print();
 };
 
 class F0_strong_two_stream : public distribution {
-    double vth, k, amp;
+    double pth, k, amp;
     F0_LD ld_seed;
     public:
         F0_strong_two_stream();
-        F0_strong_two_stream(double vth, double k, double amp);
+        F0_strong_two_stream(double pth, double k, double amp);
 
-        double operator() (double x, double v);
-        double get_vth();
+        double operator() (double x, double p);
+        double get_pth();
         double get_k();
         double get_amp();
         void print();
 };
 
 class F0_colder_two_stream : public distribution {
-    double vth, v_str, k, amp;
+    double pth, p_str, k, amp;
     F0_M maxwellian;
     public:
         F0_colder_two_stream();
-        F0_colder_two_stream(double vth, double v_str, double k, double amp);
+        F0_colder_two_stream(double pth, double p_str, double k, double amp);
 
-        double operator() (double x, double v);
-        double get_vth();
+        double operator() (double x, double p);
+        double get_pth();
         double get_k();
         double get_amp();
         void print();
@@ -79,9 +83,23 @@ class F0_Friedman_beam : public distribution {
     public:
         F0_Friedman_beam();
         F0_Friedman_beam(double Delta, double Tstar, double xmax);
-        double operator() (double x, double v);
+        double operator() (double x, double p);
         void generate_Ns(double xmax);
         double interpolate_N(double x);
+        void print();
+};
+
+class Maxwell_Jutner : public distribution {
+    double theta, mu, p_str, k, amp, phase_offset;
+    int order;
+    public:
+        Maxwell_Jutner();
+        Maxwell_Jutner(double mu);
+        Maxwell_Jutner(double k, double amp);
+        Maxwell_Jutner(double mu, double k, double amp);
+        Maxwell_Jutner(double mu, double p_str, double k, double amp);
+        Maxwell_Jutner(double mu, double p_str, double k, double amp, double phase_offset);
+        double operator() (double x, double p);
         void print();
 };
 

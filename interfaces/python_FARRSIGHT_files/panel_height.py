@@ -15,19 +15,22 @@ except:
     print('Unable to load ffmpeg.  Movie writer not accessible')
     can_do_movie = False
 
+import make_dirs
+
 plt.rcParams.update({'font.size': 18})
 
-def plot_height(sim_dir, simulation_dictionary, iter_num, height_range = [7,11],simulation_has_run=True):
+def plot_height(sim_dir, simulation_dictionary, species, iter_num, height_range = [7,11],simulation_has_run=True):
 
     sd = simulation_dictionary
     Lx = sd['xmax'] - sd['xmin']
-    output_dir = 'simulation_output/'
+    output_dir = 'simulation_output/' + species + '/'
     sim_dir_str = ''
     if sim_dir is not None:
         sim_dir_str = sim_dir
         if sim_dir[-1] != '/':
             sim_dir_str += '/'
-        output_dir = sim_dir_str + 'simulation_output/'
+        output_dir = sim_dir_str + output_dir
+
     print('starting panel height plot')
     t1 =time.time()
     if not simulation_has_run:
@@ -39,13 +42,13 @@ def plot_height(sim_dir, simulation_dictionary, iter_num, height_range = [7,11],
             
     ncolors = height_range[1] - height_range[0] + 1
     # mymap = plt.cm.get_cmap('gist_rainbow_r',ncolors)
-    mymap = plt.cm.get_cmap('jet',ncolors)
+    mymap = plt.cm.get_cmap('Greys',ncolors)
     
 
     ax.set_xlim([sd['xmin'], sd['xmax']])
-    ax.set_ylim([sd['vmin'],sd['vmax']])
+    ax.set_ylim([sd['pmin'],sd['pmax']])
     ax.set_xlabel('x')
-    ax.set_ylabel('v')
+    ax.set_ylabel('p')
 
 
     panels = np.fromfile(output_dir + f'panels/leaf_point_inds_{iter_num}',dtype='int32')
@@ -53,17 +56,17 @@ def plot_height(sim_dir, simulation_dictionary, iter_num, height_range = [7,11],
     panels = np.reshape(panels, (num_panels,9))
     panels_fs = np.zeros(num_panels)
     xs = np.fromfile(output_dir + f'xs/xs_{iter_num}')
-    vs = np.fromfile(output_dir + f'vs/vs_{iter_num}')
+    ps = np.fromfile(output_dir + f'ps/ps_{iter_num}')
 
     patches = []
     pvert = [0,2,8,6]
     for ii, panel in enumerate(panels):
         panel_xs = xs[panel]
-        panel_vs = vs[panel]
+        panel_ps = ps[panel]
         dx = panel_xs[8] - panel_xs[0]
         
         panels_fs[ii] = np.log2(Lx / dx)
-        rect_pts = np.vstack([panel_xs[pvert],panel_vs[pvert]]).T
+        rect_pts = np.vstack([panel_xs[pvert],panel_ps[pvert]]).T
         patches.append(Polygon(rect_pts))
 
     p = PatchCollection(patches, cmap=mymap)
@@ -84,16 +87,16 @@ def plot_height(sim_dir, simulation_dictionary, iter_num, height_range = [7,11],
 # end plot height
 
 
-def panel_height_movie(sim_dir, simulation_dictionary, height_range = [7,11],simulation_has_run=True, can_do_movie=True):
+def panel_height_movie(sim_dir, simulation_dictionary, species, height_range = [7,11],simulation_has_run=True, can_do_movie=True):
     sd = simulation_dictionary
     Lx = sd['xmax'] - sd['xmin']
-    output_dir = 'simulation_output/'
+    output_dir = 'simulation_output/' + species + '/'
     sim_dir_str = ''
     if sim_dir is not None:
         sim_dir_str = sim_dir
         if sim_dir[-1] != '/':
             sim_dir_str += '/'
-        output_dir = sim_dir_str + 'simulation_output/'
+        output_dir = sim_dir_str + output_dir
     print('starting panel height movie')
     t1 =time.time()
     if not simulation_has_run:
@@ -119,22 +122,22 @@ def panel_height_movie(sim_dir, simulation_dictionary, height_range = [7,11],sim
         panels = np.reshape(panels, (num_panels,9))
         panels_fs = np.zeros(num_panels)
         xs = np.fromfile(output_dir + 'xs/xs_0')
-        vs = np.fromfile(output_dir + 'vs/vs_0')
+        ps = np.fromfile(output_dir + 'ps/ps_0')
 
         patches = []
         pvert = [0,2,8,6]
         for ii, panel in enumerate(panels):
             panel_xs = xs[panel]
-            panel_vs = vs[panel]
+            panel_ps = ps[panel]
             dx = panel_xs[8] - panel_xs[0]
             
             panels_fs[ii] = np.log2(Lx / dx)
-            rect_pts = np.vstack([panel_xs[pvert],panel_vs[pvert]]).T
+            rect_pts = np.vstack([panel_xs[pvert],panel_ps[pvert]]).T
             patches.append(Polygon(rect_pts))
             
         ncolors = height_range[1] - height_range[0] + 1
         # mymap = cm.get_cmap('gist_rainbow_r',ncolors)
-        mymap = plt.cm.get_cmap('jet',ncolors)
+        mymap = plt.cm.get_cmap('Greys',ncolors)
         p = PatchCollection(patches, mymap)
         p.set_array(panels_fs)
         p.set_clim(height_range[0] - 0.5, height_range[1] + 0.5)
@@ -166,16 +169,16 @@ def panel_height_movie(sim_dir, simulation_dictionary, height_range = [7,11],sim
             panels = np.reshape(panels, (num_panels,9))
             panels_fs = np.zeros(num_panels)
             xs = np.fromfile(output_dir + f'xs/xs_{iter_num}')
-            vs = np.fromfile(output_dir + f'vs/vs_{iter_num}')
+            ps = np.fromfile(output_dir + f'ps/ps_{iter_num}')
 
             patches = []
             for ii, panel in enumerate(panels):
                 panel_xs = xs[panel]
-                panel_vs = vs[panel]
+                panel_ps = ps[panel]
                 dx = panel_xs[8] - panel_xs[0]
                 
                 panels_fs[ii] = np.log2(Lx / dx)
-                rect_pts = np.vstack([panel_xs[pvert],panel_vs[pvert]]).T
+                rect_pts = np.vstack([panel_xs[pvert],panel_ps[pvert]]).T
                 patches.append(Polygon(rect_pts))
 
             p = PatchCollection(patches, cmap=mymap)
@@ -206,8 +209,8 @@ def panel_height_movie(sim_dir, simulation_dictionary, height_range = [7,11],sim
     plt.close()
 # end panels movie
 
-def panel_height_movie_standard_tree(simulation_dictionary,root_dir=None,height_range=(7,11), simulation_has_run=True, can_do_movie=True):
+def panel_height_movie_standard_tree(simulation_dictionary,species, root_dir=None,height_range=(7,11), simulation_has_run=True, can_do_movie=True):
 
-    sim_dir, directories_found = generate_standard_names_dirs(simulation_dictionary,root_dir)
-    panel_height_movie(sim_dir, simulation_dictionary, height_range=height_range, simulation_has_run=simulation_has_run, can_do_movie=can_do_movie)
+    sim_dir, directories_found = make_dirs.generate_standard_names_dirs(simulation_dictionary,root_dir)
+    panel_height_movie(sim_dir, simulation_dictionary, species, height_range=height_range, simulation_has_run=simulation_has_run, can_do_movie=can_do_movie)
 

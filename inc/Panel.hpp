@@ -27,8 +27,8 @@ using std::endl;
  * bottom_nbr_ind
  * 
  * needs_refinement
- * is_refined_xv
- * is_refined_v
+ * is_refined_xp
+ * is_refined_p
  * child_inds_start
  * 
  * Notes
@@ -51,8 +51,8 @@ struct Panel {
     int left_nbr_ind, top_nbr_ind, right_nbr_ind, bottom_nbr_ind;
     bool is_left_bdry, is_right_bdry;
     bool needs_refinement;
-    bool is_refined_xv;
-    bool is_refined_v;
+    bool is_refined_xp;
+    bool is_refined_p;
     int child_inds_start;
     /**
      * @brief ordering of points and child indices

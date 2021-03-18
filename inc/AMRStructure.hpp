@@ -57,9 +57,9 @@ struct AMRStructure {
     std::string sim_dir;
     std::string species_name;
     // domain parameters
-    double Lx, Lv;
+    double Lx, Lp;
     double x_min, x_max;
-    double v_min, v_max;
+    double p_min, p_max;
     BoundaryConditions bcs;
 
     // species parameters
@@ -71,11 +71,11 @@ struct AMRStructure {
 
     // mesh parameters
     int initial_height;
-    int v_height;
+    int p_height;
     int height;
     int max_height;
-    int npanels_x, npanels_v;
-    double initial_dx, initial_dv;
+    int npanels_x, npanels_p;
+    double initial_dx, initial_dp;
     bool is_initial_mesh_set;
     bool need_further_refinement;
     int minimum_unrefined_index;
@@ -87,10 +87,10 @@ struct AMRStructure {
     std::vector <Panel> panels;
     std::vector <int> leaf_inds;
     // std::vector <Particle> particles;
-    std::vector<double> xs, vs, fs, q_ws, es;
+    std::vector<double> xs, ps, fs, q_ws, es;
 
     std::vector <Panel> old_panels;
-    std::vector<double> old_xs, old_vs, old_fs;
+    std::vector<double> old_xs, old_ps, old_fs;
     // class InterpolateDistribution : public Distribution {
     //     double operator() (double x, double v);
     // }
@@ -120,7 +120,7 @@ struct AMRStructure {
 
     // private functions
     int create_prerefined_mesh();
-    int create_prerefined_mesh_v_refinement();
+    int create_prerefined_mesh_p_refinement();
     void refine_panels(std::function<double (double,double)> f, bool do_adaptive_refine);
     void refine_panels_refine_v(std::function<double (double,double)> f, bool do_adaptive_refine);
     void test_panel(int panel_ind, bool verbose);
@@ -135,18 +135,18 @@ struct AMRStructure {
         AMRStructure(std::string sim_dir, std::string species_name,
                 distribution* f0, //std::function<double (double,double)>& f0, 
                 int initial_height, 
-                double x_min, double x_max, double v_min, double v_max);
+                double x_min, double x_max, double p_min, double p_max);
         AMRStructure(std::string sim_dir, std::string species_name,
                 distribution* f0, //std::function<double (double,double)>& f0, 
                 int initial_height, int max_height,
-                double x_min, double x_max, double v_min, double v_max, 
+                double x_min, double x_max, double p_min, double p_max, 
                 BoundaryConditions bcs,
                 bool do_adaptively_refine, std::vector<double>& amr_epsilons);
         AMRStructure(std::string sim_dir, std::string species_name,
                 distribution* f0, //std::function<double (double,double)>& f0, 
                 double q, double m, 
-                int initial_height, int v_height, int max_height, 
-                double x_min, double x_max, double v_min, double v_max, 
+                int initial_height, int p_height, int max_height, 
+                double x_min, double x_max, double p_min, double p_max, 
                 BoundaryConditions bcs,
                 Quadrature quad,
                 bool do_adaptively_refine, std::vector<double>& amr_epsilons);
@@ -172,16 +172,16 @@ struct AMRStructure {
         // interpolation functions
         bool use_limiter;
         double limit_val;
-        void shift_xs(std::vector<double>& shifted_xs, const std::vector<double>& xs, const std::vector<double>& vs);
-        int find_leaf_containing_xv_recursively(double &x, const double &v, bool& beyond_boundary, int panel_ind, bool verbose);
-        int find_leaf_containing_point_from_neighbor(double& tx, double& tv, bool& beyond_boundary, int leaf_ind, std::set<int>& history, bool verbose);
+        void shift_xs(std::vector<double>& shifted_xs, const std::vector<double>& xs, const std::vector<double>& ps);
+        int find_leaf_containing_xp_recursively(double &x, const double &p, bool& beyond_boundary, int panel_ind, bool verbose);
+        int find_leaf_containing_point_from_neighbor(double& tx, double& tp, bool& beyond_boundary, int leaf_ind, std::set<int>& history, bool verbose);
         // int find_leaf_containing();
-        void interpolate_to_initial_xvs(std::vector<double>& fs, std::vector<double>& xs, std::vector<double>& vs, int nx, int nv,bool verbose);
+        void interpolate_to_initial_xps(std::vector<double>& fs, std::vector<double>& xs, std::vector<double>& ps, int nx, int np,bool verbose);
         double interpolate_from_mesh(double xs, double vs, bool verbose);
-        void interpolate_from_mesh(std::vector<double> &values, std::vector<double>& x, std::vector<double>& v, bool verbose);
-        void interpolate_from_mesh_slow(std::vector<double> &values, std::vector<double>& x, std::vector<double>& v, bool verbose);
-        double interpolate_from_panel(double x, double v, int panel_ind,bool verbose);
-        void interpolate_from_panel_to_points(std::vector<double>& values, std::vector<double>& xs, std::vector<double>& vs,
+        void interpolate_from_mesh(std::vector<double> &values, std::vector<double>& x, std::vector<double>& p, bool verbose);
+        void interpolate_from_mesh_slow(std::vector<double> &values, std::vector<double>& x, std::vector<double>& p, bool verbose);
+        double interpolate_from_panel(double x, double p, int panel_ind,bool verbose);
+        void interpolate_from_panel_to_points(std::vector<double>& values, std::vector<double>& xs, std::vector<double>& ps,
                                                 std::vector<int>& point_inds, int panel_ind, bool use_limiter, double limit_val);
 
         // field utility

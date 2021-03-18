@@ -2,6 +2,9 @@ include_directories(${PROJECT_SOURCE_DIR}/inc)
 
 
 add_library(icsObj initial_distributions.cpp)
+target_link_libraries(icsObj      PUBLIC  $<$<CXX_COMPILER_ID:GNU>:m>)
+target_include_directories(icsObj PUBLIC ${INCLUDE_HEADERS})
+
 add_library(PanelObj Panel.cpp)
 
 add_library(AMRObj_cpu  AMRStructure.cpp 

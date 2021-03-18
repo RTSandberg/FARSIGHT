@@ -22,7 +22,7 @@ def make_dirs(project_name, sim_group, sim_name,
     1. es
     2. fs
     3. xs
-    4. vs
+    4. ps
     5. q_ws
     6. panels
     directories
@@ -106,8 +106,8 @@ def generate_standard_names_dirs(simulation_dictionary, root_dir=None):
         quad_str = FST.Quadrature(sd['quadrature']).name
     else:
         quad_str = 'TRAP'
-    numerical_parameters = '%s_quadrature_vm_%.1f_g_eps_%.5f_dt_%.4f_remesh_period_%i_diag_freq_%i'%(quad_str,sd['vmax'], sd['greens_epsilon'], sd['dt'], remesh_period,sd['diag_period'])
-#         sim_name = f'height0_{self.initial_height}_vm_{self.vmax:.1f}_g_eps_{self.greens_epsilon:.3f}_dt_{self.dt:.3f}_tf_{self.tf:.1f}_diag_freq_{self.diag_freq}' + tc_string
+    numerical_parameters = '%s_quadrature_pm_%.1f_g_eps_%.5f_dt_%.4f_remesh_period_%i_diag_freq_%i'%(quad_str,sd['pmax'], sd['greens_epsilon'], sd['dt'], remesh_period,sd['diag_period'])
+#         sim_name = f'height0_{self.initial_height}_pm_{self.pmax:.1f}_g_eps_{self.greens_epsilon:.3f}_dt_{self.dt:.3f}_tf_{self.tf:.1f}_diag_freq_{self.diag_freq}' + tc_string
     sim_dir = simulations_dir + sd['sim_name'] + '/' + physical_parameters + '/'
     sim_dir += numerical_parameters + '/' + tc_string + '/'
     if not os.path.exists(sim_dir):

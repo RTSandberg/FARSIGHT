@@ -15,7 +15,7 @@ int AMRSimulation::get_box_t_params(pt::ptree &deck) {
 
     std::string project_name = deck.get<std::string>("sim_name", "no_name_found");
     x_min = deck.get<double>("xmin", 0.0), x_max = deck.get<double>("xmax", 0.0);
-    v_min = deck.get<double>("vmin", -1.0), v_max = deck.get<double>("vmax",1.0);
+    p_min = deck.get<double>("pmin", -1.0), p_max = deck.get<double>("pmax",1.0);
     int bcs_int = deck.get<int>("bcs",0);
     
     if (bcs_int < 0 || bcs_int >= last_bc) {
@@ -31,7 +31,8 @@ int AMRSimulation::get_box_t_params(pt::ptree &deck) {
     int which_quad = deck.get<int>("quadrature",1);
     quad = static_cast<Quadrature>(which_quad);
 
-
+    int relativistic_int = deck.get<int>("relativistic", 0);
+    relativistic = (relativistic_int > 0);
     num_steps = deck.get<int>("num_steps", 10);//atoi(argv[19]);//120;
     n_steps_remesh = deck.get<int>("remesh_period", 1); //atoi(argv[20]);
     n_steps_diag = deck.get<int>("diag_period", 1); //atoi(argv[21]);
@@ -90,32 +91,46 @@ distribution* AMRSimulation::make_f0_return_ptr(pt::ptree &species_deck_portion)
 
     double kx = 2.0 * M_PI / Lx * deck.get<double>("normalized_wavenumber",1.0);
     double amp = deck.get<double>("amp", 0.0);//0.5;
-    double vth = deck.get<double>("vth", 1.0);//atof(argv[9]);//1.0;
-    double vstr = deck.get<double>("vstr", 0.0); //atof(argv[10]);
+    double pth = deck.get<double>("pth", 1.0);//atof(argv[9]);//1.0;
+    double pstr = deck.get<double>("pstr", 0.0); //atof(argv[10]);
     int sim_type = deck.get<int>("sim_type", 1);//atoi(argv[6]);
     distribution* f0;
     switch (sim_type)
     {
         case 1: // weak Landau Damping
-            f0 = new F0_LD(vth, vstr, kx, amp);
+            f0 = new F0_LD(pth, pstr, kx, amp);
             break;
         case 2: // strong Landau Damping
-            f0 = new F0_LD(vth, vstr, kx, amp);
+            f0 = new F0_LD(pth, pstr, kx, amp);
             break;
         case 3: // 'strong' two-stream
-            f0 = new F0_strong_two_stream(vth, kx, amp);
+            f0 = new F0_strong_two_stream(pth, kx, amp);
             break;
         case 4: // 'colder' two-stream
-            f0 = new F0_colder_two_stream(vth, vstr, kx, amp);
+            f0 = new F0_colder_two_stream(pth, pstr, kx, amp);
             break;
         case 5: // Friedman beam problem 
         {
-            double Tstar = vth * vth;
+            double Tstar = pth * pth;
             f0 = new F0_Friedman_beam(amp, Tstar, x_max);
         }
             break;
+        case 6: // maxwell-Jutner
+        {
+            double mu;
+            try {
+                mu = deck.get<double>("mu");
+            }
+            catch (pt::ptree_error& mu_error) {
+                cout << "relativistic inverse temperature mu not found in deck" << endl;
+                cout << "setting mu to default, 1.0" << endl;
+                mu = 1.0;
+            }
+            f0 = new Maxwell_Jutner(mu, pstr, kx, amp);
+        }
+            break;
         default:
-            f0 = new F0_LD(vth, vstr, kx, amp);
+            f0 = new F0_LD(pth, pstr, kx, amp);
             break;
     }
     return f0;
@@ -128,13 +143,13 @@ AMRStructure* AMRSimulation::make_species_return_ptr(pt::ptree &species_deck_por
     std::string sp_name = deck.get_child("name").get_value<std::string>();
     double kx = 2.0 * M_PI / Lx * deck.get<double>("normalized_wavenumber",1.0);
     double amp = deck.get<double>("amp", 0.0);//0.5;
-    double vth = deck.get<double>("vth", 1.0);//atof(argv[9]);//1.0;
-    double vstr = deck.get<double>("vstr", 0.0); //atof(argv[10]);
+    double pth = deck.get<double>("pth", 1.0);//atof(argv[9]);//1.0;
+    double pstr = deck.get<double>("pstr", 0.0); //atof(argv[10]);
     int sim_type = deck.get<int>("sim_type", 1);//atoi(argv[6]);
     double q = -1.0, m = 1.0;
     if (sim_type==5) { q = 1.0; }
     int initial_height = deck.get<int>("initial_height",6);//atoi(argv[11]);//6;
-    int v_height = deck.get<int>("v_height",0);
+    int p_height = deck.get<int>("p_height",0);
     int max_height = deck.get<int>("max_height", initial_height);
     bool do_adaptively_refine = deck.get<bool> ("adaptively_refine", false);//false;
     std::vector<double> amr_epsilons; 
@@ -152,8 +167,8 @@ AMRStructure* AMRSimulation::make_species_return_ptr(pt::ptree &species_deck_por
 
     AMRStructure *species = new AMRStructure{sim_dir, sp_name,
                 f0, q, m,
-                initial_height, v_height,max_height,
-                x_min, x_max, v_min, v_max, bcs,
+                initial_height, p_height,max_height,
+                x_min, x_max, p_min, p_max, bcs,
                 quad, 
                 do_adaptively_refine, amr_epsilons};
     // 

@@ -2,15 +2,15 @@
 import numpy as np
 from matplotlib import pyplot as plt
 
-def plot_e(sim_dir, simulation_dictionary, step_ii,flim, simulation_has_run = True, do_save = False):
+def plot_e(sim_dir, simulation_dictionary, species, step_ii,flim, simulation_has_run = True, do_save = False):
     sd = simulation_dictionary
-    output_dir = 'simulation_output/'
+    output_dir = 'simulation_output/' + species + '/'
     sim_dir_str = ''
     if sim_dir is not None:
         sim_dir_str = sim_dir
         if sim_dir[-1] != '/':
             sim_dir_str += '/'
-        output_dir = sim_dir_str + 'simulation_output/'
+        output_dir = sim_dir_str + output_dir
 
     if not simulation_has_run:
         print('unable to plot; simulation has not run or had errors')
@@ -28,7 +28,7 @@ def plot_e(sim_dir, simulation_dictionary, step_ii,flim, simulation_has_run = Tr
     ax1.set_xlabel('x')
 
     ax1.set_xlim(sd['xmin'], sd['xmax'])
-    ax1.set_ylim(sd['vmin'],sd['vmax'])
+    # ax1.set_ylim(sd['pmin'],sd['pmax'])
 
     ax1.grid()
     plt.tight_layout()
