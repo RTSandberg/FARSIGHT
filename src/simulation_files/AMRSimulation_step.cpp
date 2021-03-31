@@ -18,6 +18,10 @@ int AMRSimulation::step() {
 
     // if remesh: remesh_and_calculate_e, scatter if needed, set need_gather to true
     if (iter_num % n_steps_remesh == 0) {
+        bool save_Lagrangian = true;
+        if (save_Lagrangian) {
+            write_to_file(true);
+        }
         remesh();
     }
     // if not remesh: evaluate e (remeshing ends by calculating e on uniform grid)

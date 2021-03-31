@@ -129,7 +129,34 @@ distribution* AMRSimulation::make_f0_return_ptr(pt::ptree &species_deck_portion)
             f0 = new Maxwell_Jutner(mu, pstr, kx, amp);
         }
             break;
+        case 7: // relativistic two-stream(double p_th, double p_str, double k, double amp)
+        {
+            double mu;
+            try {
+                mu = deck.get<double>("mu");
+            }
+            catch (pt::ptree_error& mu_error) {
+                cout << "relativistic inverse temperature mu not found in deck" << endl;
+                cout << "setting mu to default, 1.0" << endl;
+                mu = 1.0;
+            }
+            f0 = new Relativistic_Two_Stream(pstr, mu, kx, amp);
+        }
+            break;
+        case 8: // relativistic traveling wave
+            double wave_beta;
+            try {
+                wave_beta = deck.get<double>("wave_beta");
+            }
+            catch (pt::ptree_error& wave_beta_error) {
+                cout << "wave beta not found in deck" << endl;
+                cout << "setting wave_beta to default, 0.8" << endl;
+                wave_beta = 0.8;
+            }
+            f0 = new Relativistic_Wave(amp, wave_beta, pth);
+            break;
         default:
+            cout << "Using default (Landau damping) initial conditions" << endl;
             f0 = new F0_LD(pth, pstr, kx, amp);
             break;
     }
@@ -137,6 +164,8 @@ distribution* AMRSimulation::make_f0_return_ptr(pt::ptree &species_deck_portion)
 }
 
 AMRStructure* AMRSimulation::make_species_return_ptr(pt::ptree &species_deck_portion, distribution* f0) {
+
+    cout << "Trying to load species" << endl;
 
     pt::ptree deck = species_deck_portion;
     // get parameters

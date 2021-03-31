@@ -2,15 +2,17 @@
 #ifndef INITIAL_DISTRIBUTIONS_HPP
 #define INITIAL_DISTRIBUTIONS_HPP
 
-#include <math.h> // exp, sqrt, cos
+#include <algorithm> // transform
+#include <math.h> // exp, sqrt, cos, M_PI
 #include <vector> // vector
 #include <iostream> // std::cout, std::endl;
 using std::cout;
 using std::endl;
-
-#define BesselOrder 1
+#include <numeric> // iota
 
 #include <boost/math/special_functions/bessel.hpp>  // cyl_bessel_k for Maxwell-Jutner
+#include <boost/math/special_functions/ellint_1.hpp> // ellint_1
+#include <boost/math/special_functions/ellint_2.hpp> // ellint_2
 
 #define FRIEDMAN_BEAM_MIN_N 1e-150
 
@@ -99,6 +101,32 @@ class Maxwell_Jutner : public distribution {
         Maxwell_Jutner(double mu, double k, double amp);
         Maxwell_Jutner(double mu, double p_str, double k, double amp);
         Maxwell_Jutner(double mu, double p_str, double k, double amp, double phase_offset);
+        double operator() (double x, double p);
+        void print();
+};
+
+class Relativistic_Two_Stream : public distribution {
+    double p_str, mu, k, amp, phase_offset;
+    double gamma_str;
+    public:
+        Relativistic_Two_Stream();
+        Relativistic_Two_Stream(double p_str, double mu);
+        Relativistic_Two_Stream(double p_str, double mu, double amp);
+        Relativistic_Two_Stream(double p_str, double mu, double k, double amp);
+        Relativistic_Two_Stream(double p_str, double mu, double k, double amp, double phase_offset);
+        double operator() (double x, double p);
+        void print();
+};
+
+class Relativistic_Wave : public distribution {
+    double p_th, wave_beta, amp;
+    std::vector<double> xs, ps;
+    void make_cold_xs_ps();
+    public:
+        Relativistic_Wave();
+        Relativistic_Wave(double amp);
+        Relativistic_Wave(double amp, double wave_beta);
+        Relativistic_Wave(double amp, double wave_beta, double p_th);
         double operator() (double x, double p);
         void print();
 };

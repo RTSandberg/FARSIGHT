@@ -115,6 +115,7 @@ struct AMRSimulation {
     int remesh();
     int run();
     int write_to_file();
+    int write_to_file(bool pre_remesh);
     void print_sim_setup();
 };
 #endif /* AMRSIMULATION_HPP */

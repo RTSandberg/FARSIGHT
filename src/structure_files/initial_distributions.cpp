@@ -246,6 +246,7 @@ Maxwell_Jutner::Maxwell_Jutner(double mu, double p_str, double k, double amp, do
                                     k(k), amp(amp), phase_offset(phase_offset) {}
 double Maxwell_Jutner::operator() (double x, double p) {
     double gamma = sqrt(1 + p * p);
+    int BesselOrder=1;
     double exp_fac = exp(-gamma * mu) / 2.0 / boost::math::cyl_bessel_k(BesselOrder, mu);
     return exp_fac * (1 + amp * cos(k*x));
     // return 1.0;
@@ -258,3 +259,139 @@ void Maxwell_Jutner::print() {
     cout << "k = " << k << ", amp = " << amp << ", phase offset = " << phase_offset << endl;
 }
 // end Maxwell-Jutner functions
+
+// Relativistic two-stream functions
+Relativistic_Two_Stream::Relativistic_Two_Stream() 
+    : p_str(1.0), mu(1000.0 / 3.0), k(1.0), amp(0.01), phase_offset(0.0) 
+{ 
+    gamma_str = sqrt(1 + p_str * p_str);
+}
+Relativistic_Two_Stream::Relativistic_Two_Stream(double p_str, double mu)
+    : p_str(p_str), mu(mu), k(1.0), amp(0.01), phase_offset(0.0)
+{ 
+    gamma_str = sqrt(1 + p_str * p_str);
+}
+Relativistic_Two_Stream::Relativistic_Two_Stream(double p_str, double mu, double amp)
+    : p_str(p_str), mu(mu), k(1.0), amp(amp), phase_offset(0.0)
+{ 
+    gamma_str = sqrt(1 + p_str * p_str);
+}
+Relativistic_Two_Stream::Relativistic_Two_Stream(double p_str, double mu, double k, double amp)
+    : p_str(p_str), mu(mu), k(k), amp(amp), phase_offset(0.0)
+{ 
+    gamma_str = sqrt(1 + p_str * p_str);
+}
+Relativistic_Two_Stream::Relativistic_Two_Stream(double p_str, double mu, double k, double amp, double phase_offset)
+    : p_str(p_str), mu(mu), k(k), amp(amp), phase_offset(phase_offset)
+{ 
+    gamma_str = sqrt(1 + p_str * p_str);
+}
+
+double Relativistic_Two_Stream::operator() (double x, double p) {
+    double gamma = sqrt(1 + p * p);
+    double ppbmu = p * p_str * mu;
+    int BesselOrder=1;
+    double exp_plus= exp(ppbmu - gamma_str*gamma*mu)
+            / 2.0 / boost::math::cyl_bessel_k(BesselOrder, mu);
+    double exp_minus = exp(-ppbmu - gamma_str * gamma * mu)
+            / 2.0 / boost::math::cyl_bessel_k(BesselOrder, mu);
+    return (exp_plus + exp_minus) / 2.0 * (1 + amp*cos(k*x));
+}
+void Relativistic_Two_Stream::print()  {
+    cout << "Relativistic two-stream instability initial conditions" << endl;
+    cout << "Two relativistic Maxwellians" << endl;
+    cout << "mu = " << mu << ", p_str = " << p_str << endl;
+    cout << "k = " << k << ", amp = " << amp << ", phase offset = " << phase_offset << endl;
+}
+// end Relativistic two-stream functions
+
+// Relativistic wave functions
+int check_gamma(double max_gamma, double wave_beta) {
+
+    if (wave_beta < 1.0) {
+        double gamma_wave = 1.0 / sqrt(1 - wave_beta*wave_beta);
+        if (gamma_wave < max_gamma) {
+            throw std::invalid_argument("Can't have particles moving faster than wave! Choose smaller max gamma or faster wave");
+        }
+    }
+    return 0;
+}
+
+Relativistic_Wave::Relativistic_Wave() 
+    : amp(1.01), wave_beta(0.8), p_th(1.0) 
+{   
+    make_cold_xs_ps(); 
+}
+Relativistic_Wave::Relativistic_Wave(double amp)
+    : amp(amp), wave_beta(0.8), p_th(1.0) 
+{ 
+    check_gamma(amp, wave_beta);
+    make_cold_xs_ps(); 
+}
+Relativistic_Wave::Relativistic_Wave(double amp, double wave_beta)
+    : amp(amp), wave_beta(wave_beta), p_th(1.0) 
+{   
+    check_gamma(amp, wave_beta);
+    make_cold_xs_ps(); 
+}
+Relativistic_Wave::Relativistic_Wave(double amp, double wave_beta, double p_th)
+    : amp(amp), wave_beta(wave_beta), p_th(p_th) 
+{   
+    check_gamma(amp, wave_beta);
+    make_cold_xs_ps(); 
+}
+void Relativistic_Wave::make_cold_xs_ps() {
+    int Np = 100;
+    double gm = amp;
+    double kappa_sq = (gm-1.0) / (gm + 1.0);
+    double kappa = sqrt(kappa_sq);
+    double kappa_p = sqrt(2 / (gm + 1.0));
+
+    xs = std::vector<double> (Np);
+    ps = std::vector<double> (Np);
+    double dalpha = 3*M_PI / (Np - 1);
+    try {
+    for (int ii = 0; ii < Np; ++ii) { 
+        double alphai = -M_PI/2 + ii * dalpha;
+        double x0i = wave_beta * 
+                (2 / kappa_p * boost::math::ellint_2(kappa, alphai)
+                    - kappa_p * boost::math::ellint_1(kappa, alphai));
+        double dxi = 2 * kappa / kappa_p * sin(alphai);
+        xs[ii] = x0i + dxi;
+
+        double gammai = gm - (gm - 1) * sin(alphai)*sin(alphai);
+        double abs_pi = sqrt(gammai*gammai - 1);
+        double signp = (cos(alphai)) > 0 ? 1 : -1;
+        ps[ii] = abs_pi * signp;
+    }
+    }
+    catch(const std::exception& e) {
+        cout <<
+         "\n""Message from thrown exception was:\n   " << e.what() << std::endl;
+    }
+}
+double Relativistic_Wave::operator() (double x, double p) {
+    // interpolate from cold wave solution
+    int ind_ii = 0;
+    while (x > xs[ind_ii+1]) {
+        ++ind_ii;
+    }
+    double theta = x - xs[ind_ii];
+    double p0 = (1-theta) * ps[ind_ii] + theta * ps[ind_ii+1];
+    
+    // if (fabs(p-p0) < p_th) {
+    //     return 1.0/2.0/p_th;
+    // }
+    // else {
+    //     return 0;
+    // }
+
+    return 1.0/sqrt(2*M_PI)/p_th*exp(-(p-p0)*(p-p0)/2/p_th/p_th);
+}
+void Relativistic_Wave::print()  {
+    cout << "Relativistic travelign wave initial conditions" << endl;
+    cout << "Thermal width applied to cold solution" << endl;
+    cout << "p_th = " << p_th << endl;
+    cout << "wave beta = " << wave_beta << ", amp = " << amp <<  endl;
+}
+// end relativistic wave functions

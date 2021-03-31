@@ -1,13 +1,17 @@
 #include "AMRSimulation.hpp"
 
-int AMRSimulation::write_to_file() {
+int AMRSimulation::write_to_file() { 
+    bool pre_remesh = false;
+    return write_to_file(pre_remesh);
+}
+int AMRSimulation::write_to_file(bool pre_remesh) {
 
     if (need_scatter) {
         bool send_e = true;
         scatter(send_e);
     }
     for (auto& species : species_list) {
-        species->write_to_file(iter_num);
+        species->write_to_file(pre_remesh, iter_num);
     }
     return 0;
 }

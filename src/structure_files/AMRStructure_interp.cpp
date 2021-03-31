@@ -20,7 +20,7 @@ int AMRStructure::find_leaf_containing_point_from_neighbor(double& tx, double& t
 // if (fabs(tx + 0.0314) < 0.0003 && fabs(tp - 0.0122) < 0.0003) {
 //     verbose = true;
 // }
-// verbose=true;
+verbose=true;
 #endif
     // verbose = true;
     // end trouble shooting verbosity change

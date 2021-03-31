@@ -106,10 +106,25 @@ def generate_standard_names_dirs(simulation_dictionary, root_dir=None):
         quad_str = FST.Quadrature(sd['quadrature']).name
     else:
         quad_str = 'TRAP'
-    numerical_parameters = '%s_quadrature_pm_%.1f_g_eps_%.5f_dt_%.4f_remesh_period_%i_diag_freq_%i'%(quad_str,sd['pmax'], sd['greens_epsilon'], sd['dt'], remesh_period,sd['diag_period'])
-#         sim_name = f'height0_{self.initial_height}_pm_{self.pmax:.1f}_g_eps_{self.greens_epsilon:.3f}_dt_{self.dt:.3f}_tf_{self.tf:.1f}_diag_freq_{self.diag_freq}' + tc_string
+    numerical_parameters = '%s_quadrature_pm_%.1f_x0_%.1f_xm_%.1f_g_eps_%.5f_dt_%.4f_remesh_period_%i_diag_freq_%i'%(quad_str,sd['pmax'], sd['xmin'],sd['xmax'],sd['greens_epsilon'], sd['dt'], remesh_period,sd['diag_period'])
+    sp1 = sd['species_list'][0]
+    sp_str = 'sp1_'
+    for key in list(sp0.keys())[1:]:
+        sp_str+= '.join([key,str(sp0[key])]) + '_'
+    sp_str = sp_str[:-1]
+    # print(sp1)
+    # sp1_params = f"sp1_{sp1['name']}_h0_{sp1['initial_height']}_pheight_{sp1['p_height']}_amp_{sp1['amp']:.3f}"
+    # if 'do_adaptively_refine' in sp1:
+    #     if sp1['do_adaptively_refine'] == 1:
+    #         sp1_params +=f'_AMR_hm_{sp1["max_height"]}'
+    #     else:
+    #         sp1_params +='_uniform'
+    # else:
+    #     sp1_params +='_uniform'
+        # sim_name = f'height0_{self.initial_height}_pm_{self.pmax:.1f}_g_eps_{self.greens_epsilon:.3f}_dt_{self.dt:.3f}_tf_{self.tf:.1f}_diag_freq_{self.diag_freq}' + tc_string
     sim_dir = simulations_dir + sd['sim_name'] + '/' + physical_parameters + '/'
-    sim_dir += numerical_parameters + '/' + tc_string + '/'
+    sim_dir += numerical_parameters + tc_string + '/'
+    sim_dir += sp_str + '/'
     if not os.path.exists(sim_dir):
         os.makedirs(sim_dir)
     # sim_dir, directories_found = make_dirs(sd['project_name'], sim_group, sim_name,root_dir=root_dir)
