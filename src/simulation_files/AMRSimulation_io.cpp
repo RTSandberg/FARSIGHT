@@ -63,5 +63,4 @@ void AMRSimulation::print_sim_setup() {
         cout << *(species_list[ii]) << endl;
     }
     cout << "============================" << endl;
-
 }
