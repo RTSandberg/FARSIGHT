@@ -85,6 +85,7 @@ if (ENABLE_GPU_BUILD)
     target_link_libraries(farrsight_gpu PUBLIC   OpenMP::OpenMP_CXX
                                                 MPI::MPI_CXX 
                                                 ${BARYTREE_LIB_GPU}
+                                                SimObj_gpu
                                                 FieldObj_gpu
                                                 PanelObj
                                                 icsObj
