@@ -49,6 +49,7 @@ from matplotlib.patches import Rectangle, Polygon
 plt.rcParams.update({'font.size': 18})
 
 FIG_DPI = 500
+MOV_DPI = 300
 LOW_DPI = 200
 
 from enum import IntEnum
@@ -554,8 +555,9 @@ def plot_height(sim_dir, simulation_dictionary, iter_num, height_range = [7,11],
             
     ncolors = height_range[1] - height_range[0] + 1
     # mymap = cm.get_cmap('gist_rainbow_r',ncolors)
-    mymap = cm.get_cmap('jet',ncolors)
-    
+    # mymap = cm.get_cmap('jet',ncolors)
+    # mymap = cm.get_cmap('inferno',ncolors)
+    mymap = cm.get_cmap('Greys',ncolors)
 
     ax.set_xlim([sd['xmin'], sd['xmax']])
     ax.set_ylim([sd['vmin'],sd['vmax']])
@@ -666,7 +668,7 @@ def phase_movie(sim_dir, simulation_dictionary,do_show_panels,flim=(0,.3), simul
 
     fig, ax = plt.subplots(figsize=(8,6))
 
-    with writer.saving(fig, sim_dir_str + panel_string + 'phase_space'+ ".mp4", dpi=100):
+    with writer.saving(fig, sim_dir_str + panel_string + 'phase_space'+ ".mp4", dpi=MOV_DPI):
 
 
 #     xs = np.fromfile(output_dir + f'xs/xs_{step_ii}')
@@ -838,7 +840,7 @@ def logf_movie(sim_dir, simulation_dictionary, simulation_has_run = True, can_do
 
     fig, ax = plt.subplots(figsize=(8,6))
 
-    with writer.saving(fig, sim_dir_str+ 'logf_movie.mp4', dpi=100):
+    with writer.saving(fig, sim_dir_str+ 'logf_movie.mp4', dpi=MOV_DPI):
 
 
 
@@ -1002,9 +1004,9 @@ def panel_height_movie(sim_dir, simulation_dictionary, height_range = [7,11],sim
                     comment='')
     writer = FFMpegWriter(fps=5, metadata=metadata)
 
-    fig, ax = plt.subplots(figsize=(12,10))
+    fig, ax = plt.subplots(figsize=(8,6))
 
-    with writer.saving(fig, sim_dir_str + 'panel_heights'+ ".mp4", dpi=100):
+    with writer.saving(fig, sim_dir_str + 'panel_heights'+ ".mp4", dpi=MOV_DPI):
 
 
 
@@ -1028,15 +1030,17 @@ def panel_height_movie(sim_dir, simulation_dictionary, height_range = [7,11],sim
             
         ncolors = height_range[1] - height_range[0] + 1
         # mymap = cm.get_cmap('gist_rainbow_r',ncolors)
-        mymap = cm.get_cmap('jet',ncolors)
-        p = PatchCollection(patches, mymap)
+        #mymap = cm.get_cmap('jet',ncolors)
+        # mymap = cm.get_cmap('inferno',ncolors)
+        mymap = cm.get_cmap('Greys',ncolors)
+        p = PatchCollection(patches, cmap=mymap)
         p.set_array(panels_fs)
         p.set_clim(height_range[0] - 0.5, height_range[1] + 0.5)
         ax.add_collection(p)
         # cb = fig.colorbar(p, ax=ax)
         plt_ticks = np.arange(height_range[0],height_range[1]+1)
         cb = fig.colorbar(p, ax=ax, ticks=plt_ticks)
-        cb.set_label('panel height')
+        cb.set_label('panel x-level')
 
         ax.set_xlim([sd['xmin'], sd['xmax']])
         ax.set_ylim([sd['vmin'],sd['vmax']])
@@ -1076,9 +1080,8 @@ def panel_height_movie(sim_dir, simulation_dictionary, height_range = [7,11],sim
             p.set_array(panels_fs)
             p.set_clim(height_range[0] - 0.5, height_range[1] + 0.5)
             ax.add_collection(p)
-            cb = fig.colorbar(p, ax=ax)
             cb = fig.colorbar(p, ax=ax, ticks=plt_ticks)
-            cb.set_label('panel height')
+            cb.set_label('panel x-level')
             ax.set_title(f't={iter_num*sd["dt"]:.3f}')
 
 
@@ -1708,10 +1711,14 @@ if __name__ == '__main__':
             do_show_panels = True
             phase_movie(sim_dir, simulation_dictionary, do_show_panels, flim=flim, can_do_movie=can_do_movie)
 
-    if args.panels_movie:
-        panel_height_movie(sim_dir, simulation_dictionary,\
-            height_range=[simulation_dictionary['initial_height'],simulation_dictionary['max_height']],\
-            can_do_movie=can_do_movie)
+    if args.panels_movie and sd['adaptively_refine']==1:
+
+       hlim2 = sd['max_height']
+       if 'v_height' in sd:
+           hlim2 -= sd['v_height']
+       panel_height_movie(sim_dir, simulation_dictionary,\
+           height_range=[simulation_dictionary['initial_height'],hlim2],\
+           can_do_movie=can_do_movie)
 
     if args.logf_movie:
         logf_movie(sim_dir, simulation_dictionary, can_do_movie=can_do_movie)
