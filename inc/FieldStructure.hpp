@@ -16,6 +16,37 @@ extern "C" {
     #include <BaryTreeInterface.h>
 }
 
+class ExternalElectricField {
+    public:
+        virtual void operator() (double* es, double* targets, int nt, double t) = 0;
+        virtual void print_field_obj() = 0;
+        virtual ~ExternalElectricField();
+};
+
+class ExternalSine : public ExternalElectricField {
+    public:
+        double Am, k, omega;
+        double t1 = 50, t2 = 150, t3 = 200;
+        ExternalSine();
+        ExternalSine(double Am);
+        ExternalSine(double Am, double k, double omega);
+        void operator() (double* es, double* targets, int nt, double t);
+        void print_field_obj();
+        ~ExternalSine();
+};
+
+class ExternalLogistic : public ExternalElectricField {
+    public:
+        double Am, k, omega;
+        double t1 = 60;
+        ExternalLogistic();
+        ExternalLogistic(double Am);
+        ExternalLogistic(double Am, double k, double omega);
+        void operator() (double* es, double* targets, int nt, double t);
+        void print_field_obj();
+        ~ExternalLogistic();
+};
+
 class ElectricField {
     public: 
         virtual void operator()     (double* es, double* targets, int nt, 

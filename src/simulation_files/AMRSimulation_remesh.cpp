@@ -12,7 +12,7 @@ int AMRSimulation::remesh() {
         species->remesh();
     }
 
-    evaluate_field_uniform_grid();
+    evaluate_field_uniform_grid(t);
 
     need_gather = true;
     return 0;

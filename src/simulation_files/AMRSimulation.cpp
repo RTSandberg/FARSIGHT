@@ -18,7 +18,7 @@ AMRSimulation::AMRSimulation(std::string sim_dir, std::string deck_address)
 
     // create e solver
     calculate_e = make_field_return_ptr(deck);
-
+    make_external_field(deck);
 
     // load species
     try {
@@ -37,8 +37,9 @@ AMRSimulation::AMRSimulation(std::string sim_dir, std::string deck_address)
     get_qms();
 
     // initialize e
-    evaluate_field_uniform_grid();
     iter_num = 0;
+    t = 0;
+    evaluate_field_uniform_grid(t);
 
     //write to file
     write_to_file();

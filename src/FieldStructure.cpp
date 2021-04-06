@@ -1,5 +1,58 @@
 #include "FieldStructure.hpp"
 
+ExternalElectricField::~ExternalElectricField() = default;
+// -----------------
+ExternalSine::ExternalSine()
+        : Am(0.4), k(0.26), omega(0.37) {}
+ExternalSine::ExternalSine(double Am)
+        : Am(Am), k(0.26), omega(0.37) {}    
+ExternalSine::ExternalSine(double Am, double k, double omega)
+        : Am(Am), k(k), omega(omega) {}   
+void ExternalSine::operator() (double* es, double* targets, int nt, double t) {
+    double a0 = 0;
+    if (t < t1) {
+        a0 = Am * sin (t * M_PI / 100);
+    } else if (t < t2) {
+        a0 = Am;
+    } else if (t < t3) {
+        a0 = Am * cos((t-150)*M_PI / 100);
+    }
+    double omt = omega * t;
+    for (int ii = 0; ii < nt; ++ii) {
+        es[ii] += a0 * sin(k*targets[ii] - omt);
+    }
+}
+void ExternalSine::print_field_obj() {
+    cout << "External field - sine" << endl;
+    cout << "Am " << Am << ", k " << k << ", omega " << omega << endl;
+}
+ExternalSine::~ExternalSine() = default;
+//--------------------------
+ExternalLogistic::ExternalLogistic()
+        : Am(0.4), k(0.26), omega(0.37) {}
+ExternalLogistic::ExternalLogistic(double Am)
+        : Am(Am), k(0.26), omega(0.37) {}    
+ExternalLogistic::ExternalLogistic(double Am, double k, double omega)
+        : Am(Am), k(k), omega(omega) {}   
+void ExternalLogistic::operator() (double* es, double* targets, int nt, double t) {
+    double a0;
+    if (t < t1) {
+        a0 = Am / (1.0 + exp(-40.0*(t-10.0)));
+    } else {
+        a0 = Am * (1.0 - 1.0 / (1.0 + exp(-40.0 * (t - 110.0))));
+    }
+    double omt = omega * t;
+    for (int ii = 0; ii < nt; ++ii) {
+        es[ii] += a0 * sin(k*targets[ii] - omt);
+    }
+}
+void ExternalLogistic::print_field_obj() {
+    cout << "External field - logistic" << endl;
+    cout << "Am " << Am << ", k " << k << ", omega " << omega << endl;
+}
+ExternalLogistic::~ExternalLogistic() = default;
+//================== end external ======
+
 ElectricField::~ElectricField() = default;
 
 

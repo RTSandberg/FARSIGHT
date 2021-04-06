@@ -3,10 +3,6 @@
 // #define DEBUG
 
 int AMRSimulation::step() {
-    iter_num += 1;
-    std::cout << "step " << iter_num << std::endl;
-
-
 
     if (need_gather) {
         // gather from species (need at first and after every remesh)
@@ -15,6 +11,10 @@ int AMRSimulation::step() {
 
     // rk4 step
     rk4_step(false);
+
+    iter_num += 1;
+    t += dt;
+    std::cout << "step " << iter_num << std::endl;
 
     // if remesh: remesh_and_calculate_e, scatter if needed, set need_gather to true
     if (iter_num % n_steps_remesh == 0) {
@@ -26,10 +26,11 @@ int AMRSimulation::step() {
     }
     // if not remesh: evaluate e (remeshing ends by calculating e on uniform grid)
     else {
-        std::vector<double> xtemp_cpy (xs);
-        std::vector<double> xtemp_cpy2 (xs);
-        (*calculate_e)(es.data(), xtemp_cpy.data(), es.size(),
-                        xtemp_cpy2.data(), q_ws.data(), xtemp_cpy.size());
+        evaluate_field(es, xs, q_ws, t);
+        // std::vector<double> xtemp_cpy (xs);
+        // std::vector<double> xtemp_cpy2 (xs);
+        // (*calculate_e)(es.data(), xtemp_cpy.data(), es.size(),
+        //                 xtemp_cpy2.data(), q_ws.data(), xtemp_cpy.size());
     }
 
     // if dump : write to file
@@ -107,12 +108,12 @@ int AMRSimulation::rk4_step(bool get_4th_e) {
     
 
     // auto start = high_resolution_clock::now();
-    
-    
-    std::vector<double> xk_cpy (xk);
-    std::vector<double> xk_cpy2 (xk);
-    (*calculate_e)(ef2.data(), xk_cpy.data(), ef2.size(),
-                    xk_cpy2.data(), q_ws.data(), xk.size());
+    double t2 = t + dt * 0.5;
+    evaluate_field(ef2,xk,q_ws,t2);
+    // std::vector<double> xk_cpy (xk);
+    // std::vector<double> xk_cpy2 (xk);
+    // (*calculate_e)(ef2.data(), xk_cpy.data(), ef2.size(),
+    //                 xk_cpy2.data(), q_ws.data(), xk.size());
     // auto stop = high_resolution_clock::now();
     // add_time(field_time, duration_cast<duration<double>>(stop - start) );
 
@@ -138,10 +139,12 @@ int AMRSimulation::rk4_step(bool get_4th_e) {
     // }
 
     // start = high_resolution_clock::now();
-    xk_cpy = xk;
-    xk_cpy2 = xk;
-    (*calculate_e)(ef3.data(), xk_cpy.data(), ef3.size(),
-                    xk_cpy2.data(), q_ws.data(), xk.size());
+    double t3 = t2;
+    evaluate_field(ef3, xk, q_ws, t3);
+    // xk_cpy = xk;
+    // xk_cpy2 = xk;
+    // (*calculate_e)(ef3.data(), xk_cpy.data(), ef3.size(),
+    //                 xk_cpy2.data(), q_ws.data(), xk.size());
     // stop = high_resolution_clock::now();
     // add_time(field_time, duration_cast<duration<double>>(stop - start) );
     // for (int ii = 0; ii < N; ++ii) {
@@ -169,10 +172,12 @@ int AMRSimulation::rk4_step(bool get_4th_e) {
     // }
     // start = high_resolution_clock::now();
 
-    xk_cpy = xk;
-    xk_cpy2 = xk;
-    (*calculate_e)(ef4.data(), xk_cpy.data(), ef4.size(), 
-                    xk_cpy2.data(), q_ws.data(), xk.size());
+    double t4 = t + dt;
+    evaluate_field(ef4, xk, q_ws, t4);
+    // xk_cpy = xk;
+    // xk_cpy2 = xk;
+    // (*calculate_e)(ef4.data(), xk_cpy.data(), ef4.size(), 
+    //                 xk_cpy2.data(), q_ws.data(), xk.size());
     // stop = high_resolution_clock::now();
     // add_time(field_time, duration_cast<duration<double>>(stop - start) );
 
@@ -194,10 +199,12 @@ int AMRSimulation::rk4_step(bool get_4th_e) {
     }
     if (get_4th_e) {
         // start = high_resolution_clock::now();
-        xk_cpy = xs;
-        xk_cpy2 = xs;
-        (*calculate_e)(es.data(), xk_cpy.data(), xs.size(),
-                        xk_cpy2.data(), q_ws.data(), xs.size());
+        double tk = t + dt;
+        evaluate_field(es, xs, q_ws, tk);
+        // xk_cpy = xs;
+        // xk_cpy2 = xs;
+        // (*calculate_e)(es.data(), xk_cpy.data(), xs.size(),
+        //                 xk_cpy2.data(), q_ws.data(), xs.size());
         // stop = high_resolution_clock::now();
         // add_time(field_time, duration_cast<duration<double>>(stop - start) );
     }

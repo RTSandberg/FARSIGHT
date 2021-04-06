@@ -86,6 +86,43 @@ ElectricField* AMRSimulation::make_field_return_ptr(pt::ptree &deck) {
     return calculate_e;
 }
 
+
+void AMRSimulation::make_external_field(pt::ptree &deck) {
+    try {
+        pt::ptree &external_field_deck = deck.get_child("external_field");
+
+        int use_external_int = external_field_deck.get<int>("use_external_field", 0);
+        if (use_external_int > 0) {
+            use_external_field = true;
+            int external_type = external_field_deck.get<int>("external_type", 0);
+            double Am = external_field_deck.get<double>("Am");
+            double k = external_field_deck.get<double>("k");
+            double omega = external_field_deck.get<double>("omega");
+            switch (external_type)
+            {
+                case 1: {
+                    calculate_e_external = new ExternalLogistic(Am, k, omega);
+                }
+                break;
+            
+                default: // 0
+                {
+                    calculate_e_external = new ExternalSine(Am, k, omega);
+                }
+                break;
+            }
+        }
+        else {
+            use_external_field = false;
+            calculate_e_external = nullptr;
+        }
+    } catch(std::exception& e) {
+        cout << "External field parameters not found.  External field disabled." << endl;
+        use_external_field = false;
+        calculate_e_external = nullptr;
+    }
+}
+
 distribution* AMRSimulation::make_f0_return_ptr(pt::ptree &species_deck_portion) {
     pt::ptree deck = species_deck_portion;
 
@@ -175,7 +212,8 @@ AMRStructure* AMRSimulation::make_species_return_ptr(pt::ptree &species_deck_por
     double pth = deck.get<double>("pth", 1.0);//atof(argv[9]);//1.0;
     double pstr = deck.get<double>("pstr", 0.0); //atof(argv[10]);
     int sim_type = deck.get<int>("sim_type", 1);//atoi(argv[6]);
-    double q = -1.0, m = 1.0;
+    double q = deck.get<double>("q", -1.0);
+    double m = deck.get<double>("m", 1.0);
     if (sim_type==5) { q = 1.0; }
     int initial_height = deck.get<int>("initial_height",6);//atoi(argv[11]);//6;
     int p_height = deck.get<int>("p_height",0);

@@ -107,10 +107,10 @@ def generate_standard_names_dirs(simulation_dictionary, root_dir=None):
     else:
         quad_str = 'TRAP'
     numerical_parameters = '%s_quadrature_pm_%.1f_x0_%.1f_xm_%.1f_g_eps_%.5f_dt_%.4f_remesh_period_%i_diag_freq_%i'%(quad_str,sd['pmax'], sd['xmin'],sd['xmax'],sd['greens_epsilon'], sd['dt'], remesh_period,sd['diag_period'])
-    sp1 = sd['species_list'][0]
+    sp0 = sd['species_list'][0]
     sp_str = 'sp1_'
     for key in list(sp0.keys())[1:]:
-        sp_str+= '.join([key,str(sp0[key])]) + '_'
+        sp_str+= '_'.join([key,str(sp0[key])]) + '_'
     sp_str = sp_str[:-1]
     # print(sp1)
     # sp1_params = f"sp1_{sp1['name']}_h0_{sp1['initial_height']}_pheight_{sp1['p_height']}_amp_{sp1['amp']:.3f}"

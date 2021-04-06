@@ -66,6 +66,7 @@ struct AMRSimulation {
     // time stepping parameters
     bool relativistic;
     int iter_num;
+    double t;
     int num_steps;
     int n_steps_remesh;
     int n_steps_diag;
@@ -79,6 +80,8 @@ struct AMRSimulation {
     Quadrature quad;
     bool use_treecode;
     ElectricField* calculate_e;
+    bool use_external_field;
+    ExternalElectricField* calculate_e_external;
 
     std::vector<distribution*> ic_list;
     std::vector<AMRStructure*> species_list;
@@ -98,13 +101,14 @@ struct AMRSimulation {
     int get_box_t_params(pt::ptree &deck);
     distribution* make_f0_return_ptr(pt::ptree &species_deck_portion);
     ElectricField* make_field_return_ptr(pt::ptree &deck);
+    void make_external_field(pt::ptree &deck);
     AMRStructure* make_species_return_ptr(pt::ptree &species_deck_portion, distribution* f0);
     void get_qms();
     int gather();
     int scatter(bool send_e);
 
-    int evaluate_field_uniform_grid();
-    int evaluate_field();
+    int evaluate_field_uniform_grid(double t);
+    int evaluate_field(std::vector<double>& es_local, std::vector<double>& xs_local, std::vector<double>& q_ws_local, double t);
 
 
     void relativistic_momentum_push(double* xtemp, double* vtemp, double* ptemp);
