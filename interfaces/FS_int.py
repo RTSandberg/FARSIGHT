@@ -189,58 +189,73 @@ if __name__ == '__main__':
     if args.plot_diagnostics:
         iterations = np.arange(0,sd['num_steps']+1, sd['diag_period'])
         final_iter = iterations[-1]
-        dp.sim_diagnostics_sample(simulation_dictionary, sim_dir=sim_dir)
-        if FST.SimType(sd['sim_type']) is not FST.SimType.FRIEDMAN_BEAM:
-            # phase.plot_phase_space(sim_dir, simulation_dictionary, int(45.0 / simulation_dictionary['dt']/simulation_dictionary['diag_period']), FST.sim_type_to_flim[FST.SimType(simulation_dictionary['sim_type'])])
-            phase.plot_phase_space(sim_dir, simulation_dictionary, final_iter, FST.sim_type_to_flim[FST.SimType(simulation_dictionary['sim_type'])])
-        if args.show_panels or args.panels_movie:
-            panel_height.plot_height(sim_dir, sd, final_iter)
+        for species in sd['species_list']:
+            sp_name = species['name']
+            dp.sim_diagnostics_sample(simulation_dictionary, sp_name, sim_dir=sim_dir)
+            if FST.SimType(sd['sim_type']) is not FST.SimType.FRIEDMAN_BEAM:
+                # phase.plot_phase_space(sim_dir, simulation_dictionary, int(45.0 / simulation_dictionary['dt']/simulation_dictionary['diag_period']), FST.sim_type_to_flim[FST.SimType(simulation_dictionary['sim_type'])])
+                phase.plot_phase_space(sim_dir, simulation_dictionary, sp_name, final_iter, FST.sim_type_to_flim[FST.SimType(simulation_dictionary['sim_type'])])
+            if args.show_panels or args.panels_movie:
+                panel_height.plot_height(sim_dir, sd, sp_name, final_iter)
 
     if args.plot_times is not None:
         t1 = time.time()
         iterations = np.arange(0,sd['num_steps']+1,sd['diag_period'])
         diag_ts = iterations * sd['dt']
-        for t0 in args.plot_times:
-            print('generating time',t0,'phase space')
-            t0_ind = np.nonzero(diag_ts <= t0)[0][-1]
-            t0_iter = int(iterations[t0_ind])
-            t0_sim = diag_ts[t0_ind]
-            if FST.SimType(sd['sim_type']) is FST.SimType.COLDER_TWO_STREAM:
-                flim = (0,0.5/np.sqrt(2*np.pi)/sd['vth'])
-            else:
-                flim = FST.sim_type_to_flim[FST.SimType(sd['sim_type'])]
-            phase.plot_phase_space(sim_dir,sd,t0_iter,flim)
-            if args.logf_movie or args.logf_plot:
-                logf.plot_logf(sim_dir, sd, t0_iter)
-                
-            if sd['adaptively_refine'] or args.show_panels or args.panels_movie:
-                panel_height.plot_height(sim_dir, sd, t0_iter, height_range=[sd['initial_height'],sd['max_height']])
+        for species in sd['species_list']:
+            for t0 in args.plot_times:
+                print('generating time',t0,'phase space')
+                t0_ind = np.nonzero(diag_ts <= t0)[0][-1]
+                t0_iter = int(iterations[t0_ind])
+                t0_sim = diag_ts[t0_ind]
+                if FST.ICsType(species['ics_type']) is FST.ICs.COLDER_TWO_STREAM:
+                    flim = (0,0.5/np.sqrt(2*np.pi)/species['pth'])
+                else:
+                    flim = FST.ics_type_to_flim[FST.ICsType(species['ics_type'])]
+                phase.plot_phase_space(sim_dir,sd,sp_name, t0_iter,flim)
+                if args.logf_movie or args.logf_plot:
+                    logf.plot_logf(sim_dir, sd, sp_name, t0_iter)
+                    
+                if species['adaptively_refine'] or args.show_panels or args.panels_movie:
+                    if 'p_height' in species:
+                        hmax = species['max_height'] - species['p_height']
+                    else:
+                        hmax = species['max_height']
+                    panel_height.plot_height(sim_dir, sd, sp_name, t0_iter, height_range=[species['initial_height'],hmax])
         t2 = time.time()
         print(f'spent {t2-t1:.1f}s making phase space (and log or height) images')
 
     if args.phase_movie:
-        simtype = simulation_dictionary['sim_type']
-        if simtype == 1:
-            flim = (0,0.44)
-        elif simtype == 2:
-            flim = (0,0.47)
-        elif simtype == 3:
-            flim = (0,0.45)
-        elif simtype == 4:
-            flim = (0,0.8)
-        do_show_panels = False
-        phase.phase_movie(sim_dir, simulation_dictionary, do_show_panels, flim=flim, can_do_movie=can_do_movie)
-        if args.show_panels:
-            do_show_panels = True
-            phase.phase_movie(sim_dir, simulation_dictionary, do_show_panels, flim=flim, can_do_movie=can_do_movie)
+        for species in sd['species_list']:
+            sp_name = species['name']
+            icstype = species['ics_type']
+            if icstype == 1:
+                flim = (0,0.44)
+            elif icstype == 2:
+                flim = (0,0.47)
+            elif icstype == 3:
+                flim = (0,0.45)
+            elif icstype == 4:
+                flim = (0,0.8)
+            do_show_panels = False
+            phase.phase_movie(sim_dir, simulation_dictionary, sp_name, do_show_panels, flim=flim, can_do_movie=can_do_movie)
+            if args.show_panels:
+                do_show_panels = True
+                phase.phase_movie(sim_dir, simulation_dictionary, sp_name, do_show_panels, flim=flim, can_do_movie=can_do_movie)
 
-    if args.panels_movie:
-        panel_height.panel_height_movie(sim_dir, simulation_dictionary,\
-            height_range=[simulation_dictionary['initial_height'],simulation_dictionary['max_height']],\
-            can_do_movie=can_do_movie)
+    for species in sd['species_list']:
+        sp_name = species['name']
+        if args.panels_movie:
+            if 'p_height' in species:
+                hmax = species['max_height'] - species['p_height']
+            else:
+                hmax = species['max_height']
+            panel_height.panel_height_movie(sim_dir, simulation_dictionary, sp_name,\
+                height_range=[species['initial_height'],hmax],\
+                can_do_movie=can_do_movie)
 
-    if args.logf_movie:
-        logf.logf_movie(sim_dir, simulation_dictionary, can_do_movie=can_do_movie)
+        if args.logf_movie:
+            logf.logf_movie(sim_dir, simulation_dictionary, sp_name, can_do_movie=can_do_movie)
     
 
     print('done with this run')

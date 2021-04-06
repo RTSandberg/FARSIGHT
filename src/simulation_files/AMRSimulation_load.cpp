@@ -130,9 +130,9 @@ distribution* AMRSimulation::make_f0_return_ptr(pt::ptree &species_deck_portion)
     double amp = deck.get<double>("amp", 0.0);//0.5;
     double pth = deck.get<double>("pth", 1.0);//atof(argv[9]);//1.0;
     double pstr = deck.get<double>("pstr", 0.0); //atof(argv[10]);
-    int sim_type = deck.get<int>("sim_type", 1);//atoi(argv[6]);
+    int ics_type = deck.get<int>("ics_type", 1);//atoi(argv[6]);
     distribution* f0;
-    switch (sim_type)
+    switch (ics_type)
     {
         case 1: // weak Landau Damping
             f0 = new F0_LD(pth, pstr, kx, amp);
