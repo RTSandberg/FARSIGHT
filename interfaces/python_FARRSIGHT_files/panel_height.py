@@ -15,7 +15,7 @@ except:
     print('Unable to load ffmpeg.  Movie writer not accessible')
     can_do_movie = False
 
-import make_dirs
+from . import make_dirs
 
 plt.rcParams.update({'font.size': 18})
 

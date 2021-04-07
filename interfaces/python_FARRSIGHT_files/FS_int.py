@@ -50,7 +50,7 @@ sys.path.append('/Users/ryansand/Documents/plasma_codes/FARRSIGHT/biquadratic_rk
 
 #------ custom imports ---
 # import python_FARRSIGHT_files
-import FARRSIGHT_types as FST
+from . import FARRSIGHT_types as FST
 # from python_FARRSIGHT_files import FARRSIGHT_types as FST
 from python_FARRSIGHT_files import diagnostic_plot as dp
 from python_FARRSIGHT_files import deck_utilities as deck

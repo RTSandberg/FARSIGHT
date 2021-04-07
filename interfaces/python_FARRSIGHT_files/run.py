@@ -4,8 +4,8 @@ import shutil # rmtree
 import subprocess # run, PIPE
 import time
 
-import deck_utilities
-import make_dirs
+from . import deck_utilities
+from . import make_dirs
 
 def run_sim(sim_dir=None, deck_dir = None, deck_name = None, force_deck_cwd = False, use_gpu = False):
     sim_dir_str = ''

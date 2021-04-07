@@ -9,8 +9,8 @@ from matplotlib.collections import PatchCollection
 from matplotlib.patches import Rectangle, Polygon
 plt.rcParams.update({'font.size': 18})
 
-import FARRSIGHT_types as FST
-import make_dirs
+from . import FARRSIGHT_types as FST
+from . import make_dirs
 
 def sim_diagnostics_sample(simulation_dictionary, species, sim_dir = None, test_times=[45.0]):
     """Generate and plot diagnostics 

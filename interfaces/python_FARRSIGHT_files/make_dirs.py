@@ -1,7 +1,7 @@
 
 import os
 
-import FARRSIGHT_types as FST
+from . import FARRSIGHT_types as FST
 
 def make_dirs(project_name, sim_group, sim_name, 
                           root_dir = None):
