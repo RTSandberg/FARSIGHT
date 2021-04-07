@@ -62,7 +62,7 @@ def sim_diagnostics_sample(simulation_dictionary, species, sim_dir = None, test_
         qm = q / m
     Lx = sd['xmax'] - sd['xmin']
     kx = 2*np.pi / Lx * sp_deck['normalized_wavenumber']
-    simtype = sp_deck['sim_type']
+    ics_type = sp_deck['ics_type']
     xmin = sd['xmin']
     xmax = sd['xmax']
     pmin = sd['pmin']
@@ -168,15 +168,15 @@ def sim_diagnostics_sample(simulation_dictionary, species, sim_dir = None, test_
 
     #weak LD:
     # if type_str == 'weak_LD':
-    if simtype == 1:
+    if ics_type == 1:
         g_t = .1533
         peak_ind = 0
         plt.semilogy(diag_times, l2e[peak_ind]*np.exp(-g_t*(diag_times - diag_times[peak_ind])), '-.')
 
     #strong LD:
     # if type_str == 'strong_LD':
-    if simtype == 2:
-    # if FS.simtype is SimType.STRONG_LD:
+    if ics_type == 2:
+    # if FS.ics_type is ics_type.STRONG_LD:
         g_strong1 = .2920
         g_strong2 = .0815
         damping1_ind = int(0.5/dt * 5 / diag_freq)
@@ -191,8 +191,8 @@ def sim_diagnostics_sample(simulation_dictionary, species, sim_dir = None, test_
     plt.grid()
     #weak LD
     # if type_str == 'weak_LD':
-    if simtype == 1:
-    # if FS.simtype is SimType.WEAK_LD:
+    if ics_type == 1:
+    # if FS.ics_type is ics_type.WEAK_LD:
     #     pass
         tf = sd['num_steps'] * sd['dt']
         if tf > 85:
@@ -201,7 +201,7 @@ def sim_diagnostics_sample(simulation_dictionary, species, sim_dir = None, test_
             plt.ylim([1e-8,1e-1])
     #strong LD
     # if type_str == 'strong_LD' or type_str == 'strong_2str':
-    if simtype in [2,3,4]:
+    if ics_type in [2,3,4]:
         plt.ylim([1e-3, 1e1])
     plt.xlim(0,tf)
     plt.xlabel('t')
@@ -369,7 +369,7 @@ def sim_diagnostics_sample(simulation_dictionary, species, sim_dir = None, test_
     nx0 = 2**(sp_deck["initial_height"]+1) + 1
     dx0 = (sd["xmax"] - sd["xmin"]) / nx0
     for test_time in test_times:
-        if simtype in [FST.SimType.WEAK_LD, FST.SimType.STRONG_LD]:# create new diagnostic : f(x=a,t=b,v)
+        if ics_type in [FST.ICsType.WEAK_LD, FST.ICsType.STRONG_LD]:# create new diagnostic : f(x=a,t=b,v)
             try:
                 step_ii = iterations[np.nonzero(diag_times <= test_time)[0][-1]]
                 xs = np.fromfile(output_dir + f'xs/xs_{step_ii}')
@@ -396,7 +396,7 @@ def sim_diagnostics_sample(simulation_dictionary, species, sim_dir = None, test_
                 plt.close()
             except IndexError:
                 print(f'time {test_time:.1f} is less than all simulation times')
-        if simtype in [FST.SimType.STRONG_TWO_STREAM]:
+        if ics_type in [FST.ICsType.STRONG_TWO_STREAM]:
             # test_iter = int(test_time / dt)
             try:
                 test_iter = iterations[np.nonzero(diag_times <= test_time)[0][-1]]

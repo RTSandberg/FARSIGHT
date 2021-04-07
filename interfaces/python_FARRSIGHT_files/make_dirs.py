@@ -123,7 +123,7 @@ def generate_standard_names_dirs(simulation_dictionary, root_dir=None):
     #     sp1_params +='_uniform'
         # sim_name = f'height0_{self.initial_height}_pm_{self.pmax:.1f}_g_eps_{self.greens_epsilon:.3f}_dt_{self.dt:.3f}_tf_{self.tf:.1f}_diag_freq_{self.diag_freq}' + tc_string
     sim_dir = simulations_dir + sd['sim_name'] + '/' + physical_parameters + '/'
-    sim_dir += numerical_parameters + tc_string + '/'
+    sim_dir += numerical_parameters + '_' + tc_string + '/'
     sim_dir += sp_str + '/'
     if not os.path.exists(sim_dir):
         os.makedirs(sim_dir)

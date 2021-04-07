@@ -31,7 +31,7 @@ def plot_height(sim_dir, simulation_dictionary, species, iter_num, height_range 
             sim_dir_str += '/'
         output_dir = sim_dir_str + output_dir
 
-    print('starting panel height plot')
+    print('starting panel x-level plot')
     t1 =time.time()
     if not simulation_has_run:
         print('unable to plot; simulation has not run or had errors')
@@ -79,8 +79,8 @@ def plot_height(sim_dir, simulation_dictionary, species, iter_num, height_range 
     # ax.set_title(f't={iter_num*sd["dt"]:.3f}')
 
     plt.tight_layout()
-    plt.savefig(sim_dir_str + f'panel_height_image_t_{iter_num*sd["dt"]}.png')
-    print('panel height plot done!')
+    plt.savefig(sim_dir_str + f'panel_xlevel_image_t_{iter_num*sd["dt"]}.png')
+    print('panel x-level plot done!')
     t2 = time.time()
     print(f'panels plot took {t2-t1:.3f}s')
     plt.close()
@@ -97,7 +97,7 @@ def panel_height_movie(sim_dir, simulation_dictionary, species, height_range = [
         if sim_dir[-1] != '/':
             sim_dir_str += '/'
         output_dir = sim_dir_str + output_dir
-    print('starting panel height movie')
+    print('starting panel x-level movie')
     t1 =time.time()
     if not simulation_has_run:
         print('unable to plot; simulation has not run or had errors')
@@ -107,13 +107,13 @@ def panel_height_movie(sim_dir, simulation_dictionary, species, height_range = [
         return
 
     FFMpegWriter = manimation.writers['ffmpeg']
-    metadata = dict(title='panel heights', artist='Matplotlib',
+    metadata = dict(title='panel x-level', artist='Matplotlib',
                     comment='')
     writer = FFMpegWriter(fps=5, metadata=metadata)
 
     fig, ax = plt.subplots(figsize=(12,10))
 
-    with writer.saving(fig, sim_dir_str + 'panel_heights'+ ".mp4", dpi=100):
+    with writer.saving(fig, sim_dir_str + 'panel_xlevel'+ ".mp4", dpi=100):
 
 
 
@@ -138,19 +138,19 @@ def panel_height_movie(sim_dir, simulation_dictionary, species, height_range = [
         ncolors = height_range[1] - height_range[0] + 1
         # mymap = cm.get_cmap('gist_rainbow_r',ncolors)
         mymap = plt.cm.get_cmap('Greys',ncolors)
-        p = PatchCollection(patches, mymap)
+        p = PatchCollection(patches, cmap=mymap)
         p.set_array(panels_fs)
         p.set_clim(height_range[0] - 0.5, height_range[1] + 0.5)
         ax.add_collection(p)
         # cb = fig.colorbar(p, ax=ax)
         plt_ticks = np.arange(height_range[0],height_range[1]+1)
         cb = fig.colorbar(p, ax=ax, ticks=plt_ticks)
-        cb.set_label('panel height')
+        cb.set_label('panel x-level')
 
         ax.set_xlim([sd['xmin'], sd['xmax']])
-        ax.set_ylim([sd['vmin'],sd['vmax']])
+        ax.set_ylim([sd['pmin'],sd['pmax']])
         ax.set_xlabel('x')
-        ax.set_ylabel('v')
+        ax.set_ylabel('p')
         ax.set_title(f't=0.000')
 
         fig.canvas.draw()
@@ -162,7 +162,8 @@ def panel_height_movie(sim_dir, simulation_dictionary, species, height_range = [
 
         for iter_num in range(sd['diag_period'], sd['num_steps'] + 1, sd['diag_period']):
             cb.remove()
-            ax.collections.pop()
+            ax.collections = []
+            # ax.collections.pop()
 
             panels = np.fromfile(output_dir + f'panels/leaf_point_inds_{iter_num}',dtype='int32')
             num_panels = int(panels.size/9)
@@ -185,9 +186,8 @@ def panel_height_movie(sim_dir, simulation_dictionary, species, height_range = [
             p.set_array(panels_fs)
             p.set_clim(height_range[0] - 0.5, height_range[1] + 0.5)
             ax.add_collection(p)
-            cb = fig.colorbar(p, ax=ax)
             cb = fig.colorbar(p, ax=ax, ticks=plt_ticks)
-            cb.set_label('panel height')
+            cb.set_label('panel x-level')
             ax.set_title(f't={iter_num*sd["dt"]:.3f}')
 
 
@@ -199,10 +199,10 @@ def panel_height_movie(sim_dir, simulation_dictionary, species, height_range = [
                 print(f'Movie is about {iter_num/(sd["num_steps"]+1)*100 :0.0f}% complete')
                 print_update_counter = 0
 #                 plt.savefig(mya.sim_dir + f'phase_space_image_t_{iter_num*dt}.svg')
-                plt.savefig(sim_dir_str + f'panel_height_image_t_{iter_num*sd["dt"]}.png')
+                plt.savefig(sim_dir_str + f'panel_xlevel_image_t_{iter_num*sd["dt"]}.png')
             print_update_counter += 1
 
-    plt.savefig(sim_dir_str + f'panel_height_image_t_{iter_num*sd["dt"]}.png')
+    plt.savefig(sim_dir_str + f'panel_xlevel_image_t_{iter_num*sd["dt"]}.png')
     print('panel height movie done!')
     t2 = time.time()
     print(f'panels movie took {t2-t1:.3f}s')

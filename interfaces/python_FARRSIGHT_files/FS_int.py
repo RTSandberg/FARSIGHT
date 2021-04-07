@@ -45,7 +45,7 @@ except:
 # from matplotlib.patches import Rectangle, Polygon
 # plt.rcParams.update({'font.size': 18})
 import sys
-sys.path.append('/Users/ryansand/Documents/plasma_codes/FARRSIGHT/biquadratic_rk4_source/interfaces/python_FARRSIGHT_files')
+# sys.path.append('/Users/ryansand/Documents/plasma_codes/FARRSIGHT/biquadratic_rk4_source/interfaces/python_FARRSIGHT_files')
 # sys.path.append('/Users/ryansand/Documents/PlasmaProjects/Lagrangian_particle_method/heat_lamps_projects/amr/08_biquadratic_work/05_biquadratic_cpp/biquadratic_rk4_source')
 
 #------ custom imports ---
@@ -99,6 +99,8 @@ if __name__ == '__main__':
 
     dict_args = {}
     if args.dict_args is not None:
+        print('warning - this feature not supported in multi-species FARRSIGHT')
+        print('command-line deck modification will be deprecated or heavily modified soon')
         num_dict_entries = len(args.dict_args)//3
         wrong_num_entries = len(args.dict_args) % 3
         if 'amr_epsilons' in args.dict_args:
@@ -146,7 +148,7 @@ if __name__ == '__main__':
         # get sim_dir from deck
         # simulation_dictionary = deck_to_dict(deck_dir = deck_dir, deck_name=args.deck_name)
         simulation_dictionary = deck.update_dictionary(deck_dir=deck_dir, deck_name = args.deck_name, **dict_args)
-        sim_dir_str, directories_found = deck.generate_standard_names_dirs(simulation_dictionary, root_dir=args.root_dir)
+        sim_dir_str, directories_found = make_dirs.generate_standard_names_dirs(simulation_dictionary, root_dir=args.root_dir)
         sim_dir = sim_dir_str
         shutil.copy2(deck_str, sim_dir_str)
         # end standard tree from deck option
@@ -192,9 +194,9 @@ if __name__ == '__main__':
         for species in sd['species_list']:
             sp_name = species['name']
             dp.sim_diagnostics_sample(simulation_dictionary, sp_name, sim_dir=sim_dir)
-            if FST.SimType(sd['sim_type']) is not FST.SimType.FRIEDMAN_BEAM:
+            if FST.ICsType(species['ics_type']) is not FST.ICsType.FRIEDMAN_BEAM:
                 # phase.plot_phase_space(sim_dir, simulation_dictionary, int(45.0 / simulation_dictionary['dt']/simulation_dictionary['diag_period']), FST.sim_type_to_flim[FST.SimType(simulation_dictionary['sim_type'])])
-                phase.plot_phase_space(sim_dir, simulation_dictionary, sp_name, final_iter, FST.sim_type_to_flim[FST.SimType(simulation_dictionary['sim_type'])])
+                phase.plot_phase_space(sim_dir, simulation_dictionary, sp_name, final_iter, FST.ics_type_to_flim[FST.ICsType(species['ics_type'])])
             if args.show_panels or args.panels_movie:
                 panel_height.plot_height(sim_dir, sd, sp_name, final_iter)
 
@@ -203,12 +205,14 @@ if __name__ == '__main__':
         iterations = np.arange(0,sd['num_steps']+1,sd['diag_period'])
         diag_ts = iterations * sd['dt']
         for species in sd['species_list']:
+            sp_name = species['name']
             for t0 in args.plot_times:
-                print('generating time',t0,'phase space')
+                print('searching for time',t0)
                 t0_ind = np.nonzero(diag_ts <= t0)[0][-1]
                 t0_iter = int(iterations[t0_ind])
                 t0_sim = diag_ts[t0_ind]
-                if FST.ICsType(species['ics_type']) is FST.ICs.COLDER_TWO_STREAM:
+                print(f'generating time {t0_sim:.1f} phase space')
+                if FST.ICsType(species['ics_type']) is FST.ICsType.COLDER_TWO_STREAM:
                     flim = (0,0.5/np.sqrt(2*np.pi)/species['pth'])
                 else:
                     flim = FST.ics_type_to_flim[FST.ICsType(species['ics_type'])]
@@ -216,7 +220,7 @@ if __name__ == '__main__':
                 if args.logf_movie or args.logf_plot:
                     logf.plot_logf(sim_dir, sd, sp_name, t0_iter)
                     
-                if species['adaptively_refine'] or args.show_panels or args.panels_movie:
+                if species['do_adaptively_refine'] or args.show_panels or args.panels_movie:
                     if 'p_height' in species:
                         hmax = species['max_height'] - species['p_height']
                     else:
