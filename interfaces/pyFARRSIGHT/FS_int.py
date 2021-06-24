@@ -196,7 +196,7 @@ if __name__ == '__main__':
             dp.sim_diagnostics_sample(simulation_dictionary, sp_name, sim_dir=sim_dir)
             if FST.ICsType(species['ics_type']) is not FST.ICsType.FRIEDMAN_BEAM:
                 # phase.plot_phase_space(sim_dir, simulation_dictionary, int(45.0 / simulation_dictionary['dt']/simulation_dictionary['diag_period']), FST.sim_type_to_flim[FST.SimType(simulation_dictionary['sim_type'])])
-                phase.plot_phase_space(sim_dir, simulation_dictionary, sp_name, final_iter, FST.ics_type_to_flim[FST.ICsType(species['ics_type'])])
+                phase.plot_phase_space(sim_dir, simulation_dictionary, sp_name, final_iter, FST.ics_type_to_flim(FST.ICsType(species['ics_type'])))
             if args.show_panels or args.panels_movie:
                 panel_height.plot_height(sim_dir, sd, sp_name, final_iter)
 
@@ -215,7 +215,7 @@ if __name__ == '__main__':
                 if FST.ICsType(species['ics_type']) is FST.ICsType.COLDER_TWO_STREAM:
                     flim = (0,0.5/np.sqrt(2*np.pi)/species['pth'])
                 else:
-                    flim = FST.ics_type_to_flim[FST.ICsType(species['ics_type'])]
+                    flim = FST.ics_type_to_flim(FST.ICsType(species['ics_type']))
                 phase.plot_phase_space(sim_dir,sd,sp_name, t0_iter,flim)
                 if args.logf_movie or args.logf_plot:
                     logf.plot_logf(sim_dir, sd, sp_name, t0_iter)

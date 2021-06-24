@@ -202,7 +202,6 @@ distribution* AMRSimulation::make_f0_return_ptr(pt::ptree &species_deck_portion)
 
 AMRStructure* AMRSimulation::make_species_return_ptr(pt::ptree &species_deck_portion, distribution* f0) {
 
-    cout << "Trying to load species" << endl;
 
     pt::ptree deck = species_deck_portion;
     // get parameters
@@ -218,7 +217,9 @@ AMRStructure* AMRSimulation::make_species_return_ptr(pt::ptree &species_deck_por
     int initial_height = deck.get<int>("initial_height",6);//atoi(argv[11]);//6;
     int p_height = deck.get<int>("p_height",0);
     int max_height = deck.get<int>("max_height", initial_height);
-    bool do_adaptively_refine = deck.get<bool> ("adaptively_refine", false);//false;
+    bool do_adaptively_refine = deck.get<bool> ("do_adaptively_refine", false);//false;
+    // bool do_adaptively_refine = false;
+    // if (do_adaptively_refine_int > 0) { do_adaptively_refine = true; }
     std::vector<double> amr_epsilons; 
     try {
         for (pt::ptree::value_type &eps : deck.get_child("amr_epsilons")) {
@@ -230,7 +231,6 @@ AMRStructure* AMRSimulation::make_species_return_ptr(pt::ptree &species_deck_por
 
         do_adaptively_refine = false;
     }
-
 
     AMRStructure *species = new AMRStructure{sim_dir, sp_name,
                 f0, q, m,

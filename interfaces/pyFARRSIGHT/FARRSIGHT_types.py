@@ -18,8 +18,15 @@ class Quadrature(IntEnum):
     TRAP = 0
     SIMPSONS = 1
 
-ics_type_to_flim = {ICsType.WEAK_LD : (0, 0.44),
+
+ics_type_to_flim_dict = {ICsType.WEAK_LD : (0, 0.44),
                 ICsType.STRONG_LD : (0, 0.47),
                 ICsType.STRONG_TWO_STREAM : (0, 0.45),
                 ICsType.COLDER_TWO_STREAM : (0, 0.8)}
+
+def ics_type_to_flim(ics_type):
+    if ics_type in [ICsType.WEAK_LD, ICsType.STRONG_LD, ICsType.STRONG_TWO_STREAM,ICsType.COLDER_TWO_STREAM ]:
+        return ics_type_to_flim_dict[ics_type]
+    else:
+        return (0,1)
 
