@@ -1709,7 +1709,7 @@ if __name__ == '__main__':
             phase_movie(sim_dir, simulation_dictionary, do_show_panels, flim=flim, can_do_movie=can_do_movie)
 
     if args.panels_movie and sd['adaptively_refine'==1]:
-       hlim2 = sd['max_height']
+        hlim2 = sd['max_height']
         if 'v_height' in sd:
             hlim2 -= sd['v_height']
         panel_height_movie(sim_dir, simulation_dictionary,\
