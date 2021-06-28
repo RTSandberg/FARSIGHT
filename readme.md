@@ -9,7 +9,6 @@ Dependencies
 * cmake
 * eigen
 
-Note : need to explicitly set compiler to use openmp
 
 use build command
 $ cmake .. -D CMAKE_C_COMPILER=gcc-9 -D CMAKE_CXX_COMPILER=g++-9
