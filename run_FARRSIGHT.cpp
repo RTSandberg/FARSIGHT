@@ -351,6 +351,7 @@ cout << "--------------------------------" << endl;
 
     auto start = high_resolution_clock::now();
     amr.init_e();
+
     auto stop = high_resolution_clock::now();
     amr.add_time(field_time, duration_cast<duration<double>>(stop - start) );
     amr.write_to_file();

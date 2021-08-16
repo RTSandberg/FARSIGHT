@@ -45,6 +45,8 @@ AMRStructure::AMRStructure(std::string sim_dir, distribution* f0, //std::functio
     bool is_initial_step = true;
     
     generate_mesh([&](double x, double v) { return (*f0)(x,v); }, do_adaptively_refine, is_initial_step);
+    f_beyond_boundary = *std::min_element(fs.begin(), fs.end() );
+    cout << "extrapolating value is " << f_beyond_boundary << endl;
 }
 
         // AMRStructure(std::string sim_dir, distribution* f0, //std::function<double (double,double)>& f0, 
@@ -84,6 +86,8 @@ AMRStructure::AMRStructure(std::string sim_dir, distribution* f0, //std::functio
     bool is_initial_step = true;
     generate_mesh([&](double x, double v) { return (*f0)(x,v); }, do_adaptively_refine, is_initial_step);
     // calculate_e = new E_MQ_DirectSum(Lx, greens_epsilon);
+    f_beyond_boundary = *std::min_element(fs.begin(), fs.end() );
+    cout << "extrapolating value is " << f_beyond_boundary << endl;
 }
 
 AMRStructure::AMRStructure(std::string sim_dir, distribution* f0, //std::function<double (double,double)> f0, 
@@ -119,6 +123,8 @@ AMRStructure::AMRStructure(std::string sim_dir, distribution* f0, //std::functio
     bool is_initial_step = true;
     generate_mesh([&](double x, double v) { return (*f0)(x,v); }, do_adaptively_refine, is_initial_step);
     // calculate_e = new E_MQ_DirectSum(Lx, greens_epsilon);
+    f_beyond_boundary = *std::min_element(fs.begin(), fs.end() );
+    cout << "extrapolating value is " << f_beyond_boundary << endl;
 }
 //end constructors
 

@@ -92,6 +92,7 @@ struct AMRStructure {
     // InterpolateDistribution interp_f;
     // interpolation parameters
     bool allow_boundary_extrapolation = false;
+    double f_beyond_boundary = 0;
     // bool do_unshear = false;
     bool do_unshear = false;
     // bool sqrt_f = false;
