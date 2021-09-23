@@ -962,8 +962,9 @@ cout << "unshear xs[" << ii << "] " << xs[ii] << ", dt " << dt << ", vs[ii] " <<
         }
 
         if (use_limiter) {
+            //double min_f = *std::min_element(panel_fs, panel_fs+9);
             for (int ii = 0; ii < values.size(); ++ii) {
-                if (values[ii] < 0) { values[ii] = limit_val; }
+                if (values[ii] < 0) { values[ii] = 0; } //min_f; }
             }
         }
     }
@@ -974,7 +975,7 @@ cout << "unshear xs[" << ii << "] " << xs[ii] << ", dt " << dt << ", vs[ii] " <<
 
 }
 
-double AMRStructure::interpolate_from_panel(double x, double v, int panel_ind, bool verbose) {
+double AMRStructure::interpolate_from_panel(double x, double v, int panel_ind, bool use_limiter, bool verbose) {
     if (panel_ind == 0) { return f_beyond_boundary; }
     else {
         Panel* panel = &(old_panels[panel_ind]);
@@ -1081,6 +1082,10 @@ cout << "unshear x " << x << ", dt " << dt << ", v " << v << ", vmid " << panel_
                 c(4) * dx*dx + c(5) * dx*dx*dv + c(6) * dx*dx*dv*dv +
                 c(7) * dx*dv*dv + c(8) * dv*dv;
         if (verbose) { cout << "Result = " << val << endl; }
+        if (use_limiter && val < 0) {
+            //double min_f = *std::min_element(panel_fs, panel_fs+9);
+            val = 0; //min_f;
+        }
         return val;
     }
 }
@@ -1126,7 +1131,7 @@ if (iter_num >= 240) {
 // if (iter_num >= 240) {
 // }
 #endif /* DEBUG */
-    double val = interpolate_from_panel(shifted_x,v,leaf_containing, verbose);
+    double val = interpolate_from_panel(shifted_x,v,leaf_containing, use_limiter, verbose);
     if (verbose) {
         cout << "(" << shifted_x << ", " << v << ") is in panel " << leaf_containing << ", f_interpolated(x,v) = " << val << endl;
     }
@@ -1177,7 +1182,7 @@ void AMRStructure::interpolate_from_mesh_slow(std::vector<double>& values, std::
     for (int ii = 0; ii < xs.size(); ++ii) {
         bool beyond_boundary = false;
         leaves.push_back(find_leaf_containing_xv_recursively(shifted_xs[ii], vs[ii],beyond_boundary, 0, verbose));
-        values.push_back(interpolate_from_panel(shifted_xs[ii], vs[ii], leaves[ii], verbose));
+        values.push_back(interpolate_from_panel(shifted_xs[ii], vs[ii], leaves[ii], use_limiter, verbose));
     }
     // cout << endl << "interpolated fs: ";
     // std::copy(values.begin(), values.end(), std::ostream_iterator<double>(cout, " "));
@@ -1185,7 +1190,7 @@ void AMRStructure::interpolate_from_mesh_slow(std::vector<double>& values, std::
 
 // double AMRStructure::InterpolateDistribution::operator() (double x, double v, bool verbose) {
 //     // int leaf_containing = ::find_leaf_containing_xv_recursively(x,v,0, verbose);
-//     // return ::interpolate_from_panel(x,v,leaf_containing, verbose);
+//     // return ::interpolate_from_panel(x,v,leaf_containing, use_limiter, verbose);
 //     this->find_leaf_containing_xv_recursively(x,v,0, verbose);
 //     return 1.0;
 // }

@@ -176,7 +176,7 @@ struct AMRStructure {
         double interpolate_from_mesh(double xs, double vs, bool verbose);
         void interpolate_from_mesh(std::vector<double> &values, std::vector<double>& x, std::vector<double>& v, bool verbose);
         void interpolate_from_mesh_slow(std::vector<double> &values, std::vector<double>& x, std::vector<double>& v, bool verbose);
-        double interpolate_from_panel(double x, double v, int panel_ind,bool verbose);
+        double interpolate_from_panel(double x, double v, int panel_ind, bool use_limiter, bool verbose);
         void interpolate_from_panel_to_points(std::vector<double>& values, std::vector<double>& xs, std::vector<double>& vs,
                                                 std::vector<int>& point_inds, int panel_ind, bool use_limiter, double limit_val);
 
