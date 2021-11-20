@@ -357,9 +357,9 @@ cout << "--------------------------------" << endl;
 
     for (int ii = 1; ii < num_steps+1; ++ii) {
         bool get_4th_e = false;
-        start = high_resolution_clock::now();
+        auto start = high_resolution_clock::now();
         amr.step(get_4th_e);
-        stop = high_resolution_clock::now();
+        auto stop = high_resolution_clock::now();
         amr.add_time(step_time, duration_cast<duration<double>>(stop - start) );
 
 #ifdef DEBUG2
