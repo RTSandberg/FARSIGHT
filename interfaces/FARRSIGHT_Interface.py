@@ -51,6 +51,7 @@ plt.rcParams.update({'font.size': 18})
 FIG_DPI = 500
 MOV_DPI = 300
 LOW_DPI = 200
+panels_cmap = 'Greys'
 
 from enum import IntEnum
 class BoundaryConditions(IntEnum):
@@ -554,11 +555,8 @@ def plot_height(sim_dir, simulation_dictionary, iter_num, height_range = [7,11],
 
             
     ncolors = height_range[1] - height_range[0] + 1
-    # mymap = cm.get_cmap('gist_rainbow_r',ncolors)
-    # mymap = cm.get_cmap('jet',ncolors)
-    # mymap = cm.get_cmap('inferno',ncolors)
-    mymap = cm.get_cmap('Greys',ncolors)
-
+    mymap = cm.get_cmap(panels_cmap,ncolors)
+    
     ax.set_xlim([sd['xmin'], sd['xmax']])
     ax.set_ylim([sd['vmin'],sd['vmax']])
     ax.set_xlabel('x')
@@ -668,7 +666,7 @@ def phase_movie(sim_dir, simulation_dictionary,do_show_panels,flim=(0,.3), simul
 
     fig, ax = plt.subplots(figsize=(8,6))
 
-    with writer.saving(fig, sim_dir_str + panel_string + 'phase_space'+ ".mp4", dpi=MOV_DPI):
+    with writer.saving(fig, sim_dir_str + panel_string + 'phase_space'+ ".mp4", dpi=FIG_DPI):
 
 
 #     xs = np.fromfile(output_dir + f'xs/xs_{step_ii}')
@@ -840,8 +838,7 @@ def logf_movie(sim_dir, simulation_dictionary, simulation_has_run = True, can_do
 
     fig, ax = plt.subplots(figsize=(8,6))
 
-    with writer.saving(fig, sim_dir_str+ 'logf_movie.mp4', dpi=MOV_DPI):
-
+    with writer.saving(fig, sim_dir_str+ 'logf_movie.mp4', dpi=FIG_DPI):
 
 
     #     flim = (-8,0)
@@ -886,7 +883,7 @@ def logf_movie(sim_dir, simulation_dictionary, simulation_has_run = True, can_do
         p.set_clim(flim)
         ax.add_collection(p)
         cb = fig.colorbar(p, ax=ax)
-        cb.set_label('f')
+        cb.set_label('log f')
 
         ax.set_xlim(sd["xmin"], sd["xmax"])
         ax.set_ylim(sd["vmin"], sd["vmax"])
@@ -951,7 +948,7 @@ def logf_movie(sim_dir, simulation_dictionary, simulation_has_run = True, can_do
             p.set_clim(flim)
             ax.add_collection(p)
             cb = fig.colorbar(p, ax=ax)
-            cb.set_label('f')
+            cb.set_label('log f')
             ax.set_title(f't={iter_num*sd["dt"]:.3f}')
 
 
@@ -1006,8 +1003,7 @@ def panel_height_movie(sim_dir, simulation_dictionary, height_range = [7,11],sim
 
     fig, ax = plt.subplots(figsize=(8,6))
 
-    with writer.saving(fig, sim_dir_str + 'panel_heights'+ ".mp4", dpi=MOV_DPI):
-
+    with writer.saving(fig, sim_dir_str + 'panel_heights'+ ".mp4", dpi=FIG_DPI):
 
 
         panels = np.fromfile(output_dir + 'panels/leaf_point_inds_0',dtype='int32')
@@ -1030,10 +1026,8 @@ def panel_height_movie(sim_dir, simulation_dictionary, height_range = [7,11],sim
             
         ncolors = height_range[1] - height_range[0] + 1
         # mymap = cm.get_cmap('gist_rainbow_r',ncolors)
-        #mymap = cm.get_cmap('jet',ncolors)
-        # mymap = cm.get_cmap('inferno',ncolors)
-        mymap = cm.get_cmap('Greys',ncolors)
-        p = PatchCollection(patches, cmap=mymap)
+        mymap = cm.get_cmap(panels_cmap,ncolors)
+        p = PatchCollection(patches, mymap)
         p.set_array(panels_fs)
         p.set_clim(height_range[0] - 0.5, height_range[1] + 0.5)
         ax.add_collection(p)
@@ -1712,7 +1706,6 @@ if __name__ == '__main__':
             phase_movie(sim_dir, simulation_dictionary, do_show_panels, flim=flim, can_do_movie=can_do_movie)
 
     if args.panels_movie and sd['adaptively_refine']==1:
-
        hlim2 = sd['max_height']
        if 'v_height' in sd:
            hlim2 -= sd['v_height']

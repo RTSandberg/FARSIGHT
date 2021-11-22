@@ -349,18 +349,17 @@ cout << "--------------------------------" << endl;
 // ------- end test -----------
 
 
-    auto start = high_resolution_clock::now();
+    // auto start = high_resolution_clock::now();
     amr.init_e();
-
-    auto stop = high_resolution_clock::now();
-    amr.add_time(field_time, duration_cast<duration<double>>(stop - start) );
+    // auto stop = high_resolution_clock::now();
+    // amr.add_time(field_time, duration_cast<duration<double>>(stop - start) );
     amr.write_to_file();
 
     for (int ii = 1; ii < num_steps+1; ++ii) {
         bool get_4th_e = false;
-        start = high_resolution_clock::now();
+        auto start = high_resolution_clock::now();
         amr.step(get_4th_e);
-        stop = high_resolution_clock::now();
+        auto stop = high_resolution_clock::now();
         amr.add_time(step_time, duration_cast<duration<double>>(stop - start) );
 
 #ifdef DEBUG2
