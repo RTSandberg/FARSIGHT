@@ -355,7 +355,7 @@ cout << "--------------------------------" << endl;
     // amr.add_time(field_time, duration_cast<duration<double>>(stop - start) );
     amr.write_to_file();
 
-    for (int ii = 1; ii < num_steps+1; ++ii) {
+    for (int ii = 1; ii < 2*num_steps+1; ++ii) {
         bool get_4th_e = false;
         auto start = high_resolution_clock::now();
         amr.step(get_4th_e);
@@ -397,17 +397,17 @@ amr.write_to_file(pre_remesh);
             stop = high_resolution_clock::now();
             amr.add_time(remesh_time, duration_cast<duration<double>>(stop - start) );
 
-            init_e();
+            amr.init_e();
         } else {
             // still need to calculate e
             auto start = high_resolution_clock::now();
             
             std::vector<double> xs_cpy (amr.xs);
             std::vector<double> xs_cpy2 (amr.xs);
-            (*calculate_e)(amr.es.data(), xs_cpy.data(), a2.size(),
+            (*calculate_e)(amr.es.data(), xs_cpy.data(), amr.es.size(),
                             xs_cpy2.data(), amr.q_ws.data(), xs_cpy.size());
             auto stop = high_resolution_clock::now();
-            add_time(field_time, duration_cast<duration<double>>(stop - start) );
+            amr.add_time(field_time, duration_cast<duration<double>>(stop - start) );
         }
 
         
@@ -441,6 +441,10 @@ cout << "--------------------------------" << endl;
             amr.add_time(file_time,  duration_cast<duration<double>>(file_stop - file_start) );
         }
     //     // cout << amr << endl;
+
+        if (ii == num_steps) {
+            amr.dt *= -1;
+        }
     }
 
     // cout << amr << endl;

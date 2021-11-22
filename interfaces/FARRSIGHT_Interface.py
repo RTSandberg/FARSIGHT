@@ -172,7 +172,7 @@ def generate_standard_names_dirs(simulation_dictionary, root_dir=None):
         amr_string = 'no_amr'
 #         sim_group = ''
 #         sim_name = ''
-    tf = sd['dt'] * sd['num_steps']
+    tf = sd['dt'] * 2*sd['num_steps']
     physical_parameters = SimType(sd['sim_type']).name + '_' + bcs_string + '_vth_%.3f_vstr_%.3f_amp_%.3f_normal_k_%.3f_tf_%.1f'%(sd['vth'], sd['vstr'], sd['amp'], sd['normalized_wavenumber'], tf)
     if 'remesh_period' in sd:
         remesh_period = sd['remesh_period']
@@ -735,10 +735,10 @@ def phase_movie(sim_dir, simulation_dictionary,do_show_panels,flim=(0,.3), simul
         writer.grab_frame()
 
 
-        print_update_frequency = int(np.ceil((sd['num_steps']+1)/6/sd['diag_period']))
+        print_update_frequency = int(np.ceil((2*sd['num_steps']+1)/6/sd['diag_period']))
         print_update_counter = 0
 
-        for iter_num in range(sd['diag_period'], sd['num_steps'] + 1, sd['diag_period']):
+        for iter_num in range(sd['diag_period'], 2*sd['num_steps'] + 1, sd['diag_period']):
             cb.remove()
             ax.collections.pop()
 
@@ -793,7 +793,7 @@ def phase_movie(sim_dir, simulation_dictionary,do_show_panels,flim=(0,.3), simul
 
 
             if print_update_counter == print_update_frequency:
-                print(f'Movie is about {iter_num/(sd["num_steps"]+1)*100 :0.0f}% complete')
+                print(f'Movie is about {iter_num/(2*sd["num_steps"]+1)*100 :0.0f}% complete')
                 print_update_counter = 0
 #                 plt.savefig(mya.sim_dir + f'phase_space_image_t_{iter_num*dt}.svg')
                 plt.savefig(sim_dir_str + panel_string + f'phase_space_image_t_{iter_num*sd["dt"]}.png',dpi=FIG_DPI)
@@ -900,7 +900,7 @@ def logf_movie(sim_dir, simulation_dictionary, simulation_has_run = True, can_do
         print_update_frequency = int(np.ceil((sd["num_steps"]+1)/6/sd["diag_period"]))
         print_update_counter = 0
 
-        for iter_num in range(sd["diag_period"], sd["num_steps"] + 1, sd["diag_period"]):
+        for iter_num in range(sd["diag_period"], 2*sd["num_steps"] + 1, sd["diag_period"]):
             cb.remove()
             ax.collections.pop()
 
@@ -959,7 +959,7 @@ def logf_movie(sim_dir, simulation_dictionary, simulation_has_run = True, can_do
 
 
             if print_update_counter == print_update_frequency:
-                print(f'Movie is about {iter_num/(sd["num_steps"]+1)*100 :0.0f}% complete')
+                print(f'Movie is about {iter_num/(2*sd["num_steps"]+1)*100 :0.0f}% complete')
                 print_update_counter = 0
     #             plt.savefig(mya.sim_dir + f'logf_phase_space_image_t_{iter_num*dt}.svg')
                 plt.savefig(sim_dir_str + f'logf_phase_space_image_t_{iter_num*sd["dt"]}.png',dpi=FIG_DPI)
@@ -1049,10 +1049,10 @@ def panel_height_movie(sim_dir, simulation_dictionary, height_range = [7,11],sim
         writer.grab_frame()
 
 
-        print_update_frequency = int(np.ceil((sd['num_steps']+1)/6/sd['diag_period']))
+        print_update_frequency = int(np.ceil((2*sd['num_steps']+1)/6/sd['diag_period']))
         print_update_counter = 0
 
-        for iter_num in range(sd['diag_period'], sd['num_steps'] + 1, sd['diag_period']):
+        for iter_num in range(sd['diag_period'], 2*sd['num_steps'] + 1, sd['diag_period']):
             cb.remove()
             ax.collections.pop()
 
@@ -1087,7 +1087,7 @@ def panel_height_movie(sim_dir, simulation_dictionary, height_range = [7,11],sim
 
 
             if print_update_counter == print_update_frequency:
-                print(f'Movie is about {iter_num/(sd["num_steps"]+1)*100 :0.0f}% complete')
+                print(f'Movie is about {iter_num/(2*sd["num_steps"]+1)*100 :0.0f}% complete')
                 print_update_counter = 0
 #                 plt.savefig(mya.sim_dir + f'phase_space_image_t_{iter_num*dt}.svg')
                 plt.savefig(sim_dir_str + f'panel_height_image_t_{iter_num*sd["dt"]}.png',dpi=FIG_DPI)
@@ -1156,7 +1156,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     # iterations = np.sort(iterations)
     # diag_times = dt * iterations
 
-    diag_times = np.arange(0,num_steps+1,diag_freq) * dt
+    diag_times = np.arange(0,2*num_steps+1,diag_freq) * dt
     diag_times.tofile(output_dir + 'diag_times')
     tf = diag_times[-1]
     iterations = (diag_times / dt).astype('int')
@@ -1274,7 +1274,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     if simtype == 1:
     # if FS.simtype is SimType.WEAK_LD:
     #     pass
-        tf = sd['num_steps'] * sd['dt']
+        tf = 2*sd['num_steps'] * sd['dt']
         if tf > 85:
             plt.ylim([1e-16,1e-1])
         else:
@@ -1372,7 +1372,7 @@ def sim_diagnostics_sample(simulation_dictionary, sim_dir = None, test_times=[45
     plt.figure(figsize=diag_fig_size)
     # plt.figure()
     plt.plot(diag_times,num_points,'.',label='number of points')
-    n_diags = sd['num_steps']+1
+    n_diags = 2*sd['num_steps']+1
     initial_nx = 2**(sd['initial_height']+1) + 1
     max_nx = 2**(sd['max_height']+1) + 1
     plt.plot(diag_times, initial_nx**2 * np.ones_like(num_points),label=r'$%i^2$ points'%initial_nx)
@@ -1658,7 +1658,7 @@ if __name__ == '__main__':
         run_sim(sim_dir=sim_dir, deck_dir=deck_dir, deck_name=args.deck_name, use_gpu=args.use_gpu)
 
     if args.plot_diagnostics:
-        iterations = np.arange(0,sd['num_steps']+1, sd['diag_period'])
+        iterations = np.arange(0,2*sd['num_steps']+1, sd['diag_period'])
         final_iter = iterations[-1]
         sim_diagnostics_sample(simulation_dictionary, sim_dir=sim_dir)
         if SimType(sd['sim_type']) is not SimType.FRIEDMAN_BEAM:
@@ -1669,7 +1669,7 @@ if __name__ == '__main__':
 
     if args.plot_times is not None:
         t1 = time.time()
-        iterations = np.arange(0,sd['num_steps']+1,sd['diag_period'])
+        iterations = np.arange(0,2*sd['num_steps']+1,sd['diag_period'])
         diag_ts = iterations * sd['dt']
         for t0 in args.plot_times:
             print('generating time',t0,'phase space')
