@@ -666,7 +666,7 @@ def phase_movie(sim_dir, simulation_dictionary,do_show_panels,flim=(0,.3), simul
 
     fig, ax = plt.subplots(figsize=(8,6))
 
-    with writer.saving(fig, sim_dir_str + panel_string + 'phase_space'+ ".mp4", dpi=FIG_DPI):
+    with writer.saving(fig, sim_dir_str + panel_string + 'phase_space'+ ".mp4", dpi=MOV_DPI):
 
 
 #     xs = np.fromfile(output_dir + f'xs/xs_{step_ii}')
@@ -838,7 +838,7 @@ def logf_movie(sim_dir, simulation_dictionary, simulation_has_run = True, can_do
 
     fig, ax = plt.subplots(figsize=(8,6))
 
-    with writer.saving(fig, sim_dir_str+ 'logf_movie.mp4', dpi=FIG_DPI):
+    with writer.saving(fig, sim_dir_str+ 'logf_movie.mp4', dpi=MOV_DPI):
 
 
     #     flim = (-8,0)
@@ -1003,7 +1003,7 @@ def panel_height_movie(sim_dir, simulation_dictionary, height_range = [7,11],sim
 
     fig, ax = plt.subplots(figsize=(8,6))
 
-    with writer.saving(fig, sim_dir_str + 'panel_heights'+ ".mp4", dpi=FIG_DPI):
+    with writer.saving(fig, sim_dir_str + 'panel_heights'+ ".mp4", dpi=MOV_DPI):
 
 
         panels = np.fromfile(output_dir + 'panels/leaf_point_inds_0',dtype='int32')
@@ -1706,12 +1706,12 @@ if __name__ == '__main__':
             phase_movie(sim_dir, simulation_dictionary, do_show_panels, flim=flim, can_do_movie=can_do_movie)
 
     if args.panels_movie and sd['adaptively_refine']==1:
-       hlim2 = sd['max_height']
-       if 'v_height' in sd:
-           hlim2 -= sd['v_height']
-       panel_height_movie(sim_dir, simulation_dictionary,\
-           height_range=[simulation_dictionary['initial_height'],hlim2],\
-           can_do_movie=can_do_movie)
+        hlim2 = sd['max_height']
+        if 'v_height' in sd:
+            hlim2 -= sd['v_height']
+        panel_height_movie(sim_dir, simulation_dictionary,\
+            height_range=[simulation_dictionary['initial_height'],hlim2],\
+            can_do_movie=can_do_movie)
 
     if args.logf_movie:
         logf_movie(sim_dir, simulation_dictionary, can_do_movie=can_do_movie)
