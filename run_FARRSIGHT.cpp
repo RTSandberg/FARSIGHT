@@ -396,6 +396,19 @@ amr.write_to_file(pre_remesh);
             amr.remesh();
             stop = high_resolution_clock::now();
             amr.add_time(remesh_time, duration_cast<duration<double>>(stop - start) );
+
+            init_e();
+        } else {
+            // still need to calculate e
+            auto start = high_resolution_clock::now();
+            
+            std::vector<double> xs_cpy (amr.xs);
+            std::vector<double> xs_cpy2 (amr.xs);
+            (*calculate_e)(amr.es.data(), xs_cpy.data(), amr.es.size(),
+                            xs_cpy2.data(), amr.q_ws.data(), xs_cpy.size());
+            auto stop = high_resolution_clock::now();
+            amr.add_time(field_time, duration_cast<duration<double>>(stop - start) );
+            
         }
 
         
