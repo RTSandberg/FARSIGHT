@@ -1,6 +1,6 @@
 FARRSIGHT 
 ===
-(Forward Adaptively Refined, Regularized Semi-Lagrangian method using Integral Green's function and Hierarchical Treecode)
+(Forward Adaptively Refined, Regularized Semi-Lagrangian method using Integral Green's function and GPU-accelerated Hierarchical Treecode)
 ---
 
 Dependencies
@@ -8,6 +8,7 @@ Dependencies
 * openmp - compatible compiler
 * cmake
 * eigen
+* boost
 
 Note : need to explicitly set compiler to use openmp
 
