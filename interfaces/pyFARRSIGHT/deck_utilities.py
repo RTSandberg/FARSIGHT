@@ -15,8 +15,9 @@ def dict_to_deck(sim_dictionary,deck_dir=None, deck_name='deck.json'):
     if deck_dir is None:
         input_deck = deck_name
     else:
-        if deck_dir[-1] != '/':
-            deck_dir += '/'
+        if len(deck_dir) > 0:
+            if deck_dir[-1] != '/':
+                deck_dir += '/'
         input_deck = deck_dir + deck_name
     with open(input_deck, 'w') as outfile:
         json.dump(sim_dictionary, outfile)
@@ -30,8 +31,9 @@ def deck_to_dict(deck_dir = None, deck_name = None):
     simulation_dictionary : dictionary, contains data from input deck
     """
     if deck_dir is not None:
-        if deck_dir[-1] != '/':
-            deck_dir += '/'
+        if len(deck_dir) > 0:
+            if deck_dir[-1] != '/':
+                deck_dir += '/'
     else:
         deck_dir = ''
     if deck_name is not None:
