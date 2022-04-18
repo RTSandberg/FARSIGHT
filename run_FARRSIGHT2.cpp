@@ -37,8 +37,8 @@ int main(int argc, char** argv) {
 
     int rank, numProcs;
     MPI_Init(&argc, &argv);
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &numProcs);
+    // MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    // MPI_Comm_size(MPI_COMM_WORLD, &numProcs);
 
     std::string sim_dir, input_deck;
     if (argc > 1) {
