@@ -10,9 +10,10 @@ from . import make_dirs
 def run_sim(sim_dir=None, deck_dir = None, deck_name = None, force_deck_cwd = False, use_gpu = False):
     sim_dir_str = ''
     if sim_dir is not None:
-        sim_dir_str = sim_dir
-        if sim_dir[-1] != '/':
-            sim_dir_str += '/'
+        if len(sim_dir) > 0:
+            sim_dir_str = sim_dir
+            if sim_dir[-1] != '/':
+                sim_dir_str += '/'
     # if deck_dir = None:
     #     deck_dir = sim_dir
     # elif deck_dir[-1] != '/':
@@ -33,9 +34,10 @@ def run_sim(sim_dir=None, deck_dir = None, deck_name = None, force_deck_cwd = Fa
     deck_dir_str = ''
     input_deck = ''
     if deck_dir is not None:
-        deck_dir_str = deck_dir
-        if deck_dir[-1] != '/':
-            deck_dir_str += '/'
+        if len(deck_dir) > 0:
+            deck_dir_str = deck_dir
+            if deck_dir[-1] != '/':
+                deck_dir_str += '/'
     elif not force_deck_cwd:
         deck_dir_str = sim_dir_str
 

@@ -45,6 +45,8 @@ void AMRSimulation::print_sim_setup() {
     calculate_e->print_field_obj();
     if (use_external_field) {
         calculate_e_external->print_field_obj();
+    } else {
+        cout << "No external field being used.\n";
     }
     // cout << "green's epsilon = " << greens_epsilon << endl;
     // cout << "use treecode flag " << use_treecode << endl;
