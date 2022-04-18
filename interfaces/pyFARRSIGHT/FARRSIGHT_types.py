@@ -12,8 +12,9 @@ class ICsType(IntEnum):
     RELATIVISTIC_TWO_STREAM = 7
     RELATIVISTIC_WAVE = 8
 class ExternalFieldType(IntEnum):
-    SINE = 0
-    LOGISTIC = 1
+    TANH = 0
+    SINE = 1
+    LOGISTIC = 2
 class Quadrature(IntEnum):
     TRAP = 0
     SIMPSONS = 1

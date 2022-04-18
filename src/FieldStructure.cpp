@@ -2,6 +2,37 @@
 
 ExternalElectricField::~ExternalElectricField() = default;
 // -----------------
+ExternalTanh::ExternalTanh()
+        : Am(0.2), k(0.26), omega(0.37) {
+            eps = drive_fun(t0);
+        }
+ExternalTanh::ExternalTanh(double Am)
+        : Am(Am), k(0.26), omega(0.37) {
+            eps = drive_fun(t0);
+        }    
+ExternalTanh::ExternalTanh(double Am, double k, double omega)
+        : Am(Am), k(k), omega(omega) {
+            eps = drive_fun(t0);
+        }   
+double ExternalTanh::drive_fun(double t) {
+    return  0.5 * (tanh((t - tL)/twL) - tanh((t-tR)/twR));
+}
+void ExternalTanh::operator() (double* es, double* targets, int nt, double t) {
+    double a_t_k = (drive_fun(t) - eps) / (1-eps) * Am * k;
+    double omt = omega * t;
+    for (int ii = 0; ii < nt; ++ii) {
+        es[ii] += a_t_k * sin(k*targets[ii] - omt);
+    }
+}
+void ExternalTanh::print_field_obj() {
+    cout << "External field : Tanh" << endl;
+    cout << "Am " << Am << ", k " << k << ", omega " << omega << endl;
+    cout << "t0 " << t0 << ", tL " << tL << ", tR " << tR << endl;
+    cout << "twL " << twL << ", twR " << twR << endl;
+    cout << "epsilon driver " << eps << endl;
+}
+ExternalTanh::~ExternalTanh() = default;
+// -----------------
 ExternalSine::ExternalSine()
         : Am(0.4), k(0.26), omega(0.37) {}
 ExternalSine::ExternalSine(double Am)
@@ -23,7 +54,7 @@ void ExternalSine::operator() (double* es, double* targets, int nt, double t) {
     }
 }
 void ExternalSine::print_field_obj() {
-    cout << "External field - sine" << endl;
+    cout << "External field : sine" << endl;
     cout << "Am " << Am << ", k " << k << ", omega " << omega << endl;
 }
 ExternalSine::~ExternalSine() = default;
@@ -47,7 +78,7 @@ void ExternalLogistic::operator() (double* es, double* targets, int nt, double t
     }
 }
 void ExternalLogistic::print_field_obj() {
-    cout << "External field - logistic" << endl;
+    cout << "External field : logistic" << endl;
     cout << "Am " << Am << ", k " << k << ", omega " << omega << endl;
 }
 ExternalLogistic::~ExternalLogistic() = default;

@@ -101,13 +101,17 @@ void AMRSimulation::make_external_field(pt::ptree &deck) {
             switch (external_type)
             {
                 case 1: {
+                    calculate_e_external = new ExternalSine(Am, k, omega);
+                }
+                break;
+                case 2: {
                     calculate_e_external = new ExternalLogistic(Am, k, omega);
                 }
                 break;
             
                 default: // 0
                 {
-                    calculate_e_external = new ExternalSine(Am, k, omega);
+                    calculate_e_external = new ExternalTanh(Am, k, omega);
                 }
                 break;
             }

@@ -23,6 +23,20 @@ class ExternalElectricField {
         virtual ~ExternalElectricField();
 };
 
+class ExternalTanh : public ExternalElectricField {
+    public:
+        double Am, k, omega;
+        double t0 = 0, tL = 69, tR = 307, twL = 20, twR = 20;
+        double eps;
+        double drive_fun(double t);
+        ExternalTanh();
+        ExternalTanh(double Am);
+        ExternalTanh(double Am, double k, double omega);
+        void operator() (double* es, double* targets, int nt, double t);
+        void print_field_obj();
+        ~ExternalTanh();
+};
+
 class ExternalSine : public ExternalElectricField {
     public:
         double Am, k, omega;
