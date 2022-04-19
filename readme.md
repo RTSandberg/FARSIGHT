@@ -1,4 +1,4 @@
-FARRSIGHT 
+FARSIGHT 
 ===
 (Forward Adaptively Refined, Regularized Semi-Lagrangian method using Integral Green's function and Hierarchical Treecode)
 ---
@@ -8,10 +8,13 @@ Dependencies
 * openmp - compatible compiler
 * cmake
 * eigen
+* boost ptree
 
 
 use build command
-$ cmake .. -D CMAKE_C_COMPILER=gcc-9 -D CMAKE_CXX_COMPILER=g++-9
+$ mkdir build && cd build
+$ cmake .. -D CMAKE_C_COMPILER=<your_C_compiler> -D CMAKE_CXX_COMPILER=<your_C++_compiler>
+e.g. locally I use homebrew, so my C compiler is gcc-9, C++ is g++-9
 
 Demos
 ---
