@@ -2,6 +2,8 @@ FARSIGHT
 ===
 (Forward Adaptively Refined, Regularized Semi-Lagrangian method using Integral Green's function and Hierarchical Treecode)
 ---
+Please note that this code is no longer under active development.
+The master branch is outdated; I recommend looking at the dev or multispecies branches if you are interested in using FARSIGHT.
 
 Dependencies
 ---
